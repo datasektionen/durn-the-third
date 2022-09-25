@@ -1,20 +1,16 @@
-FROM ubuntu:20.04
-
-ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get update
-RUN apt-get install -y \
-  golang \
-  npm
-
-RUN mkdir -p /app
+# Can't be heigher than node 16 since 17+ uses a newer version of OpenSSL
+# which webpack apparently does not sypport (at 2022-09-26)
+FROM node:16-alpine AS webpack_builder 
 COPY . /app
 WORKDIR /app
-EXPOSE 3000
-
-
-RUN npm install 
+RUN npm install
 RUN npm run build
 
-RUN go install 
-
-CMD [ "go" "run" ]
+FROM golang:1.19
+COPY . /app
+WORKDIR /app
+RUN go mod download
+COPY --from=webpack_builder /app/dist /app/dist
+ENV PORT=3000
+EXPOSE 3000
+CMD [ "go", "run", "main.go" ]
