@@ -28,10 +28,9 @@ func InitDB() {
 	db.AutoMigrate(&Election{})
 	db.AutoMigrate(&ValidVoter{})
 	db.AutoMigrate(&Candidate{})
-	// db.AutoMigrate(&CastedVote{})
 	db.AutoMigrate(&Vote{})
 	db.AutoMigrate(&Ranking{})
-	// db.AutoMigrate(&VoteHash{})
+	db.AutoMigrate(&VoteHash{})
 }
 
 func GetDB() *gorm.DB {

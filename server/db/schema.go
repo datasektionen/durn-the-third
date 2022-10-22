@@ -31,27 +31,20 @@ type Candidate struct {
 	ElectionID   uuid.UUID `gorm:"not null" json:"-"`
 }
 
-// type CastedVote struct {
-// 	VoterID    string     `gorm:"primaryKey"`
-// 	ElectionID uuid.UUID  `gorm:"primaryKey"`
-// 	Voter      ValidVoter `gorm:"foreignKey:VoterID"`
-// 	Election   Election   `gorm:"foreignKey:ElectionID"`
-// }
-
-// type VoteHash struct {
-// 	Hash string `gorm:"primaryKey"`
-// }
+type VoteHash struct {
+	Hash string `gorm:"primaryKey"`
+}
 
 type Vote struct {
-	Hash       string    `gorm:"primaryKey"`
+	ID         uuid.UUID `gorm:"primaryKey"`
 	IsBlank    bool      `gorm:"not null"`
 	VoteTime   time.Time `gorm:"not null"`
 	ElectionID uuid.UUID `gorm:"not null"`
-	Rankings   []Ranking `gorm:"foreignKey:VoteHash;references:Hash"`
+	Rankings   []Ranking `gorm:"foreignKey:VoteID;references:ID"`
 }
 
 type Ranking struct {
-	VoteHash    string    `gorm:"PrimaryKey"`
+	VoteID      uuid.UUID `gorm:"PrimaryKey"`
 	Rank        int       `gorm:"PrimaryKey"`
 	CandidateID uuid.UUID `gorm:"not null"`
 }
