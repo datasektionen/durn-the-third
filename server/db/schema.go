@@ -8,16 +8,16 @@ import (
 )
 
 type Election struct {
-	ID          uuid.UUID    `gorm:"primaryKey"`
-	Name        string       `gorm:"not null"`
-	Description string       `gorm:"not null"`
-	Published   bool         `gorm:"not null"`
-	Finalized   bool         `gorm:"not null"`
-	OpenTime    sql.NullTime ``
-	CloseTime   sql.NullTime ``
-	Candidates  []Candidate  `gorm:"foreignKey:ElectionID;references:ID"`
+	ID          uuid.UUID    `gorm:"primaryKey" json:"id"`
+	Name        string       `gorm:"not null" json:"name"`
+	Description string       `gorm:"not null" json:"description"`
+	Published   bool         `gorm:"not null" json:"published"`
+	Finalized   bool         `gorm:"not null" json:"finalized"`
+	OpenTime    sql.NullTime `json:"openTime"`
+	CloseTime   sql.NullTime `json:"closeTime"`
+	Candidates  []Candidate  `gorm:"foreignKey:ElectionID;references:ID" json:"candidates"`
 	Votes       []Vote       `json:"-"`
-	Voters      []ValidVoter `gorm:"many2many:casted_votes"`
+	Voters      []ValidVoter `gorm:"many2many:casted_votes" json:"-"`
 }
 
 type ValidVoter struct {
@@ -25,10 +25,10 @@ type ValidVoter struct {
 }
 
 type Candidate struct {
-	ID           uuid.UUID `gorm:"primaryKey" json:"-"`
+	ID           uuid.UUID `gorm:"primaryKey" json:"id"`
 	Name         string    `gorm:"not null" json:"name"`
 	Presentation string    `gorm:"not null" json:"presentation"`
-	ElectionID   uuid.UUID `gorm:"not null"`
+	ElectionID   uuid.UUID `gorm:"not null" json:"-"`
 }
 
 // type CastedVote struct {

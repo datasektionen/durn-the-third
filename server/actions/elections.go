@@ -85,18 +85,47 @@ func GetElection(c *gin.Context) {
 	if !success {
 		return
 	}
-	fmt.Println(electionId)
-	c.String(http.StatusNotImplemented, "501 Not Implemented")
+
+	db := database.GetDB()
+	defer database.ReleaseDB()
+
+	election := database.Election{ID: electionId}
+	if err := db.Preload("Candidates").First(&election).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, "400 Bad Request: Invalid election specified")
+		return
+	}
+
+	c.JSON(http.StatusOK, election)
 }
 
 func GetElections(c *gin.Context) {
+	db := database.GetDB()
+	defer database.ReleaseDB()
 
-	c.String(http.StatusNotImplemented, "501 Not Implemented")
+	var elections []database.Election
+	if err := db.Preload("Candidates").Find(&elections).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, "400 Bad Request: Invalid election specified")
+		return
+	}
+
+	c.JSON(http.StatusOK, elections)
 }
 
 func GetPublicElections(c *gin.Context) {
+	db := database.GetDB()
+	defer database.ReleaseDB()
 
-	c.String(http.StatusNotImplemented, "501 Not Implemented")
+	var elections []database.Election
+	if err := db.Where("Published").Preload("Candidates").Find(&elections).Error; err != nil {
+
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, "500 Internal Server Error: Server failed to handle request")
+		return
+	}
+
+	c.JSON(http.StatusOK, elections)
 }
 
 func GetPublicElection(c *gin.Context) {
@@ -107,7 +136,14 @@ func GetPublicElection(c *gin.Context) {
 
 	db := database.GetDB()
 	defer database.ReleaseDB()
-	election := database.GetElectionIfPublic(db, electionId)
+	// election := database.FetchElectionIfPublic(db, electionId)
+
+	election := database.Election{ID: electionId}
+	if err := db.Where("Published").Preload("Candidates").First(&election).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, "400 Bad Request: Invalid election specified")
+		return
+	}
 
 	c.JSON(http.StatusOK, election)
 }
