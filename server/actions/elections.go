@@ -30,7 +30,7 @@ func CreateElection(c *gin.Context) {
 
 	db := database.GetDB()
 	defer database.ReleaseDB()
-	db.Create(&database.Election{
+	election := database.Election{
 		ID:          uuid.NewV4(),
 		Name:        body.Name,
 		Description: "",
@@ -38,7 +38,12 @@ func CreateElection(c *gin.Context) {
 		CloseTime:   sql.NullTime{Valid: false},
 		Published:   false,
 		Finalized:   false,
-	})
+	}
+	if err := db.Create(&election).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, "500 Internal Server Error: Server failed to handle request")
+		return
+	}
 
 	c.String(http.StatusOK, "200 OK")
 }
@@ -87,9 +92,7 @@ func EditElection(c *gin.Context) {
 	if body.CloseTime != nil {
 		election.CloseTime = util.ConvertNullTime(*body.CloseTime)
 	}
-	if err := db.Save(&election).Error; err != nil {
-		fmt.Println(err)
-		c.String(http.StatusInternalServerError, "500 Internal Server Error: Server failed to handle request")
+	if !trySaveDatabaseRecord(c, db, election) {
 		return
 	}
 	c.String(http.StatusOK, "200 OK")
@@ -113,9 +116,7 @@ func PublishElection(c *gin.Context) {
 	}
 
 	election.Published = true
-	if err := db.Save(&election).Error; err != nil {
-		fmt.Println(err)
-		c.String(http.StatusInternalServerError, "500 Internal Server Error: Server failed to handle request")
+	if !trySaveDatabaseRecord(c, db, election) {
 		return
 	}
 
@@ -141,9 +142,7 @@ func FinalizeElection(c *gin.Context) {
 	}
 
 	election.Finalized = true
-	if err := db.Save(&election).Error; err != nil {
-		fmt.Println(err)
-		c.String(http.StatusInternalServerError, "500 Internal Server Error: Server failed to handle request")
+	if !trySaveDatabaseRecord(c, db, election) {
 		return
 	}
 
@@ -195,7 +194,6 @@ func GetPublicElections(c *gin.Context) {
 
 	var elections []database.Election
 	if err := db.Where("Published").Preload("Candidates").Find(&elections).Error; err != nil {
-
 		fmt.Println(err)
 		c.String(http.StatusBadRequest, "500 Internal Server Error: Server failed to handle request")
 		return
@@ -266,7 +264,7 @@ func AddCandidate(c *gin.Context) {
 		ElectionID:   electionId,
 	}).Error; err != nil {
 		fmt.Println(err)
-		c.AbortWithStatus(http.StatusBadRequest)
+		c.String(http.StatusInternalServerError, "500 Internal Server Error: Server failed to handle request")
 		return
 	}
 	c.String(http.StatusOK, "200 OK")
@@ -299,9 +297,7 @@ func EditCandidate(c *gin.Context) {
 	if body.Presentation != nil {
 		candidate.Presentation = *body.Presentation
 	}
-	if err := db.Save(&candidate).Error; err != nil {
-		fmt.Println(err)
-		c.String(http.StatusInternalServerError, "500 Internal Server Error: Server failed to handle request")
+	if !trySaveDatabaseRecord(c, db, candidate) {
 		return
 	}
 	c.String(http.StatusOK, "200 OK")
