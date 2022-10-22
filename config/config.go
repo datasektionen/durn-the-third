@@ -5,12 +5,8 @@ import (
 	"os"
 	"strconv"
 
-	_ "github.com/joho/godotenv/autoload"
-)
-
-var (
-	loaded bool = false
-	conf   Config
+	"github.com/joho/godotenv"
+	// _ "github.com/joho/godotenv/autoload"
 )
 
 type Config struct {
@@ -19,24 +15,33 @@ type Config struct {
 	LOGIN_URL string
 	LOGIN_KEY string
 	PLS_URL   string
+
+	DB_URL  string
+	DB_PORT int
+	DB_NAME string
+	DB_USER string
+	DB_PSWD string
 }
 
-func loadStringEnv(v string, def string) string {
-	val := os.Getenv(v)
-	if val == "" {
+var (
+	loaded bool = false
+	conf   Config
+)
+
+func loadStringEnv(e string, def string) string {
+	val, present := os.LookupEnv(e)
+	if !present {
+		fmt.Printf("No value found for ENV VAR '%s', using default value '%s'", e, def)
 		val = def
 	}
-	return def
+	return val
 }
 
-func loadIntEnv(v string, def int) int {
-	strVal := loadStringEnv(v, "")
-	if strVal == "" {
-		return def
-	}
+func loadIntEnv(e string, def int) int {
+	strVal := loadStringEnv(e, strconv.Itoa(def))
 	val, err := strconv.Atoi(strVal)
 	if err != nil {
-		fmt.Println("FATAL")
+		fmt.Printf("FATAL: %s\n", err)
 		os.Exit(1)
 	}
 	return val
@@ -47,12 +52,22 @@ func GetConfig() *Config {
 		return &conf
 	}
 
+	if err := godotenv.Load(".env"); err != nil {
+		fmt.Println(err)
+	}
+
 	conf = Config{
-		HOST:      loadStringEnv("HOST", "localhost"),
-		PORT:      loadIntEnv("PORT", 5000),
+		HOST:      loadStringEnv("HOST", "https://localhost.datasektionen.se"),
+		PORT:      loadIntEnv("PORT", 3000),
 		LOGIN_URL: loadStringEnv("LOGIN_URL", "https://login.datasektionen.se"),
 		LOGIN_KEY: loadStringEnv("LOGIN_KEY", ""),
 		PLS_URL:   loadStringEnv("PLS_URL", "https://pls.datasektionen.se"),
+
+		DB_URL:  loadStringEnv("DB_URL", "localhost"),
+		DB_PORT: loadIntEnv("DB_PORT", 5432),
+		DB_NAME: loadStringEnv("DB_NAME", "durn"),
+		DB_USER: loadStringEnv("DB_USER", "durn"),
+		DB_PSWD: loadStringEnv("DB_PSWD", ""),
 	}
 
 	loaded = true
