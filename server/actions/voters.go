@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+// AddVoters adds
 func AddVoters(c *gin.Context) {
 	body := struct {
 		Voters []string `json:"voters" binding:"required"`
@@ -22,7 +23,9 @@ func AddVoters(c *gin.Context) {
 
 	var voters []database.ValidVoter
 	for _, voter := range body.Voters {
-		voters = append(voters, database.ValidVoter{Email: voter})
+		if util.ValidEmail(voter) {
+			voters = append(voters, database.ValidVoter{Email: voter})
+		}
 	}
 
 	db := database.GetDB()
