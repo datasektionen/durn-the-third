@@ -44,6 +44,9 @@ func InitRoutes(r *gin.RouterGroup) {
 
 	read.GET("/election/:id/count", actions.CountVotes)
 
+	write.PUT("/voters/add", actions.AddVoters)
+	write.DELETE("/voters/remove", actions.RemoveVoters)
+
 	auth.GET("/")
 
 	// admin.GET("/admin/ping", func(c *gin.Context) { c.Writer.Write([]byte("pong")) })
