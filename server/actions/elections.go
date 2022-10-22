@@ -60,6 +60,12 @@ func EditElection(c *gin.Context) {
 		return
 	}
 
+	if election.Finalized {
+		fmt.Println("User tried to edit election after it had been finalized")
+		c.String(http.StatusMethodNotAllowed, "405 Method Not Allowed: Can't edit finalized election")
+		return
+	}
+
 	if body.Name != nil {
 		election.Name = *body.Name
 	}
@@ -214,10 +220,16 @@ func AddCandidate(c *gin.Context) {
 	db := database.GetDB()
 	defer database.ReleaseDB()
 
-	if err := db.First(&database.Election{ID: electionId}).Error; err != nil {
+	election := database.Election{ID: electionId}
+	if err := db.First(&election).Error; err != nil {
 		fmt.Println(err)
 		c.String(http.StatusBadRequest, "400 Bad Request: Invalid election specified")
 		return
+	}
+
+	if election.Published {
+		fmt.Println("User tried to add candidate to published election")
+		c.String(http.StatusMethodNotAllowed, "405 Method Not Allowed: Can't add candidate to published Election")
 	}
 
 	if err := db.Create(&database.Candidate{
@@ -251,6 +263,7 @@ func EditCandidate(c *gin.Context) {
 		c.String(http.StatusBadRequest, "400 Bad Request: Invalid candidate specified")
 		return
 	}
+
 	candidate.Name = body.Name
 	candidate.Presentation = body.Presentation
 	if err := db.Save(&candidate).Error; err != nil {
