@@ -16,9 +16,7 @@ func InitRoutes(r *gin.RouterGroup) {
 
 	db.InitDB()
 
-	r.Use(cors.New(cors.Options{
-		// Debug: true,
-	}))
+	r.Use(cors.New(cors.Options{}))
 
 	r.GET("/ping", func(c *gin.Context) { c.String(http.StatusOK, "pong") })
 
@@ -27,7 +25,7 @@ func InitRoutes(r *gin.RouterGroup) {
 	auth.GET("/validate-token", actions.ValidateToken)
 
 	write := auth.Group("/", middleware.HasPerm("admin-write"))
-	read := auth.Group("/", middleware.HasPerm("admin-write"))
+	read := auth.Group("/", middleware.HasPerm("admin-read"))
 
 	read.GET("/elections", actions.GetElections)
 	read.GET("/election/:id", actions.GetElection)
@@ -47,7 +45,4 @@ func InitRoutes(r *gin.RouterGroup) {
 	write.PUT("/voters/add", actions.AddVoters)
 	write.DELETE("/voters/remove", actions.RemoveVoters)
 
-	auth.GET("/")
-
-	// admin.GET("/admin/ping", func(c *gin.Context) { c.Writer.Write([]byte("pong")) })
 }
