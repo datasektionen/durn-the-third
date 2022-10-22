@@ -11,6 +11,5 @@ COPY . /app
 WORKDIR /app
 RUN go mod download
 COPY --from=webpack_builder /app/dist /app/dist
-ENV PORT=3000
 EXPOSE 3000
 CMD [ "go", "run", "main.go" ]
