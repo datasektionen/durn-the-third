@@ -1,6 +1,7 @@
 const { resolve } = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const TerserWebpackPlugin = require("terser-webpack-plugin");
+const dotEnv = require('dotenv-webpack');
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -31,6 +32,10 @@ const config = {
       template: "./client/src/index.html",
       filename: "index.html",
       inject: "body",
+    }),
+    new dotEnv({
+      path: "./.env",
+      systemvars: true,
     }),
   ],
 };
