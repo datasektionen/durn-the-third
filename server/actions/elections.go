@@ -12,6 +12,13 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+// CreateElection creates an election with the given name.
+// All other fields are set to their defaults and has to be changed
+// using the edit endpoint.
+// Default values:
+// - Description: ""
+// - OpenTime, CloseTime: null
+// - Published, Finalized: false
 func CreateElection(c *gin.Context) {
 	body := struct {
 		Name string `json:"name" binding:"required"`
@@ -20,8 +27,6 @@ func CreateElection(c *gin.Context) {
 	if !util.TryParseJsonBody(c, &body) {
 		return
 	}
-
-	fmt.Println(body)
 
 	db := database.GetDB()
 	defer database.ReleaseDB()
@@ -38,6 +43,10 @@ func CreateElection(c *gin.Context) {
 	c.String(http.StatusOK, "200 OK")
 }
 
+// EditElection updates specific fields for the specified election.
+// Individual fields can be skipped in the request body. All skipped fields
+// will not be affected in the database.
+// Allowed fields are: Name, Description, OpenTime, CloseTime
 func EditElection(c *gin.Context) {
 	electionId, success := util.TryParseUuidInPath(c)
 	body := struct {
@@ -86,25 +95,8 @@ func EditElection(c *gin.Context) {
 	c.String(http.StatusOK, "200 OK")
 }
 
-func GetElection(c *gin.Context) {
-	electionId, success := util.TryParseUuidInPath(c)
-	if !success {
-		return
-	}
-
-	db := database.GetDB()
-	defer database.ReleaseDB()
-
-	election := database.Election{ID: electionId}
-	if err := db.Preload("Candidates").First(&election).Error; err != nil {
-		fmt.Println(err)
-		c.String(http.StatusBadRequest, "400 Bad Request: Invalid election specified")
-		return
-	}
-
-	c.JSON(http.StatusOK, election)
-}
-
+// PublishElection marks an election as published.
+// Note that there is no endpoint for unpublishing elections.
 func PublishElection(c *gin.Context) {
 	electionId, success := util.TryParseUuidInPath(c)
 	if !success {
@@ -130,6 +122,9 @@ func PublishElection(c *gin.Context) {
 	c.String(http.StatusOK, "200 OK")
 }
 
+// FinalizeElection marks an election as finalized, meaning that voting is finished
+// and enabling vote counting.
+// Note that there is no endpoint for unfinalizing elections.
 func FinalizeElection(c *gin.Context) {
 	electionId, success := util.TryParseUuidInPath(c)
 	if !success {
@@ -155,6 +150,29 @@ func FinalizeElection(c *gin.Context) {
 	c.String(http.StatusOK, "200 OK")
 }
 
+// GetElection fetches a specific election from the database, including
+// all candidates in the election.
+func GetElection(c *gin.Context) {
+	electionId, success := util.TryParseUuidInPath(c)
+	if !success {
+		return
+	}
+
+	db := database.GetDB()
+	defer database.ReleaseDB()
+
+	election := database.Election{ID: electionId}
+	if err := db.Preload("Candidates").First(&election).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, "400 Bad Request: Invalid election specified")
+		return
+	}
+
+	c.JSON(http.StatusOK, election)
+}
+
+// GetElections fetches all elections in the database, including all
+// candidates in the elections.
 func GetElections(c *gin.Context) {
 	db := database.GetDB()
 	defer database.ReleaseDB()
@@ -169,6 +187,8 @@ func GetElections(c *gin.Context) {
 	c.JSON(http.StatusOK, elections)
 }
 
+// GetPublicElections fetches all elections in the database with the
+// published flag set to true.
 func GetPublicElections(c *gin.Context) {
 	db := database.GetDB()
 	defer database.ReleaseDB()
@@ -184,6 +204,10 @@ func GetPublicElections(c *gin.Context) {
 	c.JSON(http.StatusOK, elections)
 }
 
+// GetPublicElections fetches an elections in the database if the
+// published flag set to true. If no there exist an election with the
+// given id that is not published, the same error is returned as when
+// there is no election with that id.
 func GetPublicElection(c *gin.Context) {
 	electionId, success := util.TryParseUuidInPath(c)
 	if !success {
@@ -204,6 +228,9 @@ func GetPublicElection(c *gin.Context) {
 	c.JSON(http.StatusOK, election)
 }
 
+// AddCandidate adds a candidate to the specified election. The name parameter
+// needs to be specified, presentation is defaulted to "" if not present.
+// Note that candidates can not be added to elections after they have been published
 func AddCandidate(c *gin.Context) {
 	electionId, success := util.TryParseUuidInPath(c)
 	body := struct {
@@ -245,11 +272,13 @@ func AddCandidate(c *gin.Context) {
 	c.String(http.StatusOK, "200 OK")
 }
 
+// EditCandidate modifies the specified candidate. Fields that are not included in
+// request body will not be changed in the database
 func EditCandidate(c *gin.Context) {
 	candidateId, success := util.TryParseUuidInPath(c)
 	body := struct {
-		Name         string `json:"name" binding:"required"`
-		Presentation string `json:"presentation" binding:"required"`
+		Name         *string `json:"name"`
+		Presentation *string `json:"presentation"`
 	}{}
 	if !success || util.TryParseJsonBody(c, &body) {
 		return
@@ -264,8 +293,12 @@ func EditCandidate(c *gin.Context) {
 		return
 	}
 
-	candidate.Name = body.Name
-	candidate.Presentation = body.Presentation
+	if body.Name != nil {
+		candidate.Name = *body.Name
+	}
+	if body.Presentation != nil {
+		candidate.Presentation = *body.Presentation
+	}
 	if err := db.Save(&candidate).Error; err != nil {
 		fmt.Println(err)
 		c.String(http.StatusInternalServerError, "500 Internal Server Error: Server failed to handle request")

@@ -11,7 +11,9 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-// AddVoters adds
+// AddVoters takes a list of email addresses and adds them all to the
+// database table `valid_voters`. It silently skips all strings that are
+// not valid email addresses and addresses that are already in the database
 func AddVoters(c *gin.Context) {
 	body := struct {
 		Voters []string `json:"voters" binding:"required"`
@@ -40,6 +42,8 @@ func AddVoters(c *gin.Context) {
 	c.String(http.StatusOK, "200 OK")
 }
 
+// RemoveVoters takes a list of email addresses and removes them from the database.
+// Ignores addresses that are not in the database
 func RemoveVoters(c *gin.Context) {
 	body := struct {
 		Voters []string `json:"voters" binding:"required"`
