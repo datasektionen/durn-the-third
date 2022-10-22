@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetElectionIfPublic(db *gorm.DB, id uuid.UUID) *Election {
+func FetchElectionIfPublic(db *gorm.DB, id uuid.UUID) *Election {
 	election := Election{ID: id}
 	if err := db.Find(&election).Preload("Candidates").Error; err != nil {
 		return nil

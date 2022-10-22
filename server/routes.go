@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	//cors "github.com/rs/cors/wrapper/gin"
+	cors "github.com/rs/cors/wrapper/gin"
 
 	"durn/server/actions"
 	"durn/server/middleware"
@@ -16,9 +16,9 @@ func InitRoutes(r *gin.RouterGroup) {
 
 	db.InitDB()
 
-	// r.Use(cors.New(cors.Options{
-	// 	Debug: true,
-	// }))
+	r.Use(cors.New(cors.Options{
+		// Debug: true,
+	}))
 
 	r.GET("/ping", func(c *gin.Context) { c.String(http.StatusOK, "pong") })
 
