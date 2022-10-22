@@ -99,6 +99,56 @@ func GetElection(c *gin.Context) {
 	c.JSON(http.StatusOK, election)
 }
 
+func PublishElection(c *gin.Context) {
+	electionId, success := util.TryParseUuidInPath(c)
+	if !success {
+		return
+	}
+
+	election := database.Election{ID: electionId}
+	db := database.GetDB()
+	defer database.ReleaseDB()
+	if err := db.First(&election).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, "400 Bad Request: Invalid election specified")
+		return
+	}
+
+	election.Published = true
+	if err := db.Save(&election).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusInternalServerError, "500 Internal Server Error: Server failed to handle request")
+		return
+	}
+
+	c.String(http.StatusOK, "200 OK")
+}
+
+func FinalizeElection(c *gin.Context) {
+	electionId, success := util.TryParseUuidInPath(c)
+	if !success {
+		return
+	}
+
+	election := database.Election{ID: electionId}
+	db := database.GetDB()
+	defer database.ReleaseDB()
+	if err := db.First(&election).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, "400 Bad Request: Invalid election specified")
+		return
+	}
+
+	election.Finalized = true
+	if err := db.Save(&election).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusInternalServerError, "500 Internal Server Error: Server failed to handle request")
+		return
+	}
+
+	c.String(http.StatusOK, "200 OK")
+}
+
 func GetElections(c *gin.Context) {
 	db := database.GetDB()
 	defer database.ReleaseDB()
