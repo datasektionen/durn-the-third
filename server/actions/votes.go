@@ -115,7 +115,24 @@ func GetHashes(c *gin.Context) {
 
 }
 
+// HasVoted checks if there is a record in the database for the specified election
+// for the user that is requesting.
 func HasVoted(c *gin.Context) {
+	electionId, err := uuid.FromString(c.Param("id"))
+	if err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadUUID)
+		return
+	}
+	user := c.GetString("user")
+
+	db := database.GetDB()
+	defer database.ReleaseDB()
+
+	if err := db.Find(&database.CastedVote{ElectionID: electionId, Email: user}).Error; err != nil {
+		c.String(http.StatusOK, "false")
+	}
+	c.String(http.StatusOK, "true")
 }
 
 func calculateVoteHash(vote *database.Vote, secret string, user string) (string, error) {
