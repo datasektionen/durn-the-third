@@ -47,7 +47,7 @@ func CreateElection(c *gin.Context) {
 		return
 	}
 
-	c.String(http.StatusOK, "200 OK")
+	c.JSON(http.StatusOK, election)
 }
 
 // EditElection updates specific fields for the specified election.
@@ -78,7 +78,7 @@ func EditElection(c *gin.Context) {
 	election := database.Election{ID: electionId}
 	db := database.GetDB()
 	defer database.ReleaseDB()
-	if err := db.First(&election).Error; err != nil {
+	if err := db.Preload("Candidates").First(&election).Error; err != nil {
 		fmt.Println(err)
 		c.String(http.StatusBadRequest, util.InvalidElection)
 		return
@@ -107,7 +107,7 @@ func EditElection(c *gin.Context) {
 		c.String(http.StatusInternalServerError, util.RequestFailed)
 		return
 	}
-	c.String(http.StatusOK, "200 OK")
+	c.JSON(http.StatusOK, election)
 }
 
 // PublishElection marks an election as published.
@@ -123,7 +123,7 @@ func PublishElection(c *gin.Context) {
 	election := database.Election{ID: electionId}
 	db := database.GetDB()
 	defer database.ReleaseDB()
-	if err := db.First(&election).Error; err != nil {
+	if err := db.Preload("Candidates").First(&election).Error; err != nil {
 		fmt.Println(err)
 		c.String(http.StatusBadRequest, util.InvalidElection)
 		return
@@ -136,7 +136,7 @@ func PublishElection(c *gin.Context) {
 		return
 	}
 
-	c.String(http.StatusOK, "200 OK")
+	c.JSON(http.StatusOK, election)
 }
 
 // FinalizeElection marks an election as finalized, meaning that voting is finished
@@ -153,7 +153,7 @@ func FinalizeElection(c *gin.Context) {
 	election := database.Election{ID: electionId}
 	db := database.GetDB()
 	defer database.ReleaseDB()
-	if err := db.First(&election).Error; err != nil {
+	if err := db.Preload("Candidates").First(&election).Error; err != nil {
 		fmt.Println(err)
 		c.String(http.StatusBadRequest, util.InvalidElection)
 		return
@@ -165,8 +165,7 @@ func FinalizeElection(c *gin.Context) {
 		c.String(http.StatusInternalServerError, util.RequestFailed)
 		return
 	}
-
-	c.String(http.StatusOK, "200 OK")
+	c.JSON(http.StatusOK, election)
 }
 
 // GetElection fetches a specific election from the database, including
@@ -289,17 +288,18 @@ func AddCandidate(c *gin.Context) {
 		c.String(http.StatusMethodNotAllowed, "Can't add candidate to published Election")
 	}
 
-	if err := db.Create(&database.Candidate{
+	candidate := database.Candidate{
 		ID:           uuid.NewV4(),
 		Name:         body.Name,
 		Presentation: body.Presentation,
 		ElectionID:   electionId,
-	}).Error; err != nil {
+	}
+	if err := db.Create(&candidate).Error; err != nil {
 		fmt.Println(err)
 		c.String(http.StatusInternalServerError, util.RequestFailed)
 		return
 	}
-	c.String(http.StatusOK, "200 OK")
+	c.JSON(http.StatusOK, candidate)
 }
 
 // EditCandidate modifies the specified candidate. Fields that are not included in
@@ -341,5 +341,5 @@ func EditCandidate(c *gin.Context) {
 		c.String(http.StatusInternalServerError, util.RequestFailed)
 		return
 	}
-	c.String(http.StatusOK, "200 OK")
+	c.JSON(http.StatusOK, candidate)
 }
