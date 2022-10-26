@@ -93,6 +93,13 @@ func CastVote(c *gin.Context) {
 		return
 	}
 
+	if err := database.ReorderRows(db, "casted_votes"); err != nil {
+		fmt.Println("Database failed to shuffle table casted_votes")
+	}
+	if err := database.ReorderRows(db, "vote_hashes"); err != nil {
+		fmt.Println("Database failed to shuffle table vote_hashes")
+	}
+
 	c.String(http.StatusOK, hash)
 }
 
