@@ -19,7 +19,9 @@ func AddVoters(c *gin.Context) {
 		Voters []string `json:"voters" binding:"required"`
 	}{}
 
-	if !util.TryParseJsonBody(c, &body) {
+	if err := c.BindJSON(&body); err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadParameters)
 		return
 	}
 
@@ -49,7 +51,9 @@ func RemoveVoters(c *gin.Context) {
 		Voters []string `json:"voters" binding:"required"`
 	}{}
 
-	if !util.TryParseJsonBody(c, &body) {
+	if err := c.BindJSON(&body); err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadParameters)
 		return
 	}
 

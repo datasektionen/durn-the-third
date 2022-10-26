@@ -24,7 +24,9 @@ func CreateElection(c *gin.Context) {
 		Name string `json:"name" binding:"required"`
 	}{}
 
-	if !util.TryParseJsonBody(c, &body) {
+	if err := c.BindJSON(&body); err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadParameters)
 		return
 	}
 
@@ -53,7 +55,13 @@ func CreateElection(c *gin.Context) {
 // will not be affected in the database.
 // Allowed fields are: Name, Description, OpenTime, CloseTime
 func EditElection(c *gin.Context) {
-	electionId, success := util.TryParseUuidInPath(c)
+	electionId, err := uuid.FromString(c.Param("id"))
+	if err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadUUID)
+		return
+	}
+
 	body := struct {
 		Name        *string        `json:"name"`
 		Description *string        `json:"description"`
@@ -61,7 +69,9 @@ func EditElection(c *gin.Context) {
 		CloseTime   *util.NullTime `json:"closeTime"`
 	}{}
 
-	if !success || !util.TryParseJsonBody(c, &body) {
+	if err := c.BindJSON(&body); err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadParameters)
 		return
 	}
 
@@ -92,7 +102,9 @@ func EditElection(c *gin.Context) {
 	if body.CloseTime != nil {
 		election.CloseTime = util.ConvertNullTime(*body.CloseTime)
 	}
-	if !trySaveDatabaseRecord(c, db, election) {
+	if err := db.Save(&election).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusInternalServerError, util.RequestFailed)
 		return
 	}
 	c.String(http.StatusOK, "200 OK")
@@ -101,8 +113,10 @@ func EditElection(c *gin.Context) {
 // PublishElection marks an election as published.
 // Note that there is no endpoint for unpublishing elections.
 func PublishElection(c *gin.Context) {
-	electionId, success := util.TryParseUuidInPath(c)
-	if !success {
+	electionId, err := uuid.FromString(c.Param("id"))
+	if err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadUUID)
 		return
 	}
 
@@ -116,7 +130,9 @@ func PublishElection(c *gin.Context) {
 	}
 
 	election.Published = true
-	if !trySaveDatabaseRecord(c, db, election) {
+	if err := db.Save(&election).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusInternalServerError, util.RequestFailed)
 		return
 	}
 
@@ -127,8 +143,10 @@ func PublishElection(c *gin.Context) {
 // and enabling vote counting.
 // Note that there is no endpoint for unfinalizing elections.
 func FinalizeElection(c *gin.Context) {
-	electionId, success := util.TryParseUuidInPath(c)
-	if !success {
+	electionId, err := uuid.FromString(c.Param("id"))
+	if err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadUUID)
 		return
 	}
 
@@ -142,7 +160,9 @@ func FinalizeElection(c *gin.Context) {
 	}
 
 	election.Finalized = true
-	if !trySaveDatabaseRecord(c, db, election) {
+	if err := db.Save(&election).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusInternalServerError, util.RequestFailed)
 		return
 	}
 
@@ -152,8 +172,10 @@ func FinalizeElection(c *gin.Context) {
 // GetElection fetches a specific election from the database, including
 // all candidates in the election.
 func GetElection(c *gin.Context) {
-	electionId, success := util.TryParseUuidInPath(c)
-	if !success {
+	electionId, err := uuid.FromString(c.Param("id"))
+	if err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadUUID)
 		return
 	}
 
@@ -207,8 +229,10 @@ func GetPublicElections(c *gin.Context) {
 // given id that is not published, the same error is returned as when
 // there is no election with that id.
 func GetPublicElection(c *gin.Context) {
-	electionId, success := util.TryParseUuidInPath(c)
-	if !success {
+	electionId, err := uuid.FromString(c.Param("id"))
+	if err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadUUID)
 		return
 	}
 
@@ -230,7 +254,13 @@ func GetPublicElection(c *gin.Context) {
 // needs to be specified, presentation is defaulted to "" if not present.
 // Note that candidates can not be added to elections after they have been published
 func AddCandidate(c *gin.Context) {
-	electionId, success := util.TryParseUuidInPath(c)
+	electionId, err := uuid.FromString(c.Param("id"))
+	if err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadUUID)
+		return
+	}
+
 	body := struct {
 		Name         string `json:"name" binding:"required"`
 		Presentation string `json:"presentation"`
@@ -238,7 +268,9 @@ func AddCandidate(c *gin.Context) {
 		Presentation: "",
 	}
 
-	if !success || !util.TryParseJsonBody(c, &body) {
+	if err := c.BindJSON(&body); err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadParameters)
 		return
 	}
 
@@ -273,12 +305,19 @@ func AddCandidate(c *gin.Context) {
 // EditCandidate modifies the specified candidate. Fields that are not included in
 // request body will not be changed in the database
 func EditCandidate(c *gin.Context) {
-	candidateId, success := util.TryParseUuidInPath(c)
+	candidateId, err := uuid.FromString(c.Param("id"))
+	if err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadUUID)
+		return
+	}
 	body := struct {
 		Name         *string `json:"name"`
 		Presentation *string `json:"presentation"`
 	}{}
-	if !success || util.TryParseJsonBody(c, &body) {
+	if err := c.BindJSON(&body); err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadParameters)
 		return
 	}
 
@@ -297,7 +336,9 @@ func EditCandidate(c *gin.Context) {
 	if body.Presentation != nil {
 		candidate.Presentation = *body.Presentation
 	}
-	if !trySaveDatabaseRecord(c, db, candidate) {
+	if err := db.Save(&candidate).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusInternalServerError, util.RequestFailed)
 		return
 	}
 	c.String(http.StatusOK, "200 OK")
