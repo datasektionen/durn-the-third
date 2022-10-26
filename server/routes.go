@@ -26,6 +26,7 @@ func InitRoutes(r *gin.RouterGroup) {
 
 	write := auth.Group("/", middleware.HasPerm("admin-write"))
 	read := auth.Group("/", middleware.HasPerm("admin-read"))
+	vote := auth.Group("/", middleware.AllowedToVote())
 
 	read.GET("/elections", actions.GetElections)
 	read.GET("/election/:id", actions.GetElection)
@@ -40,10 +41,14 @@ func InitRoutes(r *gin.RouterGroup) {
 	write.POST("/election/:id/candidate/add", actions.AddCandidate)
 	write.PUT("/election/candidate/:id/edit", actions.EditCandidate)
 
-	read.GET("/election/:id/count", actions.CountVotes)
-
 	read.GET("/voters", actions.GetVoters)
 	write.PUT("/voters/add", actions.AddVoters)
 	write.DELETE("/voters/remove", actions.RemoveVoters)
+
+	vote.POST("/election/:id/vote", actions.CastVote)
+	auth.GET("/election/:id/has-voted", actions.HasVoted)
+	read.POST("/election/:id/get-votes", actions.CastVote)
+	read.GET("/election/:id/count", actions.CountVotes)
+	read.GET("/election/:id/hashes", actions.CastVote)
 
 }
