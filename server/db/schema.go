@@ -17,11 +17,17 @@ type Election struct {
 	CloseTime   sql.NullTime `json:"closeTime"`
 	Candidates  []Candidate  `gorm:"foreignKey:ElectionID;references:ID" json:"candidates"`
 	Votes       []Vote       `json:"-"`
-	Voters      []ValidVoter `gorm:"many2many:casted_votes" json:"-"`
 }
 
 type ValidVoter struct {
 	Email string `gorm:"primaryKey"`
+}
+
+type CastedVote struct {
+	Email      string     `gorm:"primaryKey"`
+	ElectionID uuid.UUID  `gorm:"primaryKey"`
+	User       ValidVoter `gorm:"foreignKey:Email;references:Email"`
+	Election   Election   `gorm:"foreignKey:ID;references:ElectionID"`
 }
 
 type Candidate struct {
@@ -37,8 +43,8 @@ type VoteHash struct {
 
 type Vote struct {
 	ID         uuid.UUID `gorm:"primaryKey"`
-	IsBlank    bool      `gorm:"not null"`
 	VoteTime   time.Time `gorm:"not null"`
+	IsBlank    bool      `gorm:"not null"`
 	ElectionID uuid.UUID `gorm:"not null"`
 	Rankings   []Ranking `gorm:"foreignKey:VoteID;references:ID"`
 }
