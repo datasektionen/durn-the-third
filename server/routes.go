@@ -33,7 +33,7 @@ func InitRoutes(r *gin.RouterGroup) {
 	auth.GET("/election/public/:id", actions.GetPublicElection)
 
 	write.POST("/election/create", actions.CreateElection)
-	write.PUT("/election/:id/edit", actions.EditElection)
+	write.PATCH("/election/:id/edit", actions.EditElection)
 	write.PUT("/election/:id/publish", actions.PublishElection)
 	write.PUT("/election/:id/finalize", actions.FinalizeElection)
 

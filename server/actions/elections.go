@@ -43,7 +43,7 @@ func CreateElection(c *gin.Context) {
 	}
 	if err := db.Create(&election).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.RequestFailed)
+		c.String(http.StatusInternalServerError, util.RequestFailed)
 		return
 	}
 
@@ -85,7 +85,7 @@ func EditElection(c *gin.Context) {
 
 	if election.Finalized {
 		fmt.Println("User tried to edit election after it had been finalized")
-		c.String(http.StatusMethodNotAllowed, "Can't edit finalized election")
+		c.String(http.StatusBadRequest, "Can't edit finalized election")
 		return
 	}
 
@@ -215,7 +215,7 @@ func GetPublicElections(c *gin.Context) {
 	var elections []database.Election
 	if err := db.Where("Published").Preload("Candidates").Find(&elections).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.RequestFailed)
+		c.String(http.StatusInternalServerError, util.RequestFailed)
 		return
 	}
 
