@@ -41,6 +41,7 @@ func CastVote(c *gin.Context) {
 		IsBlank:    body.IsBlank,
 	}
 
+	var hash string
 	db := database.GetDB()
 	defer database.ReleaseDB()
 	election := database.Election{ID: electionId}
@@ -61,6 +62,20 @@ func CastVote(c *gin.Context) {
 			if err := tx.Create(&ranking).Error; err != nil {
 				return err
 			}
+		}
+
+		hash, err = calculateVoteHash(&vote, user, body.Secret)
+		if err != nil {
+			return err
+		}
+		if err := tx.Create(&database.CastedVote{
+			Email:      user,
+			ElectionID: electionId,
+		}).Error; err != nil {
+			return err
+		}
+		if err := tx.Create(&database.VoteHash{Hash: hash}).Error; err != nil {
+			return err
 		}
 
 		return nil
@@ -88,3 +103,16 @@ func GetHashes(c *gin.Context) {
 func HasVoted(c *gin.Context) {
 }
 
+func calculateVoteHash(vote *database.Vote, secret string, user string) (string, error) {
+	var voteString string
+	if vote.IsBlank {
+		voteString = user + secret + vote.ElectionID.String() + "Blank"
+	} else {
+		voteString = user + secret + vote.ElectionID.String()
+		for _, rank := range vote.Rankings {
+			voteString += fmt.Sprint(rank.Rank) + rank.CandidateID.String()
+		}
+	}
+	result, err := bcrypt.GenerateFromPassword([]byte(voteString), bcrypt.DefaultCost)
+	return string(result), err
+}
