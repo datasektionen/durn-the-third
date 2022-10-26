@@ -41,7 +41,7 @@ func CreateElection(c *gin.Context) {
 	}
 	if err := db.Create(&election).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, "500 Internal Server Error: Server failed to handle request")
+		c.String(http.StatusBadRequest, util.RequestFailed)
 		return
 	}
 
@@ -70,13 +70,13 @@ func EditElection(c *gin.Context) {
 	defer database.ReleaseDB()
 	if err := db.First(&election).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, "400 Bad Request: Invalid election specified")
+		c.String(http.StatusBadRequest, util.InvalidElection)
 		return
 	}
 
 	if election.Finalized {
 		fmt.Println("User tried to edit election after it had been finalized")
-		c.String(http.StatusMethodNotAllowed, "405 Method Not Allowed: Can't edit finalized election")
+		c.String(http.StatusMethodNotAllowed, "Can't edit finalized election")
 		return
 	}
 
@@ -111,7 +111,7 @@ func PublishElection(c *gin.Context) {
 	defer database.ReleaseDB()
 	if err := db.First(&election).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, "400 Bad Request: Invalid election specified")
+		c.String(http.StatusBadRequest, util.InvalidElection)
 		return
 	}
 
@@ -137,7 +137,7 @@ func FinalizeElection(c *gin.Context) {
 	defer database.ReleaseDB()
 	if err := db.First(&election).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, "400 Bad Request: Invalid election specified")
+		c.String(http.StatusBadRequest, util.InvalidElection)
 		return
 	}
 
@@ -163,7 +163,7 @@ func GetElection(c *gin.Context) {
 	election := database.Election{ID: electionId}
 	if err := db.Preload("Candidates").First(&election).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, "400 Bad Request: Invalid election specified")
+		c.String(http.StatusBadRequest, util.InvalidElection)
 		return
 	}
 
@@ -179,7 +179,7 @@ func GetElections(c *gin.Context) {
 	var elections []database.Election
 	if err := db.Preload("Candidates").Find(&elections).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, "400 Bad Request: Invalid election specified")
+		c.String(http.StatusBadRequest, util.InvalidElection)
 		return
 	}
 
@@ -195,7 +195,7 @@ func GetPublicElections(c *gin.Context) {
 	var elections []database.Election
 	if err := db.Where("Published").Preload("Candidates").Find(&elections).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, "500 Internal Server Error: Server failed to handle request")
+		c.String(http.StatusBadRequest, util.RequestFailed)
 		return
 	}
 
@@ -219,7 +219,7 @@ func GetPublicElection(c *gin.Context) {
 	election := database.Election{ID: electionId}
 	if err := db.Where("Published").Preload("Candidates").First(&election).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, "400 Bad Request: Invalid election specified")
+		c.String(http.StatusBadRequest, util.InvalidElection)
 		return
 	}
 
@@ -248,13 +248,13 @@ func AddCandidate(c *gin.Context) {
 	election := database.Election{ID: electionId}
 	if err := db.First(&election).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, "400 Bad Request: Invalid election specified")
+		c.String(http.StatusBadRequest, util.InvalidElection)
 		return
 	}
 
 	if election.Published {
 		fmt.Println("User tried to add candidate to published election")
-		c.String(http.StatusMethodNotAllowed, "405 Method Not Allowed: Can't add candidate to published Election")
+		c.String(http.StatusMethodNotAllowed, "Can't add candidate to published Election")
 	}
 
 	if err := db.Create(&database.Candidate{
@@ -264,7 +264,7 @@ func AddCandidate(c *gin.Context) {
 		ElectionID:   electionId,
 	}).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusInternalServerError, "500 Internal Server Error: Server failed to handle request")
+		c.String(http.StatusInternalServerError, util.RequestFailed)
 		return
 	}
 	c.String(http.StatusOK, "200 OK")
@@ -287,7 +287,7 @@ func EditCandidate(c *gin.Context) {
 	defer database.ReleaseDB()
 	if err := db.First(&candidate).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, "400 Bad Request: Invalid candidate specified")
+		c.String(http.StatusBadRequest, "Invalid candidate specified")
 		return
 	}
 

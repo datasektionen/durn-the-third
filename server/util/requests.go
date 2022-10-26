@@ -1,11 +1,10 @@
 package util
 
-import (
-	"fmt"
-	"net/http"
-
-	"github.com/gin-gonic/gin"
-	uuid "github.com/satori/go.uuid"
+const (
+	BadUUID         = "Malformed UUID specified"
+	BadParameters   = "Malformed or missing parameters in body"
+	InvalidElection = "Invalid election specified"
+	RequestFailed   = "Server failed to handle request"
 )
 
 func TryParseUuidInPath(c *gin.Context) (uuid.UUID, bool) {
