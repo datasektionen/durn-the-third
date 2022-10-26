@@ -38,7 +38,7 @@ func AddVoters(c *gin.Context) {
 
 	if err := db.Clauses(clause.OnConflict{DoNothing: true}).Create(&voters).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusInternalServerError, "Server failed to handle request")
+		c.String(http.StatusInternalServerError, util.RequestFailed)
 		return
 	}
 
@@ -74,7 +74,7 @@ func RemoveVoters(c *gin.Context) {
 
 	if err := db.Delete(&voters).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusInternalServerError, "Server failed to handle request")
+		c.String(http.StatusInternalServerError, util.RequestFailed)
 		return
 	}
 
