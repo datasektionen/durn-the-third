@@ -87,11 +87,25 @@ func RemoveVoters(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
+// GetVoters fetches all current allowed voters from the database
+func GetVoters(c *gin.Context) {
+	db := database.GetDB()
+	defer database.ReleaseDB()
+
+	result, err := getAllVoters(db)
+	if err != nil {
+		fmt.Println(err)
+		c.String(http.StatusInternalServerError, util.RequestFailed)
+		return
+	}
+	c.JSON(http.StatusOK, result)
+}
+
 type votersResponse struct {
 	Voters []string `json:"voters"`
 }
 
-// Gets all voters from the database in a
+// getAllVoters fetches all current voters from the database and returns them in a response ready way
 func getAllVoters(db *gorm.DB) (votersResponse, error) {
 	var result votersResponse
 	var voters []database.ValidVoter
