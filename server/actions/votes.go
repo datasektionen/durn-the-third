@@ -70,6 +70,7 @@ func CastVote(c *gin.Context) {
 			if err := tx.Create(&ranking).Error; err != nil {
 				return err
 			}
+			vote.Rankings = append(vote.Rankings, ranking)
 		}
 
 		hash, err = calculateVoteHash(&vote, user, body.Secret)
@@ -141,8 +142,12 @@ func calculateVoteHash(vote *database.Vote, secret string, user string) (string,
 		voteString = user + secret + vote.ElectionID.String() + "Blank"
 	} else {
 		voteString = user + secret + vote.ElectionID.String()
-		for _, rank := range vote.Rankings {
-			voteString += fmt.Sprint(rank.Rank) + rank.CandidateID.String()
+		rankings := make([]uuid.UUID, len(vote.Rankings))
+		for _, ranking := range vote.Rankings {
+			rankings[ranking.Rank] = ranking.CandidateID
+		}
+		for rank, candidate := range rankings {
+			voteString += fmt.Sprint(rank) + candidate.String()
 		}
 	}
 	result, err := bcrypt.GenerateFromPassword([]byte(voteString), bcrypt.DefaultCost)
