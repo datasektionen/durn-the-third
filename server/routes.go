@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	//cors "github.com/rs/cors/wrapper/gin"
+	cors "github.com/rs/cors/wrapper/gin"
 
 	"durn/server/actions"
 	"durn/server/middleware"
@@ -16,9 +16,7 @@ func InitRoutes(r *gin.RouterGroup) {
 
 	db.InitDB()
 
-	// r.Use(cors.New(cors.Options{
-	// 	Debug: true,
-	// }))
+	r.Use(cors.New(cors.Options{}))
 
 	r.GET("/ping", func(c *gin.Context) { c.String(http.StatusOK, "pong") })
 
@@ -27,7 +25,7 @@ func InitRoutes(r *gin.RouterGroup) {
 	auth.GET("/validate-token", actions.ValidateToken)
 
 	write := auth.Group("/", middleware.HasPerm("admin-write"))
-	read := auth.Group("/", middleware.HasPerm("admin-write"))
+	read := auth.Group("/", middleware.HasPerm("admin-read"))
 
 	read.GET("/elections", actions.GetElections)
 	read.GET("/election/:id", actions.GetElection)
@@ -35,14 +33,17 @@ func InitRoutes(r *gin.RouterGroup) {
 	auth.GET("/election/public/:id", actions.GetPublicElection)
 
 	write.POST("/election/create", actions.CreateElection)
-	write.PUT("/election/:id/edit", actions.EditElection)
+	write.PATCH("/election/:id/edit", actions.EditElection)
+	write.PUT("/election/:id/publish", actions.PublishElection)
+	write.PUT("/election/:id/finalize", actions.FinalizeElection)
 
 	write.POST("/election/:id/candidate/add", actions.AddCandidate)
 	write.PUT("/election/candidate/:id/edit", actions.EditCandidate)
 
 	read.GET("/election/:id/count", actions.CountVotes)
 
-	auth.GET("/")
+	read.GET("/voters", actions.GetVoters)
+	write.PUT("/voters/add", actions.AddVoters)
+	write.DELETE("/voters/remove", actions.RemoveVoters)
 
-	// admin.GET("/admin/ping", func(c *gin.Context) { c.Writer.Write([]byte("pong")) })
 }
