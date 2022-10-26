@@ -18,7 +18,7 @@ func CastVote(c *gin.Context) {
 	body := struct {
 		IsBlank bool        `json:"blank"`
 		Secret  string      `json:"secret"`
-		Ranking []uuid.UUID `json:"ranking"` // Assumes candidates are ordered according to user ranking
+		Ranking []uuid.UUID `json:"ranking"` // Assumes candidates are ordered from highest to lowest in priority for user
 	}{}
 	electionId, err := uuid.FromString(c.Param("id"))
 
@@ -45,6 +45,10 @@ func CastVote(c *gin.Context) {
 
 	db := database.GetDB()
 	defer database.ReleaseDB()
+
+	// Validation section
+	// Check that election is open for voting, that all candidates are included in the vote,
+	// and that no extra candidates (or invalid ones) are accounted for
 	election := database.Election{ID: electionId}
 	if err := db.First(&election).Error; err != nil || !election.Published { // Information should not be leaked if elections is not public
 		fmt.Println(err)
@@ -65,6 +69,7 @@ func CastVote(c *gin.Context) {
 		return
 	}
 
+	// Insertion section
 	if err := db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(&vote).Error; err != nil {
 			return err
@@ -102,6 +107,10 @@ func CastVote(c *gin.Context) {
 		return
 	}
 
+	// Tables are shuffled to prevent that votes can be associated with a person
+	// by correlating positions in the database tables
+	// Raises the complexity of the vote operation a lot, but should be fine for
+	// the amount of traffic expected for this system
 	if err := database.ReorderRows(db, "casted_votes"); err != nil {
 		fmt.Println("Database failed to shuffle table casted_votes")
 	}
