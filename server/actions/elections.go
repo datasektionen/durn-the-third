@@ -55,20 +55,19 @@ func CreateElection(c *gin.Context) {
 // will not be affected in the database.
 // Allowed fields are: Name, Description, OpenTime, CloseTime
 func EditElection(c *gin.Context) {
-	electionId, err := uuid.FromString(c.Param("id"))
-	if err != nil {
-		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.BadUUID)
-		return
-	}
-
 	body := struct {
 		Name        *string        `json:"name"`
 		Description *string        `json:"description"`
 		OpenTime    *util.NullTime `json:"openTime"`
 		CloseTime   *util.NullTime `json:"closeTime"`
 	}{}
+	electionId, err := uuid.FromString(c.Param("id"))
 
+	if err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadUUID)
+		return
+	}
 	if err := c.BindJSON(&body); err != nil {
 		fmt.Println(err)
 		c.String(http.StatusBadRequest, util.BadParameters)
@@ -253,20 +252,19 @@ func GetPublicElection(c *gin.Context) {
 // needs to be specified, presentation is defaulted to "" if not present.
 // Note that candidates can not be added to elections after they have been published
 func AddCandidate(c *gin.Context) {
-	electionId, err := uuid.FromString(c.Param("id"))
-	if err != nil {
-		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.BadUUID)
-		return
-	}
-
 	body := struct {
 		Name         string `json:"name" binding:"required"`
 		Presentation string `json:"presentation"`
 	}{
 		Presentation: "",
 	}
+	electionId, err := uuid.FromString(c.Param("id"))
 
+	if err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadUUID)
+		return
+	}
 	if err := c.BindJSON(&body); err != nil {
 		fmt.Println(err)
 		c.String(http.StatusBadRequest, util.BadParameters)
@@ -305,16 +303,17 @@ func AddCandidate(c *gin.Context) {
 // EditCandidate modifies the specified candidate. Fields that are not included in
 // request body will not be changed in the database
 func EditCandidate(c *gin.Context) {
+	body := struct {
+		Name         *string `json:"name"`
+		Presentation *string `json:"presentation"`
+	}{}
 	candidateId, err := uuid.FromString(c.Param("id"))
+
 	if err != nil {
 		fmt.Println(err)
 		c.String(http.StatusBadRequest, util.BadUUID)
 		return
 	}
-	body := struct {
-		Name         *string `json:"name"`
-		Presentation *string `json:"presentation"`
-	}{}
 	if err := c.BindJSON(&body); err != nil {
 		fmt.Println(err)
 		c.String(http.StatusBadRequest, util.BadParameters)
