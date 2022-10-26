@@ -60,12 +60,18 @@ func CastVote(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Voting is not open for the specified election")
 		return
 	}
+
 	var electionCandidates []uuid.UUID
 	for _, candidate := range election.Candidates {
 		electionCandidates = append(electionCandidates, candidate.ID)
 	}
-	if !util.SameSet(electionCandidates, body.Ranking) {
+	if !vote.IsBlank && !util.SameSet(electionCandidates, body.Ranking) {
 		c.String(http.StatusBadRequest, "Missing or invalid candidates in vote")
+		return
+	}
+
+	if err := db.Find(&database.CastedVote{ElectionID: electionId, Email: user}); err == nil {
+		c.String(http.StatusBadRequest, "User has already voted")
 		return
 	}
 

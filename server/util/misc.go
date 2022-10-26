@@ -27,6 +27,9 @@ func TimeIsInValidInterval(time time.Time, start sql.NullTime, end sql.NullTime)
 // SameSet checks if to slices contains the same (multi)set of items,
 // i.e. the same items the same amount of times
 func SameSet[T comparable](a, b []T) bool {
+	if len(a) != len(b) {
+		return false
+	}
 	items := make(map[T]int)
 	for _, i := range a {
 		items[i] += 1

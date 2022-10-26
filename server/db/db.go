@@ -30,6 +30,7 @@ func InitDB() {
 	db.AutoMigrate(&Candidate{})
 	db.AutoMigrate(&Vote{})
 	db.AutoMigrate(&Ranking{})
+	db.AutoMigrate(&CastedVote{})
 	db.AutoMigrate(&VoteHash{})
 }
 
