@@ -15,6 +15,62 @@ import (
 )
 
 func CastVote(c *gin.Context) {
+	body := struct {
+		IsBlank bool        `json:"blank"`
+		Secret  string      `json:"secret"`
+		Ranking []uuid.UUID `json:"ranking"` // Assumes candidates are ordered according to user ranking
+	}{}
+	electionId, err := uuid.FromString(c.Param("id"))
+
+	if err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadUUID)
+		return
+	}
+	if err := c.BindJSON(&body); err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadParameters)
+		return
+	}
+
+	user := c.GetString("user")
+	vote := database.Vote{
+		ID:         uuid.NewV4(),
+		VoteTime:   time.Now(),
+		ElectionID: electionId,
+		IsBlank:    body.IsBlank,
+	}
+
+	db := database.GetDB()
+	defer database.ReleaseDB()
+	election := database.Election{ID: electionId}
+	if err := db.First(&election).Error; err != nil || !election.Published { // Information should not be leaked if elections is not public
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.InvalidElection)
+	}
+	if err := db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&vote).Error; err != nil {
+			return err
+		}
+		for rank, candidateID := range body.Ranking {
+			ranking := database.Ranking{
+				VoteID:      vote.ID,
+				Rank:        rank,
+				CandidateID: candidateID,
+			}
+			if err := tx.Create(&ranking).Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
+		fmt.Println(err)
+		c.String(http.StatusInternalServerError, util.RequestFailed)
+		return
+	}
+
+	c.String(http.StatusOK, hash)
 }
 
 func GetVotes(c *gin.Context) {
