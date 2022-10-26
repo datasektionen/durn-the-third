@@ -42,6 +42,7 @@ func CastVote(c *gin.Context) {
 	}
 
 	var hash string
+
 	db := database.GetDB()
 	defer database.ReleaseDB()
 	election := database.Election{ID: electionId}
@@ -49,6 +50,13 @@ func CastVote(c *gin.Context) {
 		fmt.Println(err)
 		c.String(http.StatusBadRequest, util.InvalidElection)
 	}
+	if election.Finalized || !util.TimeIsInValidInterval(
+		vote.VoteTime, election.OpenTime, election.CloseTime,
+	) {
+		c.String(http.StatusBadRequest, "Voting is not open for the specified election")
+		return
+	}
+
 	if err := db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(&vote).Error; err != nil {
 			return err
