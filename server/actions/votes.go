@@ -16,9 +16,9 @@ import (
 
 func CastVote(c *gin.Context) {
 	body := struct {
-		IsBlank bool        `json:"blank"`
-		Secret  string      `json:"secret"`
-		Ranking []uuid.UUID `json:"ranking"` // Assumes candidates are ordered from highest to lowest in priority for user
+		IsBlank bool        `json:"blank" binding:"required"`
+		Secret  string      `json:"secret" binding:"required"`
+		Ranking []uuid.UUID `json:"ranking" binding:"required"` // Assumes candidates are ordered from highest to lowest in priority for user
 	}{}
 	electionId, err := uuid.FromString(c.Param("id"))
 
@@ -70,7 +70,7 @@ func CastVote(c *gin.Context) {
 		return
 	}
 
-	if err := db.Find(&database.CastedVote{ElectionID: electionId, Email: user}); err == nil {
+	if db.Find(&database.CastedVote{ElectionID: electionId, Email: user}).RowsAffected > 0 {
 		c.String(http.StatusBadRequest, "User has already voted")
 		return
 	}
@@ -159,18 +159,18 @@ func HasVoted(c *gin.Context) {
 	c.String(http.StatusOK, "true")
 }
 
-func calculateVoteHash(vote *database.Vote, secret string, user string) (string, error) {
+func calculateVoteHash(vote *database.Vote, user string, secret string) (string, error) {
 	var voteString string
 	if vote.IsBlank {
-		voteString = user + secret + vote.ElectionID.String() + "Blank"
+		voteString = fmt.Sprintf("%s_%s_%s_Blank", user, secret, vote.ElectionID.String())
 	} else {
-		voteString = user + secret + vote.ElectionID.String()
+		voteString = fmt.Sprintf("%s_%s_%s", user, secret, vote.ElectionID.String())
 		rankings := make([]uuid.UUID, len(vote.Rankings))
 		for _, ranking := range vote.Rankings {
 			rankings[ranking.Rank] = ranking.CandidateID
 		}
 		for rank, candidate := range rankings {
-			voteString += fmt.Sprint(rank) + candidate.String()
+			voteString += fmt.Sprintf("_%d:%s", rank, candidate.String())
 		}
 	}
 	result, err := bcrypt.GenerateFromPassword([]byte(voteString), bcrypt.DefaultCost)
