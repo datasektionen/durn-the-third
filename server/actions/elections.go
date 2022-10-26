@@ -284,6 +284,7 @@ func AddCandidate(c *gin.Context) {
 	if election.Published {
 		fmt.Println("User tried to add candidate to published election")
 		c.String(http.StatusMethodNotAllowed, "Can't add candidate to published Election")
+		return
 	}
 
 	candidate := database.Candidate{
