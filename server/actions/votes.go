@@ -56,6 +56,14 @@ func CastVote(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Voting is not open for the specified election")
 		return
 	}
+	var electionCandidates []uuid.UUID
+	for _, candidate := range election.Candidates {
+		electionCandidates = append(electionCandidates, candidate.ID)
+	}
+	if !util.SameSet(electionCandidates, body.Ranking) {
+		c.String(http.StatusBadRequest, "Missing or invalid candidates in vote")
+		return
+	}
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(&vote).Error; err != nil {
