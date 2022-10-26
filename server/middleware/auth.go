@@ -38,7 +38,7 @@ func Authenticate() gin.HandlerFunc {
 		if err := util.GetValidatedJsonFromURL(requestURL, &response); err != nil {
 			// TODO: proper logging
 			fmt.Println(err)
-			c.String(http.StatusUnauthorized, "401 Unauthorized: Not logged in") // Unauthorized = Unauthenticated in http
+			c.String(http.StatusUnauthorized, "Not logged in") // Unauthorized = Unauthenticated in http
 			c.Abort()
 			return
 		}
@@ -90,7 +90,7 @@ func HasPerm(perm string) gin.HandlerFunc {
 				return
 			}
 		}
-		c.String(http.StatusForbidden, "403 Forbidden: Insufficient permissions")
+		c.String(http.StatusForbidden, "Insufficient permissions")
 	}
 }
 
