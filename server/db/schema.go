@@ -38,7 +38,7 @@ type Candidate struct {
 }
 
 type VoteHash struct {
-	Hash string `gorm:"primaryKey"`
+	Hash string
 }
 
 type Vote struct {

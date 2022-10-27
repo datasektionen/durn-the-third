@@ -3,6 +3,7 @@ package actions
 import (
 	database "durn/server/db"
 	"durn/server/util"
+	"encoding/hex"
 	"time"
 
 	"fmt"
@@ -10,7 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	uuid "github.com/satori/go.uuid"
-	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/crypto/sha3"
 	"gorm.io/gorm"
 )
 
@@ -94,10 +95,8 @@ func CastVote(c *gin.Context) {
 			vote.Rankings = append(vote.Rankings, ranking)
 		}
 
-		hash, err = calculateVoteHash(&vote, user, body.Secret)
-		if err != nil {
-			return err
-		}
+		hash = calculateVoteHash(&vote, user, body.Secret)
+
 		if err := tx.Create(&database.CastedVote{
 			UserID:     user,
 			ElectionID: electionId,
@@ -161,9 +160,12 @@ func HasVoted(c *gin.Context) {
 	c.String(http.StatusOK, "true")
 }
 
-// TODO: check that everything is consistently formatted
-// TODO: find consistent hash function
-func calculateVoteHash(vote *database.Vote, user string, secret string) (string, error) {
+// calculateVoteHash uses sha3-256 on a string representation of a vote with the format:
+// "[username]_[secret]_[election-id]_<vote>""
+// where <vote> is:
+// - "Blank" if the vote is blank
+// - "_[rank]_[candidate-id]" (repeated for each candidate in the vote) otherwise
+func calculateVoteHash(vote *database.Vote, user string, secret string) string {
 	var voteString string
 	if vote.IsBlank {
 		voteString = fmt.Sprintf("%s_%s_%s_Blank", user, secret, vote.ElectionID.String())
@@ -177,6 +179,6 @@ func calculateVoteHash(vote *database.Vote, user string, secret string) (string,
 			voteString += fmt.Sprintf("_%d:%s", rank, candidate.String())
 		}
 	}
-	result, err := bcrypt.GenerateFromPassword([]byte(voteString), bcrypt.DefaultCost)
-	return string(result), err
+	result := sha3.Sum256([]byte(voteString))
+	return hex.EncodeToString(result[:])
 }
