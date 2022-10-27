@@ -131,8 +131,49 @@ func CastVote(c *gin.Context) {
 	c.String(http.StatusOK, hash)
 }
 
+// GetVotes returns all votes for a specific election, in the same format as
+// the request body for casting a vote, with an timestamp added.
 func GetVotes(c *gin.Context) {
+	electionId, err := uuid.FromString(c.Param("id"))
+	if err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadUUID)
+		return
+	}
 
+	db := database.GetDB()
+	defer database.ReleaseDB()
+
+	var votes []database.Vote
+	if err := db.Preload("Rankings").Find(&votes, "election_id = ?", electionId).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusInternalServerError, util.RequestFailed)
+		return
+	}
+
+	type responseType struct {
+		Time       time.Time   `json:"time"`
+		IsBlank    bool        `json:"blank"`
+		ElectionID uuid.UUID   `json:"election"`
+		Rankings   []uuid.UUID `json:"rankings"`
+	}
+
+	var response []responseType
+	for _, vote := range votes {
+		respVote := responseType{
+			Time:       vote.VoteTime,
+			IsBlank:    vote.IsBlank,
+			ElectionID: vote.ElectionID,
+			Rankings:   make([]uuid.UUID, len(vote.Rankings)),
+		}
+		for _, ranking := range vote.Rankings {
+			respVote.Rankings[ranking.Rank] = ranking.CandidateID
+		}
+
+		response = append(response, respVote)
+	}
+
+	c.JSON(http.StatusAccepted, response)
 }
 
 func CountVotes(c *gin.Context) {
