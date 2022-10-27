@@ -4,6 +4,7 @@ import (
 	database "durn/server/db"
 	"durn/server/util"
 	"encoding/hex"
+	"sort"
 	"time"
 
 	"fmt"
@@ -215,6 +216,49 @@ func CountVotes(c *gin.Context) {
 		Blanks     int               `json:"blanks"`
 	}
 	var electionResult []voteStage
+
+	for {
+		var stageResult voteStage
+		count := make(map[uuid.UUID]int)
+
+		for _, vote := range voterRankings {
+			for _, candidate := range vote {
+				if !candidateEliminated[candidate] {
+					count[candidate] += 1
+					break
+				}
+			}
+		}
+
+		total := 0
+		for candidate, votes := range count {
+			if candidateNames[candidate] == util.BlankCandidate {
+				stageResult.Blanks = votes
+				continue
+			}
+			total += votes
+		}
+		for candidate, votes := range count {
+			if candidateNames[candidate] == util.BlankCandidate {
+				continue
+			}
+			stageResult.Candidates = append(stageResult.Candidates, candidateResult{
+				Name:       candidateNames[candidate],
+				Votes:      votes,
+			})
+		}
+
+		sort.Slice(stageResult.Candidates, func(i, j int) bool {
+			return stageResult.Candidates[i].Votes > stageResult.Candidates[j].Votes
+		})
+
+		if stageResult.Candidates[0].Votes*2 > total {
+			electionResult = append(electionResult, stageResult)
+			break
+		}
+		electionResult = append(electionResult, stageResult)
+	}
+
 	c.JSON(http.StatusOK, electionResult)
 }
 
