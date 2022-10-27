@@ -188,6 +188,22 @@ func CountVotes(c *gin.Context) {
 		return
 	}
 	database.ReleaseDB()
+
+	candidateEliminated := make(map[uuid.UUID]bool)
+	candidateNames := make(map[uuid.UUID]string)
+	for _, candidate := range election.Candidates {
+		candidateNames[candidate.ID] = candidate.Name
+		candidateEliminated[candidate.ID] = false
+	}
+
+	var voterRankings [][]uuid.UUID
+	for _, vote := range election.Votes {
+		ranking := make([]uuid.UUID, len(vote.Rankings))
+		for _, rank := range vote.Rankings {
+			ranking[rank.Rank] = rank.CandidateID
+		}
+		voterRankings = append(voterRankings, ranking)
+	}
 }
 
 // GetHashes returns all hashes in the database. Requires user to be able to vote.
