@@ -173,7 +173,7 @@ func GetVotes(c *gin.Context) {
 		response = append(response, respVote)
 	}
 
-	c.JSON(http.StatusAccepted, response)
+	c.JSON(http.StatusOK, response)
 }
 
 func CountVotes(c *gin.Context) {
