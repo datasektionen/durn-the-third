@@ -7,4 +7,4 @@ const (
 	RequestFailed   = "Server failed to handle request"
 )
 
-
+const ()
