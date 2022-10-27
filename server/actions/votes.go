@@ -204,6 +204,18 @@ func CountVotes(c *gin.Context) {
 		}
 		voterRankings = append(voterRankings, ranking)
 	}
+
+	type candidateResult struct {
+		Name       string `json:"name"`
+		Votes      int    `json:"votes"`
+		Eliminated bool   `json:"boolean"`
+	}
+	type voteStage struct {
+		Candidates []candidateResult `json:"candidates"`
+		Blanks     int               `json:"blanks"`
+	}
+	var electionResult []voteStage
+	c.JSON(http.StatusOK, electionResult)
 }
 
 // GetHashes returns all hashes in the database. Requires user to be able to vote.
