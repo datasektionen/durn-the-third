@@ -29,14 +29,14 @@ func GetFromUrl(url string) ([]byte, error) {
 	return ret, err
 }
 
-func ParseJson[D string | []byte, T interface{}](data D, target *T) error {
+func ParseJson[D string | []byte, T any](data D, target *T) error {
 	if err := json.Unmarshal([]byte(data), target); err != nil {
 		return err
 	}
 	return nil
 }
 
-func GetJsonFromURL[T interface{}](url string, target *T) error {
+func GetJsonFromURL[T any](url string, target *T) error {
 	json, err := GetFromUrl(url)
 	if err != nil {
 		return err
@@ -49,7 +49,7 @@ func GetJsonFromURL[T interface{}](url string, target *T) error {
 	return nil
 }
 
-func ValidateJson[D string | []byte, T interface{}](data D, target *T) error {
+func ValidateJson[D string | []byte, T any](data D, target *T) error {
 	if err := json.Unmarshal([]byte(data), target); err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func ValidateJson[D string | []byte, T interface{}](data D, target *T) error {
 	return nil
 }
 
-func GetValidatedJsonFromURL[T interface{}](url string, target *T) error {
+func GetValidatedJsonFromURL[T any](url string, target *T) error {
 	json, err := GetFromUrl(url)
 	if err != nil {
 		return err

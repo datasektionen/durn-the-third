@@ -17,13 +17,20 @@ type Election struct {
 	CloseTime   sql.NullTime `json:"closeTime"`
 	Candidates  []Candidate  `gorm:"foreignKey:ElectionID;references:ID" json:"candidates"`
 	Votes       []Vote       `json:"-"`
-	Voters      []ValidVoter `gorm:"many2many:casted_votes" json:"-"`
 }
 
 type ValidVoter struct {
 	Email string `gorm:"primaryKey"`
 }
 
+type CastedVote struct {
+	Email      string     `gorm:"primaryKey"`
+	ElectionID uuid.UUID  `gorm:"primaryKey"`
+	User       ValidVoter `gorm:"foreignKey:Email;references:Email"`
+	Election   Election   `gorm:"foreignKey:ID;references:ElectionID"`
+}
+
+// All elections should contain two forces candidates "Vakant" and "Blank"
 type Candidate struct {
 	ID           uuid.UUID `gorm:"primaryKey" json:"id"`
 	Name         string    `gorm:"not null" json:"name"`
@@ -32,12 +39,11 @@ type Candidate struct {
 }
 
 type VoteHash struct {
-	Hash string `gorm:"primaryKey"`
+	Hash string
 }
 
 type Vote struct {
 	ID         uuid.UUID `gorm:"primaryKey"`
-	IsBlank    bool      `gorm:"not null"`
 	VoteTime   time.Time `gorm:"not null"`
 	ElectionID uuid.UUID `gorm:"not null"`
 	Rankings   []Ranking `gorm:"foreignKey:VoteID;references:ID"`
