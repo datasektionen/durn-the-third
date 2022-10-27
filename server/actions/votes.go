@@ -64,7 +64,7 @@ func CastVote(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Voting is not open for the specified election")
 		return
 	}
-	if db.Find(&database.CastedVote{ElectionID: electionId, UserID: user}).RowsAffected > 0 {
+	if db.Find(&database.CastedVote{ElectionID: electionId, Email: user}).RowsAffected > 0 {
 		c.String(http.StatusBadRequest, "User has already voted")
 		return
 	}
@@ -98,7 +98,7 @@ func CastVote(c *gin.Context) {
 		hash = calculateVoteHash(&vote, user, body.Secret)
 
 		if err := tx.Create(&database.CastedVote{
-			UserID:     user,
+			Email:      user,
 			ElectionID: electionId,
 		}).Error; err != nil {
 			return err
@@ -154,14 +154,14 @@ func HasVoted(c *gin.Context) {
 	db := database.GetDB()
 	defer database.ReleaseDB()
 
-	if err := db.Find(&database.CastedVote{ElectionID: electionId, UserID: user}).Error; err != nil {
+	if err := db.Find(&database.CastedVote{ElectionID: electionId, Email: user}).Error; err != nil {
 		c.String(http.StatusOK, "false")
 	}
 	c.String(http.StatusOK, "true")
 }
 
 // calculateVoteHash uses sha3-256 on a string representation of a vote with the format:
-// "[username]_[secret]_[election-id]_<vote>""
+// "[user-email]_[secret]_[election-id]_<vote>""
 // where <vote> is:
 // - "Blank" if the vote is blank
 // - "_[rank]_[candidate-id]" (repeated for each candidate in the vote) otherwise

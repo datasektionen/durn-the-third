@@ -43,7 +43,7 @@ func Authenticate() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("user", response.User)
+		c.Set("user", response.Email)
 
 		c.Next()
 	}

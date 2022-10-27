@@ -13,7 +13,7 @@ import (
 // Assumes Auth middleware has been run before
 func AllowedToVote() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user := c.GetString("User")
+		user := c.GetString("user")
 
 		db := database.GetDB()
 		if err := db.First(&database.ValidVoter{Email: user}).Error; err != nil {
