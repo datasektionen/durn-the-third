@@ -180,7 +180,10 @@ func CountVotes(c *gin.Context) {
 
 }
 
+// GetHashes returns all hashes in the database. Requires user to be able to vote.
 func GetHashes(c *gin.Context) {
+	// TODO: possibly add electionID to database for hashes, since it would be nice
+	// to be able to filter by that and only allow fetching from finalized elections
 
 	db := database.GetDB()
 	defer database.ReleaseDB()
