@@ -230,6 +230,7 @@ func CountVotes(c *gin.Context) {
 			}
 		}
 
+		var eliminate *uuid.UUID = nil
 		total := 0
 		for candidate, votes := range count {
 			if candidateNames[candidate] == util.BlankCandidate {
@@ -237,7 +238,14 @@ func CountVotes(c *gin.Context) {
 				continue
 			}
 			total += votes
+			if candidateNames[candidate] != util.VacantCandidate {
+				if eliminate == nil || count[*eliminate] > count[candidate] {
+					eliminate = &candidate
+				}
+			}
 		}
+		candidateEliminated[*eliminate] = true
+
 		for candidate, votes := range count {
 			if candidateNames[candidate] == util.BlankCandidate {
 				continue
@@ -245,6 +253,7 @@ func CountVotes(c *gin.Context) {
 			stageResult.Candidates = append(stageResult.Candidates, candidateResult{
 				Name:       candidateNames[candidate],
 				Votes:      votes,
+				Eliminated: candidate == *eliminate,
 			})
 		}
 
