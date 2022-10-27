@@ -16,10 +16,12 @@ import (
 
 func CastVote(c *gin.Context) {
 	body := struct {
-		IsBlank bool        `json:"blank" binding:"required"`
+		IsBlank bool        `json:"blank"`
 		Secret  string      `json:"secret" binding:"required"`
 		Ranking []uuid.UUID `json:"ranking" binding:"required"` // Assumes candidates are ordered from highest to lowest in priority for user
-	}{}
+	}{
+		IsBlank: false,
+	}
 	electionId, err := uuid.FromString(c.Param("id"))
 
 	if err != nil {
@@ -47,10 +49,11 @@ func CastVote(c *gin.Context) {
 	defer database.ReleaseDB()
 
 	// Validation section
-	// Check that election is open for voting, that all candidates are included in the vote,
-	// and that no extra candidates (or invalid ones) are accounted for
+	// Check that election is open for voting, that the user hasn't voted already,
+	// that all candidates are accounted for the vote, and that no extra candidates
+	// (or invalid ones) are included
 	election := database.Election{ID: electionId}
-	if err := db.First(&election).Error; err != nil || !election.Published { // Information should not be leaked if elections is not public
+	if err := db.Preload("Candidates").First(&election).Error; err != nil || !election.Published { // Information should not be leaked if elections is not public
 		fmt.Println(err)
 		c.String(http.StatusBadRequest, util.InvalidElection)
 	}
@@ -60,6 +63,10 @@ func CastVote(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Voting is not open for the specified election")
 		return
 	}
+	if db.Find(&database.CastedVote{ElectionID: electionId, Email: user}).RowsAffected > 0 {
+		c.String(http.StatusBadRequest, "User has already voted")
+		return
+	}
 
 	var electionCandidates []uuid.UUID
 	for _, candidate := range election.Candidates {
@@ -67,11 +74,6 @@ func CastVote(c *gin.Context) {
 	}
 	if !vote.IsBlank && !util.SameSet(electionCandidates, body.Ranking) {
 		c.String(http.StatusBadRequest, "Missing or invalid candidates in vote")
-		return
-	}
-
-	if db.Find(&database.CastedVote{ElectionID: electionId, Email: user}).RowsAffected > 0 {
-		c.String(http.StatusBadRequest, "User has already voted")
 		return
 	}
 
@@ -159,6 +161,8 @@ func HasVoted(c *gin.Context) {
 	c.String(http.StatusOK, "true")
 }
 
+// TODO: check that everything is consistently formatted
+// TODO: find consistent hash function
 func calculateVoteHash(vote *database.Vote, user string, secret string) (string, error) {
 	var voteString string
 	if vote.IsBlank {
