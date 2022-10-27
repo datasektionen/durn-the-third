@@ -173,7 +173,21 @@ func GetVotes(c *gin.Context) {
 }
 
 func CountVotes(c *gin.Context) {
+	electionId, err := uuid.FromString(c.Param("id"))
+	if err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadUUID)
+		return
+	}
 
+	db := database.GetDB()
+	election := database.Election{ID: electionId}
+	if err := db.Preload("Votes.Rankings").Preload("Candidates").First(&election).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.InvalidElection)
+		return
+	}
+	database.ReleaseDB()
 }
 
 // GetHashes returns all hashes in the database. Requires user to be able to vote.
