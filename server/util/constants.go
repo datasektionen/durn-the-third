@@ -7,4 +7,7 @@ const (
 	RequestFailed   = "Server failed to handle request"
 )
 
-const ()
+const (
+	VacantCandidate = "Vakant"
+	BlankCandidate  = "Blank"
+)

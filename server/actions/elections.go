@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	uuid "github.com/satori/go.uuid"
+	"gorm.io/gorm"
 )
 
 // CreateElection creates an election with the given name.
@@ -41,7 +42,31 @@ func CreateElection(c *gin.Context) {
 		Published:   false,
 		Finalized:   false,
 	}
-	if err := db.Create(&election).Error; err != nil {
+	vacant := database.Candidate{
+		ID:           uuid.NewV4(),
+		Name:         util.VacantCandidate,
+		Presentation: "",
+		ElectionID:   election.ID,
+	}
+	blank := database.Candidate{
+		ID:           uuid.NewV4(),
+		Name:         util.BlankCandidate,
+		Presentation: "",
+		ElectionID:   election.ID,
+	}
+
+	if err := db.Transaction(func(tx *gorm.DB) error {
+		if err := db.Create(&election).Error; err != nil {
+			return err
+		}
+		if err := db.Create(&vacant).Error; err != nil {
+			return err
+		}
+		if err := db.Create(&blank).Error; err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
 		fmt.Println(err)
 		c.String(http.StatusInternalServerError, util.RequestFailed)
 		return
@@ -268,6 +293,10 @@ func AddCandidate(c *gin.Context) {
 	if err := c.BindJSON(&body); err != nil {
 		fmt.Println(err)
 		c.String(http.StatusBadRequest, util.BadParameters)
+		return
+	}
+	if body.Name == util.BlankCandidate || body.Name == util.VacantCandidate {
+		c.String(http.StatusBadRequest, fmt.Sprintf("'%s' is a reserved candidate name", body.Name))
 		return
 	}
 
