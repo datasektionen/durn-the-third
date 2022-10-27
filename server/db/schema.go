@@ -38,6 +38,9 @@ type Candidate struct {
 	ElectionID   uuid.UUID `gorm:"not null" json:"-"`
 }
 
+// VoteHash is purposefully not primaryKey/unique since it is theoretically
+// possible for two hashes to be the same, albeit quite unlikely. If it was
+// the case, however, it would prevent someone from voting, which is not good
 type VoteHash struct {
 	Hash string
 }

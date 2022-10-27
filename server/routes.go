@@ -13,7 +13,6 @@ import (
 )
 
 func InitRoutes(r *gin.RouterGroup) {
-
 	db.InitDB()
 
 	r.Use(cors.New(cors.Options{}))
@@ -47,8 +46,7 @@ func InitRoutes(r *gin.RouterGroup) {
 
 	vote.POST("/election/:id/vote", actions.CastVote)
 	auth.GET("/election/:id/has-voted", actions.HasVoted)
-	read.POST("/election/:id/get-votes", actions.CastVote)
+	read.GET("/election/:id/votes", actions.GetVotes)
 	read.GET("/election/:id/count", actions.CountVotes)
-	read.GET("/election/:id/hashes", actions.CastVote)
-
+	vote.GET("/election/hashes", actions.GetHashes)
 }

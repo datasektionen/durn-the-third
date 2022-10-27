@@ -128,16 +128,75 @@ func CastVote(c *gin.Context) {
 	c.String(http.StatusOK, hash)
 }
 
+// GetVotes returns all votes for a specific election, in the same format as
+// the request body for casting a vote, with an timestamp added.
 func GetVotes(c *gin.Context) {
+	electionId, err := uuid.FromString(c.Param("id"))
+	if err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadUUID)
+		return
+	}
 
+	db := database.GetDB()
+	defer database.ReleaseDB()
+
+	var votes []database.Vote
+	if err := db.Preload("Rankings").Find(&votes, "election_id = ?", electionId).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusInternalServerError, util.RequestFailed)
+		return
+	}
+
+	type responseType struct {
+		Time       time.Time   `json:"time"`
+		IsBlank    bool        `json:"blank"`
+		ElectionID uuid.UUID   `json:"election"`
+		Rankings   []uuid.UUID `json:"rankings"`
+	}
+
+	var response []responseType
+	for _, vote := range votes {
+		respVote := responseType{
+			Time:       vote.VoteTime,
+			IsBlank:    vote.IsBlank,
+			ElectionID: vote.ElectionID,
+			Rankings:   make([]uuid.UUID, len(vote.Rankings)),
+		}
+		for _, ranking := range vote.Rankings {
+			respVote.Rankings[ranking.Rank] = ranking.CandidateID
+		}
+
+		response = append(response, respVote)
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 func CountVotes(c *gin.Context) {
 
 }
 
+// GetHashes returns all hashes in the database. Requires user to be able to vote.
 func GetHashes(c *gin.Context) {
+	// TODO: possibly add electionID to database for hashes, since it would be nice
+	// to be able to filter by that and only allow fetching from finalized elections
 
+	db := database.GetDB()
+	defer database.ReleaseDB()
+
+	var hashes []database.VoteHash
+	if err := db.Find(&hashes).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusInternalServerError, util.RequestFailed)
+		return
+	}
+	var response []string
+	for _, hash := range hashes {
+		response = append(response, hash.Hash)
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 // HasVoted checks if there is a record in the database for the specified election
