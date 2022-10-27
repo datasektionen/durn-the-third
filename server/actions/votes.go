@@ -182,6 +182,21 @@ func CountVotes(c *gin.Context) {
 
 func GetHashes(c *gin.Context) {
 
+	db := database.GetDB()
+	defer database.ReleaseDB()
+
+	var hashes []database.VoteHash
+	if err := db.Find(&hashes).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusInternalServerError, util.RequestFailed)
+		return
+	}
+	var response []string
+	for _, hash := range hashes {
+		response = append(response, hash.Hash)
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 // HasVoted checks if there is a record in the database for the specified election
