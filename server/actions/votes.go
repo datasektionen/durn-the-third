@@ -195,6 +195,10 @@ func CountVotes(c *gin.Context) {
 		return
 	}
 	database.ReleaseDB()
+	if !election.Finalized {
+		c.String(http.StatusBadRequest, "Can't count votes of unfinalized election")
+		return
+	}
 
 	candidateEliminated := make(map[uuid.UUID]bool)
 	candidateNames := make(map[uuid.UUID]string)
