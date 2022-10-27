@@ -44,6 +44,7 @@ func Authenticate() gin.HandlerFunc {
 		}
 
 		c.Set("user", response.Email)
+		c.Set("userid", response.User)
 
 		c.Next()
 	}
@@ -59,7 +60,7 @@ func Authorize() gin.HandlerFunc {
 	}
 
 	return func(c *gin.Context) {
-		user := c.GetString("user")
+		user := c.GetString("userid")
 		requestURL := fmt.Sprintf("%s/api/user/%s/durn", url, user)
 
 		var response []string
@@ -91,6 +92,7 @@ func HasPerm(perm string) gin.HandlerFunc {
 			}
 		}
 		c.String(http.StatusForbidden, "Insufficient permissions")
+		c.Abort()
 	}
 }
 

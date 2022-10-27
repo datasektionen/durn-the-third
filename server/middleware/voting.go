@@ -16,8 +16,9 @@ func AllowedToVote() gin.HandlerFunc {
 		user := c.GetString("user")
 
 		db := database.GetDB()
-		if err := db.First(&database.ValidVoter{Email: user}).Error; err != nil {
+		if db.First(&database.ValidVoter{Email: user}).RowsAffected == 0 {
 			c.String(http.StatusForbidden, "Not registered as a valid voter")
+			c.Abort()
 			database.ReleaseDB()
 			return
 		}
