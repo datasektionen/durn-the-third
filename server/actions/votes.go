@@ -159,7 +159,6 @@ func GetVotes(c *gin.Context) {
 	for _, vote := range votes {
 		respVote := responseType{
 			Time:       vote.VoteTime,
-			IsBlank:    vote.IsBlank,
 			ElectionID: vote.ElectionID,
 			Rankings:   make([]uuid.UUID, len(vote.Rankings)),
 		}
@@ -181,7 +180,6 @@ func CountVotes(c *gin.Context) {
 func GetHashes(c *gin.Context) {
 	// TODO: possibly add electionID to database for hashes, since it would be nice
 	// to be able to filter by that and only allow fetching from finalized elections
-
 	db := database.GetDB()
 	defer database.ReleaseDB()
 
