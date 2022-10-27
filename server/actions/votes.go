@@ -20,12 +20,10 @@ import (
 // possible to vote in the election at the time of the request.
 func CastVote(c *gin.Context) {
 	body := struct {
-		IsBlank bool        `json:"blank"`
 		Secret  string      `json:"secret" binding:"required"`
 		Ranking []uuid.UUID `json:"ranking" binding:"required"` // Assumes candidates are ordered from highest to lowest in priority for user
-	}{
-		IsBlank: false,
-	}
+	}{}
+
 	electionId, err := uuid.FromString(c.Param("id"))
 
 	if err != nil {
@@ -44,7 +42,6 @@ func CastVote(c *gin.Context) {
 		ID:         uuid.NewV4(),
 		VoteTime:   time.Now(),
 		ElectionID: electionId,
-		IsBlank:    body.IsBlank,
 	}
 
 	var hash string
@@ -76,7 +73,7 @@ func CastVote(c *gin.Context) {
 	for _, candidate := range election.Candidates {
 		electionCandidates = append(electionCandidates, candidate.ID)
 	}
-	if !vote.IsBlank && !util.SameSet(electionCandidates, body.Ranking) {
+	if !util.SameSet(electionCandidates, body.Ranking) {
 		c.String(http.StatusBadRequest, "Missing or invalid candidates in vote")
 		return
 	}
@@ -164,23 +161,17 @@ func HasVoted(c *gin.Context) {
 }
 
 // calculateVoteHash uses sha3-256 on a string representation of a vote with the format:
-// "[user-email]_[secret]_[election-id]_<vote>""
+// "[user-email]_[secret]_[election-id]_<vote>"
 // where <vote> is:
-// - "Blank" if the vote is blank
 // - "_[rank]_[candidate-id]" (repeated for each candidate in the vote) otherwise
 func calculateVoteHash(vote *database.Vote, user string, secret string) string {
-	var voteString string
-	if vote.IsBlank {
-		voteString = fmt.Sprintf("%s_%s_%s_Blank", user, secret, vote.ElectionID.String())
-	} else {
-		voteString = fmt.Sprintf("%s_%s_%s", user, secret, vote.ElectionID.String())
-		rankings := make([]uuid.UUID, len(vote.Rankings))
-		for _, ranking := range vote.Rankings {
-			rankings[ranking.Rank] = ranking.CandidateID
-		}
-		for rank, candidate := range rankings {
-			voteString += fmt.Sprintf("_%d:%s", rank, candidate.String())
-		}
+	voteString := fmt.Sprintf("%s_%s_%s", user, secret, vote.ElectionID.String())
+	rankings := make([]uuid.UUID, len(vote.Rankings))
+	for _, ranking := range vote.Rankings {
+		rankings[ranking.Rank] = ranking.CandidateID
+	}
+	for rank, candidate := range rankings {
+		voteString += fmt.Sprintf("_%d:%s", rank, candidate.String())
 	}
 	result := sha3.Sum256([]byte(voteString))
 	return hex.EncodeToString(result[:])

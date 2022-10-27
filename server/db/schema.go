@@ -30,6 +30,7 @@ type CastedVote struct {
 	Election   Election   `gorm:"foreignKey:ID;references:ElectionID"`
 }
 
+// All elections should contain two forces candidates "Vakant" and "Blank"
 type Candidate struct {
 	ID           uuid.UUID `gorm:"primaryKey" json:"id"`
 	Name         string    `gorm:"not null" json:"name"`
@@ -44,7 +45,6 @@ type VoteHash struct {
 type Vote struct {
 	ID         uuid.UUID `gorm:"primaryKey"`
 	VoteTime   time.Time `gorm:"not null"`
-	IsBlank    bool      `gorm:"not null"`
 	ElectionID uuid.UUID `gorm:"not null"`
 	Rankings   []Ranking `gorm:"foreignKey:VoteID;references:ID"`
 }
