@@ -20,13 +20,13 @@ type Election struct {
 }
 
 type ValidVoter struct {
-	Email string `gorm:"primaryKey"`
+	UserID string `gorm:"primaryKey"`
 }
 
 type CastedVote struct {
-	Email      string     `gorm:"primaryKey"`
+	UserID     string     `gorm:"primaryKey"`
 	ElectionID uuid.UUID  `gorm:"primaryKey"`
-	User       ValidVoter `gorm:"foreignKey:Email;references:Email"`
+	User       ValidVoter `gorm:"foreignKey:UserID;references:UserID"`
 	Election   Election   `gorm:"foreignKey:ID;references:ElectionID"`
 }
 

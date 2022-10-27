@@ -63,7 +63,7 @@ func CastVote(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Voting is not open for the specified election")
 		return
 	}
-	if db.Find(&database.CastedVote{ElectionID: electionId, Email: user}).RowsAffected > 0 {
+	if db.Find(&database.CastedVote{ElectionID: electionId, UserID: user}).RowsAffected > 0 {
 		c.String(http.StatusBadRequest, "User has already voted")
 		return
 	}
@@ -99,7 +99,7 @@ func CastVote(c *gin.Context) {
 			return err
 		}
 		if err := tx.Create(&database.CastedVote{
-			Email:      user,
+			UserID:     user,
 			ElectionID: electionId,
 		}).Error; err != nil {
 			return err
@@ -155,7 +155,7 @@ func HasVoted(c *gin.Context) {
 	db := database.GetDB()
 	defer database.ReleaseDB()
 
-	if err := db.Find(&database.CastedVote{ElectionID: electionId, Email: user}).Error; err != nil {
+	if err := db.Find(&database.CastedVote{ElectionID: electionId, UserID: user}).Error; err != nil {
 		c.String(http.StatusOK, "false")
 	}
 	c.String(http.StatusOK, "true")
