@@ -15,6 +15,9 @@ import (
 	"gorm.io/gorm"
 )
 
+// CastVote submits a vote for the logged in user to the database.
+// Validates that the user has the right to vote and that it is
+// possible to vote in the election at the time of the request.
 func CastVote(c *gin.Context) {
 	body := struct {
 		IsBlank bool        `json:"blank"`
@@ -115,9 +118,9 @@ func CastVote(c *gin.Context) {
 	}
 
 	// Tables are shuffled to prevent that votes can be associated with a person
-	// by correlating positions in the database tables
-	// Raises the complexity of the vote operation a lot, but should be fine for
-	// the amount of traffic expected for this system
+	// by correlating positions in the database tables.
+	// Raises the time complexity of the vote operation a lot, but should be
+	// fine for the amount of traffic expected for this system.
 	if err := database.ReorderRows(db, "casted_votes"); err != nil {
 		fmt.Println("Database failed to shuffle table casted_votes")
 	}
