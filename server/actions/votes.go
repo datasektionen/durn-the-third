@@ -199,6 +199,10 @@ func CountVotes(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Can't count votes of unfinalized election")
 		return
 	}
+	if len(election.Votes) == 0 {
+		c.String(http.StatusBadRequest, "Election has no votes")
+		return
+	}
 
 	candidateEliminated := make(map[uuid.UUID]bool)
 	candidateNames := make(map[uuid.UUID]string)
@@ -219,7 +223,7 @@ func CountVotes(c *gin.Context) {
 	type candidateResult struct {
 		Name       string `json:"name"`
 		Votes      int    `json:"votes"`
-		Eliminated bool   `json:"boolean"`
+		Eliminated bool   `json:"eliminated"`
 	}
 	type voteStage struct {
 		Candidates []candidateResult `json:"candidates"`
@@ -240,7 +244,8 @@ func CountVotes(c *gin.Context) {
 			}
 		}
 
-		var eliminate *uuid.UUID = nil
+		var eliminate uuid.UUID
+		chosenElimination := false
 		total := 0
 		for candidate, votes := range count {
 			if candidateNames[candidate] == util.BlankCandidate {
@@ -249,12 +254,13 @@ func CountVotes(c *gin.Context) {
 			}
 			total += votes
 			if candidateNames[candidate] != util.VacantCandidate {
-				if eliminate == nil || count[*eliminate] > count[candidate] {
-					eliminate = &candidate
+				if !chosenElimination || count[eliminate] > count[candidate] {
+					eliminate = candidate
+					chosenElimination = true
 				}
 			}
 		}
-		candidateEliminated[*eliminate] = true
+		candidateEliminated[eliminate] = true
 
 		for candidate, votes := range count {
 			if candidateNames[candidate] == util.BlankCandidate {
@@ -263,7 +269,7 @@ func CountVotes(c *gin.Context) {
 			stageResult.Candidates = append(stageResult.Candidates, candidateResult{
 				Name:       candidateNames[candidate],
 				Votes:      votes,
-				Eliminated: candidate == *eliminate,
+				Eliminated: candidate == eliminate,
 			})
 		}
 
