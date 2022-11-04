@@ -4,6 +4,7 @@ import (
 	database "durn/server/db"
 	"durn/server/util"
 	"encoding/hex"
+	"sort"
 	"time"
 
 	"fmt"
@@ -159,7 +160,6 @@ func GetVotes(c *gin.Context) {
 	for _, vote := range votes {
 		respVote := responseType{
 			Time:       vote.VoteTime,
-			IsBlank:    vote.IsBlank,
 			ElectionID: vote.ElectionID,
 			Rankings:   make([]uuid.UUID, len(vote.Rankings)),
 		}
@@ -173,15 +173,124 @@ func GetVotes(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+// CountVotes calculates the winner of an election using the "Alternativsomröstning" algorithm,
+// as described in https://styrdokument.datasektionen.se/reglemente (§3.12.7 Urnval)
+// Expects there to be  token candidates for a vacant spot and a blank vote, which it
+// treats differently, but works without them.
+// Does not handle the case where the two lowest candidates have the same amount of votes
+// in a good way (it is probably random) since it is not handled in the algorithm specification
 func CountVotes(c *gin.Context) {
+	electionId, err := uuid.FromString(c.Param("id"))
+	if err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadUUID)
+		return
+	}
 
+	db := database.GetDB()
+	election := database.Election{ID: electionId}
+	if err := db.Preload("Votes.Rankings").Preload("Candidates").First(&election).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.InvalidElection)
+		return
+	}
+	database.ReleaseDB()
+	if !election.Finalized {
+		c.String(http.StatusBadRequest, "Can't count votes of unfinalized election")
+		return
+	}
+	if len(election.Votes) == 0 {
+		c.String(http.StatusBadRequest, "Election has no votes")
+		return
+	}
+
+	candidateEliminated := make(map[uuid.UUID]bool)
+	candidateNames := make(map[uuid.UUID]string)
+	for _, candidate := range election.Candidates {
+		candidateNames[candidate.ID] = candidate.Name
+		candidateEliminated[candidate.ID] = false
+	}
+
+	var voterRankings [][]uuid.UUID
+	for _, vote := range election.Votes {
+		ranking := make([]uuid.UUID, len(vote.Rankings))
+		for _, rank := range vote.Rankings {
+			ranking[rank.Rank] = rank.CandidateID
+		}
+		voterRankings = append(voterRankings, ranking)
+	}
+
+	type candidateResult struct {
+		Name       string `json:"name"`
+		Votes      int    `json:"votes"`
+		Eliminated bool   `json:"eliminated"`
+	}
+	type voteStage struct {
+		Candidates []candidateResult `json:"candidates"`
+		Blanks     int               `json:"blanks"`
+	}
+	var electionResult []voteStage
+
+	for {
+		var stageResult voteStage
+		count := make(map[uuid.UUID]int)
+
+		for _, vote := range voterRankings {
+			for _, candidate := range vote {
+				if !candidateEliminated[candidate] {
+					count[candidate] += 1
+					break
+				}
+			}
+		}
+
+		var eliminate uuid.UUID
+		chosenElimination := false
+		total := 0
+		for candidate, votes := range count {
+			if candidateNames[candidate] == util.BlankCandidate {
+				stageResult.Blanks = votes
+				continue
+			}
+			total += votes
+			if candidateNames[candidate] != util.VacantCandidate {
+				if !chosenElimination || count[eliminate] > count[candidate] {
+					eliminate = candidate
+					chosenElimination = true
+				}
+			}
+		}
+		candidateEliminated[eliminate] = true
+
+		for candidate, votes := range count {
+			if candidateNames[candidate] == util.BlankCandidate {
+				continue
+			}
+			stageResult.Candidates = append(stageResult.Candidates, candidateResult{
+				Name:       candidateNames[candidate],
+				Votes:      votes,
+				Eliminated: candidate == eliminate,
+			})
+		}
+
+		sort.Slice(stageResult.Candidates, func(i, j int) bool {
+			return stageResult.Candidates[i].Votes > stageResult.Candidates[j].Votes
+		})
+
+		if stageResult.Candidates[0].Votes*2 > total {
+			electionResult = append(electionResult, stageResult)
+			break
+		}
+		electionResult = append(electionResult, stageResult)
+	}
+
+	c.JSON(http.StatusOK, electionResult)
 }
 
 // GetHashes returns all hashes in the database. Requires user to be able to vote.
 func GetHashes(c *gin.Context) {
 	// TODO: possibly add electionID to database for hashes, since it would be nice
 	// to be able to filter by that and only allow fetching from finalized elections
-
 	db := database.GetDB()
 	defer database.ReleaseDB()
 
