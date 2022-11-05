@@ -90,6 +90,9 @@ const useStyle = createStyles((theme) => ({
   },
 
 export const Voting: React.FC<{election: Election}> = (props) => {
+  const keys = new Map (props.election.candidates.map((candidate)=>
+    [candidate.id, [(candidate.symbolic ? 1 : 0), Math.random()]]
+  ))
   const [voteOrder, voteOrderHandlers] = useListState<candidateInfo>(props.election.candidates.map(
     (candidate, index) => {return {
       id: candidate.id,
@@ -98,6 +101,10 @@ export const Voting: React.FC<{election: Election}> = (props) => {
       presentation: candidate.presentation,
       symbolic: candidate.symbolic
     }}
+  ).sort((a: candidateInfo, b: candidateInfo) => {
+    const aKey = keys.get(a.id) || [1, 1]
+    const bKey = keys.get(b.id) || [1, 1]
+    return compareList(aKey, bKey)
   }))
 
   const [disabled, setDisabled] = useState(true)
@@ -129,14 +136,29 @@ export const Voting: React.FC<{election: Election}> = (props) => {
     </Draggable>
   )
 
+  const updateIndexes = useCallback(()=> {
+    let firstSymbolic = voteOrder.length
+    voteOrderHandlers.apply((candidate, index) => {
+      if (candidate.symbolic && index !== undefined)
+        firstSymbolic = Math.min(firstSymbolic, index)
+      return candidate
+    })
+    voteOrderHandlers.apply((candidate, index) => {
+      index = index || 0
+      candidate.index = `${firstSymbolic < index ? "-" : index + 1}`
+      return candidate
+    })
+  }, [voteOrderHandlers])
 
   const handleItemDrop = useCallback(({ destination, source }: DropResult) => {
     voteOrderHandlers.reorder({
       from: source.index,
       to: destination ? destination.index : source.index
     })
+    updateIndexes()
   }, [voteOrderHandlers])
 
+  useEffect(() => updateIndexes(), [])
   return <div>
     <div className={classes.description}>
       <p>{props.election.description}</p>
