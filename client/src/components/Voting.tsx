@@ -89,6 +89,29 @@ const useStyle = createStyles((theme) => ({
     paddingBottom: "0.4rem",
   },
 
+  info : {
+    padding: "1rem",
+    marginBottom: "1rem",
+    borderRadius: "0.5rem",
+    backgroundColor: "rgb(197, 202, 233)",
+  }
+
+}));
+
+const InfoBox: React.FC = () => {
+
+  const { classes, cx } = useStyle()
+
+  return <div className={cx(constants.themeColor, "lighten-4", classes.info)}>
+    <p>
+      Rangordna kandidater i den ordningen som du föredrar dem. Om du lägger <strong>Blank</strong> eller <strong>Vakant</strong> ovanför en kandidat betyder det att du hellre vill rösta blankt 
+      eller vakanssätta posten än att den kandidaten blir vald. Allt som ligger under Blank eller Vakant spelar ordningen ingen roll på.
+      <br /><br />
+      <strong>Secret</strong> ska innehålla en minst 10 karaktärer lång sträng som kan användas för att varifiera att din röst registrerats i systemet efter att rösterna räknats.
+    </p>
+  </div>
+}
+
 export const Voting: React.FC<{election: Election}> = (props) => {
   const keys = new Map (props.election.candidates.map((candidate)=>
     [candidate.id, [(candidate.symbolic ? 1 : 0), Math.random()]]
@@ -163,6 +186,8 @@ export const Voting: React.FC<{election: Election}> = (props) => {
     <div className={classes.description}>
       <p>{props.election.description}</p>
     </div>
+
+    <InfoBox />
 
       <DragDropContext onDragEnd={handleItemDrop} >
         <Droppable droppableId="vote-ordering" direction="vertical">
