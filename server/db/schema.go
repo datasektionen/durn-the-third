@@ -36,6 +36,7 @@ type Candidate struct {
 	Name         string    `gorm:"not null" json:"name"`
 	Presentation string    `gorm:"not null" json:"presentation"`
 	ElectionID   uuid.UUID `gorm:"not null" json:"-"`
+	Symbolic     bool      `gorm:"not null;default:false" json:"symbolic"`
 }
 
 // VoteHash is purposefully not primaryKey/unique since it is theoretically
