@@ -1,30 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { Header } from "methone";
 import { Grid, Skeleton, Container } from "@mantine/core";
+import { electionMock, DisplayElectionInfo, Election } from "../components/Election";
 
 const Info: React.FC = () => {
   return <Skeleton height={300} animate={false}> </Skeleton>
 }
 
-
-interface Election {
-  a?: number
-}
-
-const ElectionInfo: React.FC<{ election: Election }> = (props) => {
-  return <Skeleton height={230} animate={false}> </Skeleton>;
-}
-
-
 const getElections = (): Election[] =>  {
-
-  return [{a:3}, {}, {}];
+  return [electionMock(), electionMock(), electionMock()];
 }
 
-
-export const Home: React.FC = (propps) => {
-
-  const [elections, setElections]= useState<Election[]>([]);
+export const Home: React.FC = (props) => {
+  const [elections, setElections] = useState<Election[]>([]);
   useEffect(() => {
     setElections(getElections());
   });
