@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { Button, createStyles, Skeleton } from "@mantine/core";
+import axios from "axios";
 import useAuthorization from "../hooks/useAuthorization";
+import constants from "../util/constants";
+import { useNavigate } from "react-router-dom";
+import { Modal } from "@mantine/core";
 
 export interface Candidate {
   id: string,
@@ -57,13 +62,63 @@ export const electionMock = (): Election => {
   }
 }
 
+const useStyle = createStyles((theme) => {
+  return {
+    electionTitle: {
+      fontFamily: "lato",
+      marginTop: "0",
+      marginBottom: "0",
+      backgroundColor: "#eeeeee",
+      padding: "0.8rem",
+      borderRadius: "0.2rem",
+    },
+    electionBox: {
+      boxShadow: "3px 3px 2px 2px rgba(0,0,0,0.15)",
+      position: "relative",
+      padding: "1rem",
+      borderRadius: "0.2rem",
+    },
+    electionBoxHover: {
+      boxShadow: "3px 3px 5px 5px rgba(0,0,0,0.15)",
+      position: "relative",
+      padding: "1rem",
+      borderRadius: "0.2rem",
+    },
+    candidateText: {
+      marginTop: "1.6rem",
+      marginLeft: "1rem",
+    }, 
+    electionDescription: {
+      marginTop: "1.6rem",
+      marginLeft: "1rem",
+    }
+  }
+})
+
+
 export const DisplayElectionInfo: React.FC<{ election: Election, modalContent: React.FC<{election: Election}> }> = (props) => {
   const { classes, cx } = useStyle()
   const [hovering, setHovering] = useState(false)
+  const [opened, setOpened] = useState(false)
 
   return <>
+    <Modal centered 
+      opened={opened} 
+      onClose={() => setOpened(false)} 
+      title={
+        <h2>{props.election.name}</h2>
+      } 
+      closeOnClickOutside={false}
+      overlayOpacity={0.2}
+      size="600px"
+    >
+      <props.modalContent election={props.election} />
+    </Modal>
     <div
       className={cx(constants.themeColor, "lighten-4", hovering ? classes.electionBoxHover : classes.electionBox)}
+      onClick={() => setOpened(true)}
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
     >
       
       <div className={classes.electionTitle}>
