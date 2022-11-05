@@ -131,7 +131,18 @@ export const Voting: React.FC<{election: Election}> = (props) => {
   }))
 
   const [disabled, setDisabled] = useState(true)
+  const [hash, setHash] = useState<string | null>(null)
+  const { authHeader } = useAuthorization()
   const { classes, cx } = useStyle()
+  const form = useForm({
+    initialValues: {
+      secret: "",
+      ranking: voteOrder.map((c) => c.id)
+    },
+    validate: {
+      secret: (s: string) => (s.length < 10 ? "Secret should be at least 10 characters long" : null)
+    }
+  })
 
   const items = voteOrder.map((candidate, index) =>
     <Draggable key={candidate.id} index={index} draggableId={candidate.id} isDragDisabled={disabled}>
@@ -159,6 +170,11 @@ export const Voting: React.FC<{election: Election}> = (props) => {
     </Draggable>
   )
 
+  // Update result ordering
+  useEffect(() => {
+    form.setFieldValue('ranking', voteOrder.map((c) => c.id))
+  },[voteOrder])
+
   const updateIndexes = useCallback(()=> {
     let firstSymbolic = voteOrder.length
     voteOrderHandlers.apply((candidate, index) => {
@@ -181,6 +197,20 @@ export const Voting: React.FC<{election: Election}> = (props) => {
     updateIndexes()
   }, [voteOrderHandlers])
 
+  const submitForm = useCallback(form.onSubmit((values) => {
+    console.log(values)
+    axios.post(`/api/election/${props.election.id}/vote`, values, {
+      headers: authHeader
+    }).then((res) => {
+      setHash(res.data)
+      console.log(res.data)
+      setDisabled(true)
+    }).catch((reason) => {
+      setError(reason.message)
+      console.log(reason.message)
+    })
+  }), [form])
+
   useEffect(() => updateIndexes(), [])
   return <div>
     <div className={classes.description}>
@@ -188,6 +218,18 @@ export const Voting: React.FC<{election: Election}> = (props) => {
     </div>
 
     <InfoBox />
+
+    <form onSubmit={submitForm}>
+
+      <div className={classes.flexRow} style={{marginBottom:"1rem"}}>
+        <div className={classes.flexSubRow}>
+          <p style={{marginTop: "0.6rem"}}>Secret: </p>
+          <TextInput disabled={disabled} placeholder="Secret" {...form.getInputProps('secret')} />
+        </div>
+        <Button disabled={disabled} type="submit">
+          Rösta
+        </Button>
+      </div>
 
       <DragDropContext onDragEnd={handleItemDrop} >
         <Droppable droppableId="vote-ordering" direction="vertical">
@@ -197,5 +239,7 @@ export const Voting: React.FC<{election: Election}> = (props) => {
           </div>}
         </Droppable>
       </DragDropContext>
+    </form>
+
   </div>
 }
