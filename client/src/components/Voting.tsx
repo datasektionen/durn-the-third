@@ -162,10 +162,22 @@ export const Voting: React.FC<{election: Election}> = (props) => {
   const items = voteOrder.map((candidate, index) =>
     <Draggable key={candidate.id} index={index} draggableId={candidate.id} isDragDisabled={disabled}>
       {(provided, snapshot) => {
+        // https://github.com/atlassian/react-beautiful-dnd/issues/958#issuecomment-980548919
+        // disable x-axis movement 
+        let transform = provided.draggableProps.style?.transform;
+        if (snapshot.isDragging && transform) {
+          transform = transform.replace(/\(.+\,/, "(0,");
+        }
+        const style = {
+          ...provided.draggableProps.style,
+          transform,
+        };
+
         return <div
           className={cx(classes.item, {[classes.itemDragging]: snapshot.isDragging}, {[classes.disabled]: disabled})}
           {...provided.draggableProps}
           ref={provided.innerRef}
+          style={style}
         >
           <div className={classes.flexRow}>
             <div className={classes.flexSubRow}>
