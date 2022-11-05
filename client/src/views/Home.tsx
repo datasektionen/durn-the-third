@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Header } from "methone";
 import { Grid, Skeleton, Container, createStyles } from "@mantine/core";
 import { electionMock, DisplayElectionInfo, Election } from "../components/Election";
+import { Voting } from "../components/Voting";
 import axios from "axios";
 import useAuthorization from "../hooks/useAuthorization";
 
@@ -35,10 +36,9 @@ export const Home: React.FC = (props) => {
       <Container my="md">
         <Grid>
           <Grid.Col xs={12}>{<Info />}</Grid.Col>
-          {
-            elections.map(e => 
-              <Grid.Col xs={4}>{<ElectionInfo election={e}/>}</Grid.Col>)
-          }
+          {elections.map((e) => 
+            <Grid.Col xs={4}>{<DisplayElectionInfo election={e} modalContent={Voting}/>}</Grid.Col>
+          )}
           
         </Grid>
       </Container>
