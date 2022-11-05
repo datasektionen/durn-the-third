@@ -5,29 +5,44 @@ const useAuthorization = () => {
   const [loggedIn, setLoggedIn] = useState(false);
   const [user, setUser] = useState("");
   const [perms, setPerms] = useState<string[]>([]);
+  const [header, setHeader] = useState<object>({})
+  const [token, setToken] = useState("")
 
   useEffect(() => {
-    setLoggedIn(false);
-    
-    const token = localStorage.getItem("token");
-    if (token === null) {
+    const tempToken = localStorage.getItem("token");
+    if (tempToken === null) {
+      setToken("")
       return;
     }
-    
-    axios.get(`#/api/validate-token`, {
-      headers: { "Authorization": `Bearer ${token}`}
+    if (tempToken != token) {
+      setToken(tempToken)
+    }
+  }, [localStorage])
+
+  useEffect(() => {
+    if (token == "") return;
+    const header = { "Authorization": `Bearer ${token}` }
+    axios.get('/api/validate-token', {
+      headers: header
     }).then(res => {
       console.log(res);
       setLoggedIn(true);
       setUser(res.data.user);
-      setPerms(res.data.perms)
+      setPerms(res.data.perms);
+      setHeader(header)
     }).catch(() => { // login token invalid, possibly because it has expired
       localStorage.removeItem("token")
     })
-  }, [localStorage]);
+  }, [token])
 
-
-  return { loggedIn, admin: true, user: user, perms: perms};
+  return {
+    loggedIn,
+    adminRead: perms.includes("admin-read"),
+    adminWrite: perms.includes("admin-write"),
+    user: user,
+    perms: perms,
+    authHeader: header
+  };
 };
 
 export default useAuthorization;
