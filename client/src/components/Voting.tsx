@@ -87,6 +87,9 @@ const useStyle = createStyles((theme) => ({
     paddingRight: "1rem",
     paddingTop: "0.4rem",
     paddingBottom: "0.4rem",
+
+  description : {
+
   },
 
   info : {
@@ -132,6 +135,7 @@ export const Voting: React.FC<{election: Election}> = (props) => {
 
   const [disabled, setDisabled] = useState(true)
   const [hash, setHash] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const { authHeader } = useAuthorization()
   const { classes, cx } = useStyle()
   const form = useForm({
@@ -143,6 +147,17 @@ export const Voting: React.FC<{election: Election}> = (props) => {
       secret: (s: string) => (s.length < 10 ? "Secret should be at least 10 characters long" : null)
     }
   })
+
+  useEffect(() => {
+    // let hasVoted = false
+    axios(`/api/election/${props.election.id}/has-voted`, {
+      headers: authHeader
+    }).then((res) => {
+      setDisabled(res.data == "true")
+    }).catch((reason) => {
+      console.log(reason.body)
+    })
+  }, [authHeader])
 
   const items = voteOrder.map((candidate, index) =>
     <Draggable key={candidate.id} index={index} draggableId={candidate.id} isDragDisabled={disabled}>
