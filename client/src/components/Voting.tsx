@@ -87,6 +87,7 @@ const useStyle = createStyles((theme) => ({
     paddingRight: "1rem",
     paddingTop: "0.4rem",
     paddingBottom: "0.4rem",
+  },
 
   description : {
 
