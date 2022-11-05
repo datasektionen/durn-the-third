@@ -39,11 +39,55 @@ const useStyle = createStyles((theme) => ({
     overflowY: "scroll",
   },
 
+  dragHandle: {
+    ...theme.fn.focusStyles(),
+    display: 'flex',
+    alignItems: 'center',
+    height: '100%',
+    padding: "1rem",
+    paddingTop: "2rem",
+    margin: "-1rem",
+    marginLeft: "-2rem",
+    marginTop: "-2rem"
+  },
+
+  disabled: {
+    backgroundColor: theme.colors.gray[3],
+  },
+
   itemDragging: {
     boxShadow: theme.shadows.sm,
   },
 
+  symbol: {
+    fontSize: 30,
+    fontWeight: 700,
+    width: 60,
+  },
 
+  flexRow: { 
+    display: "flex", 
+    justifyContent: "space-between", 
+    width: "100%", 
+    alignItems: "center", 
+    gap: "1rem"
+  },
+
+  flexSubRow: {
+    display: "flex",
+    justifyContent: "left",
+    alignItems: "center",
+    gap: "1rem"
+  },
+
+  box : {
+    border: `1px solid ${theme.colors.gray[5]}`,
+    borderRadius: "0.5rem",
+    paddingLeft: "1rem",
+    paddingRight: "1rem",
+    paddingTop: "0.4rem",
+    paddingBottom: "0.4rem",
+  },
 
 export const Voting: React.FC<{election: Election}> = (props) => {
   const [voteOrder, voteOrderHandlers] = useListState<candidateInfo>(props.election.candidates.map(
@@ -56,6 +100,7 @@ export const Voting: React.FC<{election: Election}> = (props) => {
     }}
   }))
 
+  const [disabled, setDisabled] = useState(true)
   const { classes, cx } = useStyle()
 
   const items = voteOrder.map((candidate, index) =>
@@ -68,6 +113,9 @@ export const Voting: React.FC<{election: Election}> = (props) => {
         >
           <div className={classes.flexRow}>
             <div className={classes.flexSubRow}>
+              <div {...provided.dragHandleProps} className={classes.dragHandle}>
+                <Selector size={18} strokeWidth={2} color={'black'} />
+              </div>
               <div className={classes.box}> <span> {candidate.index} </span> </div>
               <div> <span> {candidate.name} </span> </div>
             </div>
