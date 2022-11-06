@@ -58,6 +58,7 @@ const EditVoters: React.FC = () => {
   </>
 }
 
+
 const Info: React.FC = () => {
   return <Skeleton height={300} animate={false} />
 }
@@ -107,6 +108,8 @@ interface VotersTableProps {
 }
 
 const VotersTable: React.FC<VotersTableProps> = ({voters, setVoters}) => {
+  const { authHeader } = useAuthorization()
+  const { classes, cx } = useStyles()
   const [selection, selectionActions] = useMap<string, boolean>()
 
   const toggleVoter = (voter: string) => {
@@ -124,6 +127,25 @@ const VotersTable: React.FC<VotersTableProps> = ({voters, setVoters}) => {
       selectionActions.setList(voters, true)
     }
   }
+
+  const deleteVoters = () => {
+    if (selection.size == 0) return
+    const removedVoters = Array.from(selection.keys())
+    console.log(removedVoters)
+
+    axios.delete("/api/voters/remove", {
+      headers: authHeader,
+      data: {
+        voters: removedVoters
+      }
+    }).then((res) => {
+      setVoters(res.data.voters)
+      selectionActions.reset()
+    }).catch((err) => {
+      console.log(err)
+    })
+  }
+
 
   const rows = voters.map((voter) => (
     <tr key={voter}>
@@ -156,6 +178,9 @@ const VotersTable: React.FC<VotersTableProps> = ({voters, setVoters}) => {
               />
             </th>
             <th>
+              <Button compact onClick={deleteVoters}> 
+                Delete selected Users
+              </Button>
             </th>
           </tr>
         </thead>
