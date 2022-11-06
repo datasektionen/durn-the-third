@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useState } from "react";
+import axios from "axios";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd'
 import { Selector } from 'tabler-icons-react'
-import axios from "axios";
 
 import { useForm } from "@mantine/form"
 import { useListState } from "@mantine/hooks";
-import { Button, createStyles, Input, TextInput } from "@mantine/core";
+import { Button, createStyles, TextInput } from "@mantine/core";
 
-import { Election, electionMock } from "./Election";
+import { Election } from "./Election";
 import useAuthorization from "../hooks/useAuthorization";
 import constants from "../util/constants";
 import { compareList } from "../util/funcs";
@@ -157,7 +157,6 @@ export const Voting: React.FC<{election: Election}> = (props) => {
     }).then((res) => {
       setDisabled(res.data == "true")
     }).catch((reason) => {
-      console.log(reason.body)
       setDisabled(false)
     })
   }, [authHeader])

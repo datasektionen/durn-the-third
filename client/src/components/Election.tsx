@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Button, createStyles, Skeleton } from "@mantine/core";
 import axios from "axios";
+
+import { createStyles, Modal } from "@mantine/core";
+
 import useAuthorization from "../hooks/useAuthorization";
 import constants from "../util/constants";
-import { useNavigate } from "react-router-dom";
-import { Modal } from "@mantine/core";
 
 export interface Candidate {
   id: string,
