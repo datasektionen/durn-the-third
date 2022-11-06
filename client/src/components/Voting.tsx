@@ -11,6 +11,7 @@ import { Election, electionMock } from "./Election";
 import useAuthorization from "../hooks/useAuthorization";
 import constants from "../util/constants";
 import { compareList } from "../util/funcs";
+import { ErrorModal, InformationModal } from "./Information";
 
 interface candidateInfo {
   id: string,
@@ -104,7 +105,6 @@ const useStyle = createStyles((theme) => ({
 }));
 
 const InfoBox: React.FC = () => {
-
   const { classes, cx } = useStyle()
 
   return <div className={cx(constants.themeColor, "lighten-4", classes.info)}>
@@ -280,6 +280,13 @@ export const Voting: React.FC<{election: Election}> = (props) => {
         </Droppable>
       </DragDropContext>
     </form>
+
+    {hash && <InformationModal opened={!!hash} onClose={() => setHash(null)} info={
+      `Din röst är registrerad och fick hashen ${hash}, den kan användas för att kolla att din röst har räknats`
+    } />}
+    {error && <ErrorModal opened={!!error} onClose={() => setError(null)} error={
+      "Misslyckades skicka rösten till databasen, kontakta IOR"
+    } />}
 
   </div>
 }
