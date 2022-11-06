@@ -107,10 +107,30 @@ interface VotersTableProps {
 }
 
 const VotersTable: React.FC<VotersTableProps> = ({voters, setVoters}) => {
+  const [selection, selectionActions] = useMap<string, boolean>()
+
+  const toggleVoter = (voter: string) => {
+    if (selection.has(voter)) {
+      selectionActions.remove(voter)
+    } else {
+      selectionActions.set(voter, true)
+    }
+  }
+
+  const toggleAll = () => {
+    if (selection.size > 0) {
+      selectionActions.reset()
+    } else {
+      selectionActions.setList(voters, true)
+    }
+  }
+
   const rows = voters.map((voter) => (
     <tr key={voter}>
       <td>
         <Checkbox
+          checked={selection.has(voter)}
+          onChange={() => toggleVoter(voter)}
         />
       </td>
       <td>
@@ -129,6 +149,10 @@ const VotersTable: React.FC<VotersTableProps> = ({voters, setVoters}) => {
           <tr>
             <th style={{ width: 40 }}>
               <Checkbox 
+                onChange={toggleAll}
+                size="sm"
+                checked={selection.size == voters.length}
+                indeterminate={selection.size > 0 && selection.size < voters.length}
               />
             </th>
             <th>
