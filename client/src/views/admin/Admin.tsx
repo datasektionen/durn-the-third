@@ -1,6 +1,11 @@
 import React from "react";
+import { Header } from "methone"
 
-export const Admin: React.FC = () => {
-
-  return <div />
+const Admin: React.FC = () => {
+  return <>
+    <Header title="Hem" />
+    <p>text</p>
+  </>
 }
+
+export default Admin

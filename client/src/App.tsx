@@ -10,26 +10,24 @@ import {
 import useAuthorization from "./hooks/useAuthorization";
 
 import { Home } from "./views/Home";
-import { Admin } from "./views/admin/Admin";
 import { Login, Logout, Token } from "./components/Authentication";
 import constants from "./util/constants";
-import { Rotate } from "tabler-icons-react";
+
+import Admin from "./views/admin/Admin";
 import EditElection from "./views/admin/EditElection";
 import EditVoters from "./views/admin/EditVoters";
 
 const App: React.FC = () => {
   const { loggedIn, adminRead, adminWrite } = useAuthorization();
 
-  const adminLinks = [
-    <Link to="/admin"> Admin </Link>,
-  ];
-
   const config = {
     system_name: "durn",
     color_scheme: constants.themeColor,
     links: [
       <Link to="/">Hem</Link>,
-      ...(adminRead ? adminLinks : [])
+      ...(adminRead ? [
+        <Link to="/admin"> Admin </Link>,
+      ] : [])
     ],
     login_href: loggedIn ? "#/logout" : "#/login",
     login_text: loggedIn ? "Logga ut" : "Logga in",
