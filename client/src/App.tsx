@@ -13,6 +13,9 @@ import { Home } from "./views/Home";
 import { Admin } from "./views/admin/Admin";
 import { Login, Logout, Token } from "./components/Authentication";
 import constants from "./util/constants";
+import { Rotate } from "tabler-icons-react";
+import EditElection from "./views/admin/EditElection";
+import EditVoters from "./views/admin/EditVoters";
 
 const App: React.FC = () => {
   const { loggedIn, adminRead, adminWrite } = useAuthorization();
@@ -43,9 +46,10 @@ const App: React.FC = () => {
           <Route path="/logout" element={<Logout />} /> 
           <Route path="/token/:token" element={<Token />} />
 
-          <Route path="/admin" element={<Admin />}>
-            
-          </Route>
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/:id" element={<EditElection />} />
+          <Route path="/admin/voters" element={<EditVoters />} />
+
 
         </Routes>
 
