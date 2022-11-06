@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 import axios from "axios";
+
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd'
 import { Selector } from 'tabler-icons-react'
-
 import { useForm } from "@mantine/form"
 import { useListState } from "@mantine/hooks";
 import { Button, createStyles, TextInput } from "@mantine/core";
@@ -21,9 +21,7 @@ interface candidateInfo {
 }
 
 const useStyle = createStyles((theme) => ({
-
   item: {
-    // ...theme.fn.focusStyles(),
     display: 'flex',
     alignItems: 'center',
     borderRadius: theme.radius.md,
@@ -117,7 +115,8 @@ const InfoBox: React.FC = () => {
   </div>
 }
 
-export const Voting: React.FC<{election: Election}> = (props) => {
+
+export const Voting: React.FC<{ election: Election }> = (props) => {
   const keys = new Map (props.election.candidates.map((candidate)=>
     [candidate.id, [(candidate.symbolic ? 1 : 0), Math.random()]]
   ))
@@ -133,13 +132,13 @@ export const Voting: React.FC<{election: Election}> = (props) => {
     const bKey = keys.get(b.id) ?? [1, 1]
     return compareList(aKey, bKey)
   }))
-  const [displayIndex, setDisplayIndex] = useState<Map<string, string>>(new Map<string, string>())
 
+  const { classes, cx } = useStyle()
+  const [displayIndex, setDisplayIndex] = useState<Map<string, string>>(new Map<string, string>())
   const [disabled, setDisabled] = useState(true)
   const [hash, setHash] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const { authHeader } = useAuthorization()
-  const { classes, cx } = useStyle()
   const form = useForm({
     initialValues: {
       secret: "",
@@ -149,60 +148,6 @@ export const Voting: React.FC<{election: Election}> = (props) => {
       secret: (s: string) => (s.length < 10 ? "Secret should be at least 10 characters long" : null)
     }
   })
-
-  useEffect(() => {
-    // let hasVoted = false
-    axios(`/api/election/${props.election.id}/has-voted`, {
-      headers: authHeader
-    }).then((res) => {
-      setDisabled(res.data == "true")
-    }).catch((reason) => {
-      setDisabled(false)
-    })
-  }, [authHeader])
-
-  const items = voteOrder.map((candidate, index) =>
-    <Draggable key={candidate.id} index={index} draggableId={candidate.id} isDragDisabled={disabled}>
-      {(provided, snapshot) => {
-        // https://github.com/atlassian/react-beautiful-dnd/issues/958#issuecomment-980548919
-        // disable x-axis movement 
-        let transform = provided.draggableProps.style?.transform;
-        if (snapshot.isDragging && transform) {
-          transform = transform.replace(/\(.+\,/, "(0,");
-        }
-        const style = {
-          ...provided.draggableProps.style,
-          transform,
-        };
-
-        return <div
-          className={cx(classes.item, {[classes.itemDragging]: snapshot.isDragging}, {[classes.disabled]: disabled})}
-          {...provided.draggableProps}
-          ref={provided.innerRef}
-          style={style}
-        >
-          <div className={classes.flexRow}>
-            <div className={classes.flexSubRow}>
-              <div {...provided.dragHandleProps} className={classes.dragHandle}>
-                <Selector size={18} strokeWidth={2} color={'black'} />
-              </div>
-              <div className={classes.box}> <span> {displayIndex.get(candidate.id) ?? '-'} </span> </div>
-              <div> <span> {candidate.name} </span> </div>
-            </div>
-            {candidate.presentation != "" ?
-              <div style={{ whiteSpace: "nowrap", marginLeft:"0.5rem"}}> <span>
-                <a href={candidate.presentation} target="_blank"> Presentation </a>
-              </span> </div> : <></>}
-          </div>
-        </div>
-      }}
-    </Draggable>
-  )
-
-  // Update result ordering in form
-  useEffect(() => {
-    form.setFieldValue('ranking', voteOrder.map((c) => c.id))
-  }, [voteOrder])
 
   const updateDisplayIndex = useCallback((indexes: Map<string, number>) => {
     let firstSymbolic = voteOrder.length
@@ -215,14 +160,9 @@ export const Voting: React.FC<{election: Election}> = (props) => {
     })))
   }, [setDisplayIndex, voteOrder])
 
-  useEffect(
-    () => updateDisplayIndex(new Map(voteOrder.map((candidate, index) => [candidate.id, index]))), 
-    [voteOrder]
-  )
-
   const handleItemUpdate = useCallback(({ destination, source }: DropResult) => {
     if (destination == undefined) return;
-    const tempOrder = new Map(voteOrder.map((candidate, index) => {
+    const adjustedIndexes = new Map(voteOrder.map((candidate, index) => {
       if (source.index == destination.index) return [candidate.id, index]
       if (index == source.index) return [candidate.id, destination.index]
       return [candidate.id, (source.index < destination.index ?
@@ -230,7 +170,7 @@ export const Voting: React.FC<{election: Election}> = (props) => {
         index + (index >= destination.index ? 1 : 0) - (index >= source.index ? 1 : 0)
       )]
     }))
-    updateDisplayIndex(tempOrder)
+    updateDisplayIndex(adjustedIndexes)
   }, [voteOrder])
   
   const handleItemDrop = useCallback(({ destination, source }: DropResult) => {
@@ -250,6 +190,65 @@ export const Voting: React.FC<{election: Election}> = (props) => {
       setError(reason.message)
     })
   }), [form])
+
+
+  useEffect(() => {
+    axios(`/api/election/${props.election.id}/has-voted`, {
+      headers: authHeader
+    }).then((res) => {
+      setDisabled(res.data == "true")
+    }).catch((reason) => {
+      setDisabled(false)
+    })
+  }, [authHeader])
+
+  useEffect(() => {
+    form.setFieldValue('ranking', voteOrder.map((c) => c.id))
+  }, [voteOrder])
+
+  useEffect(
+    () => updateDisplayIndex(new Map(voteOrder.map((candidate, index) => [candidate.id, index]))),
+    [voteOrder]
+  )
+
+
+  const items = voteOrder.map((candidate, index) =>
+    <Draggable key={candidate.id} index={index} draggableId={candidate.id} isDragDisabled={disabled}>
+      {(provided, snapshot) => {
+        // https://github.com/atlassian/react-beautiful-dnd/issues/958#issuecomment-980548919
+        // disable x-axis movement 
+        let transform = provided.draggableProps.style?.transform;
+        if (snapshot.isDragging && transform) {
+          transform = transform.replace(/\(.+\,/, "(0,");
+        }
+        const style = {
+          ...provided.draggableProps.style,
+          transform,
+        };
+
+        return <div
+          className={cx(classes.item, { [classes.itemDragging]: snapshot.isDragging }, { [classes.disabled]: disabled })}
+          {...provided.draggableProps}
+          ref={provided.innerRef}
+          style={style}
+        >
+          <div className={classes.flexRow}>
+            <div className={classes.flexSubRow}>
+              <div {...provided.dragHandleProps} className={classes.dragHandle}>
+                <Selector size={18} strokeWidth={2} color={'black'} />
+              </div>
+              <div className={classes.box}> <span> {displayIndex.get(candidate.id) ?? '-'} </span> </div>
+              <div> <span> {candidate.name} </span> </div>
+            </div>
+            {candidate.presentation != "" ?
+              <div style={{ whiteSpace: "nowrap", marginLeft: "0.5rem" }}> <span>
+                <a href={candidate.presentation} target="_blank"> Presentation </a>
+              </span> </div> : <></>}
+          </div>
+        </div>
+      }}
+    </Draggable>
+  )
 
   return <div>
     <div className={classes.description}>
