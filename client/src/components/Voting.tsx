@@ -14,7 +14,6 @@ import { compareList } from "../util/funcs";
 
 interface candidateInfo {
   id: string,
-  index: string,
   name: string,
   presentation: string, 
   symbolic: boolean
@@ -36,7 +35,7 @@ const useStyle = createStyles((theme) => ({
   },
 
   droppable: {
-    overflowY: "scroll",
+    // overflowY: "scroll",
   },
 
   dragHandle: {
@@ -82,6 +81,8 @@ const useStyle = createStyles((theme) => ({
 
   box : {
     border: `1px solid ${theme.colors.gray[5]}`,
+    width: "3.2rem",
+    textAlign: "center",
     borderRadius: "0.5rem",
     paddingLeft: "1rem",
     paddingRight: "1rem",
@@ -123,16 +124,16 @@ export const Voting: React.FC<{election: Election}> = (props) => {
   const [voteOrder, voteOrderHandlers] = useListState<candidateInfo>(props.election.candidates.map(
     (candidate, index) => {return {
       id: candidate.id,
-      index: `${index}`,
       name: candidate.name,
       presentation: candidate.presentation,
       symbolic: candidate.symbolic
     }}
   ).sort((a: candidateInfo, b: candidateInfo) => {
-    const aKey = keys.get(a.id) || [1, 1]
-    const bKey = keys.get(b.id) || [1, 1]
+    const aKey = keys.get(a.id) ?? [1, 1]
+    const bKey = keys.get(b.id) ?? [1, 1]
     return compareList(aKey, bKey)
   }))
+  const [displayIndex, setDisplayIndex] = useState<Map<string, string>>(new Map<string, string>())
 
   const [disabled, setDisabled] = useState(true)
   const [hash, setHash] = useState<string | null>(null)
@@ -157,6 +158,7 @@ export const Voting: React.FC<{election: Election}> = (props) => {
       setDisabled(res.data == "true")
     }).catch((reason) => {
       console.log(reason.body)
+      setDisabled(false)
     })
   }, [authHeader])
 
@@ -185,7 +187,7 @@ export const Voting: React.FC<{election: Election}> = (props) => {
               <div {...provided.dragHandleProps} className={classes.dragHandle}>
                 <Selector size={18} strokeWidth={2} color={'black'} />
               </div>
-              <div className={classes.box}> <span> {candidate.index} </span> </div>
+              <div className={classes.box}> <span> {displayIndex.get(candidate.id) ?? '-'} </span> </div>
               <div> <span> {candidate.name} </span> </div>
             </div>
             {candidate.presentation != "" ?
@@ -198,48 +200,58 @@ export const Voting: React.FC<{election: Election}> = (props) => {
     </Draggable>
   )
 
-  // Update result ordering
+  // Update result ordering in form
   useEffect(() => {
     form.setFieldValue('ranking', voteOrder.map((c) => c.id))
-  },[voteOrder])
+  }, [voteOrder])
 
-  const updateIndexes = useCallback(()=> {
+  const updateDisplayIndex = useCallback((indexes: Map<string, number>) => {
     let firstSymbolic = voteOrder.length
-    voteOrderHandlers.apply((candidate, index) => {
-      if (candidate.symbolic && index !== undefined)
-        firstSymbolic = Math.min(firstSymbolic, index)
-      return candidate
+    voteOrder.forEach((candidate) => {
+      if (candidate.symbolic) firstSymbolic = Math.min(firstSymbolic, indexes.get(candidate.id) ?? firstSymbolic)
     })
-    voteOrderHandlers.apply((candidate, index) => {
-      index = index || 0
-      candidate.index = `${firstSymbolic < index ? "-" : index + 1}`
-      return candidate
-    })
-  }, [voteOrderHandlers])
+    setDisplayIndex(new Map(voteOrder.map((candidate) => {
+      let index = indexes.get(candidate.id) ?? 0
+      return [candidate.id, `${firstSymbolic < index ? "-" : index + 1}`]
+    })))
+  }, [setDisplayIndex, voteOrder])
 
+  useEffect(
+    () => updateDisplayIndex(new Map(voteOrder.map((candidate, index) => [candidate.id, index]))), 
+    [voteOrder]
+  )
+
+  const handleItemUpdate = useCallback(({ destination, source }: DropResult) => {
+    if (destination == undefined) return;
+    const tempOrder = new Map(voteOrder.map((candidate, index) => {
+      if (source.index == destination.index) return [candidate.id, index]
+      if (index == source.index) return [candidate.id, destination.index]
+      return [candidate.id, (source.index < destination.index ?
+        index - (index > source.index ? 1 : 0) + (index > destination.index ? 1 : 0) :
+        index + (index >= destination.index ? 1 : 0) - (index >= source.index ? 1 : 0)
+      )]
+    }))
+    updateDisplayIndex(tempOrder)
+  }, [voteOrder])
+  
   const handleItemDrop = useCallback(({ destination, source }: DropResult) => {
     voteOrderHandlers.reorder({
       from: source.index,
       to: destination ? destination.index : source.index
     })
-    updateIndexes()
   }, [voteOrderHandlers])
 
   const submitForm = useCallback(form.onSubmit((values) => {
-    console.log(values)
     axios.post(`/api/election/${props.election.id}/vote`, values, {
       headers: authHeader
     }).then((res) => {
       setHash(res.data)
-      console.log(res.data)
       setDisabled(true)
     }).catch((reason) => {
       setError(reason.message)
-      console.log(reason.message)
     })
   }), [form])
 
-  useEffect(() => updateIndexes(), [])
   return <div>
     <div className={classes.description}>
       <p>{props.election.description}</p>
@@ -259,7 +271,7 @@ export const Voting: React.FC<{election: Election}> = (props) => {
         </Button>
       </div>
 
-      <DragDropContext onDragEnd={handleItemDrop} >
+      <DragDropContext onDragEnd={handleItemDrop} onDragUpdate={handleItemUpdate}>
         <Droppable droppableId="vote-ordering" direction="vertical">
           {(provided) => <div {...provided.droppableProps} ref={provided.innerRef} className={classes.droppable}>
             {items}
