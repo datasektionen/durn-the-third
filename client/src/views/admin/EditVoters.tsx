@@ -68,10 +68,36 @@ interface AddVotersFieldProps {
 }
 
 const AddVotersField: React.FC<AddVotersFieldProps> = ({disabled, setVoters}) => {
+  const { classes, cx } = useStyles()
+  const { authHeader } = useAuthorization()
+  const ref = useRef<HTMLTextAreaElement>(null)
+
+  const addVoters = (voters: string[]) => {
+    axios.put("/api/voters/add",{
+      voters: voters
+    }, {
+      headers: authHeader
+    }).then((res) => {
+      setVoters(res.data.voters)
+    }).catch((err) => {
+      console.log(err.message)
+    })
+  }
+
+  const handleButtonClick = () => {
+    const input = ref.current?.value ?? ""
+    const values = input.split(/\s*[\n,]\s*/)
+    addVoters(values)
+  }
+
   return <div>
     <h3 className={classes.sectionTitle}>
       Add voters
     </h3>
+    <Button onClick={handleButtonClick}>Submit</Button>
+    <div style={{marginTop: "1rem"}}>
+      <Textarea autosize ref={ref} />
+    </div>
   </div>
 }
 
