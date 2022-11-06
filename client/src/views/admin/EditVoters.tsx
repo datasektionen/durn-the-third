@@ -1,6 +1,8 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Header } from "methone"
 
 import { createStyles, Grid } from "@mantine/core";
 
@@ -24,30 +26,47 @@ const EditVoters: React.FC = () => {
       headers: authHeader
     }).then((res) => {
       setVoters(res.data.voters)
+    }).catch((error) => {
+      console.log(error.body)
     })
-  }, [])
+  }, [authHeader])
 
-  return <div>
-    <Grid>
-      <Grid.Col xs={6}>
-        <AddVotersField disabled={!adminWrite} />
-      </Grid.Col>
+  return <>
+    <Header title="Manage voters" />
+    <div>
+      <Container my="md">
+        <Grid>
+          <Grid.Col>
+            <Info />
+          </Grid.Col>
 
-      <Grid.Col xs={6}>
-        <VotersTable voters={voters} setVoters={setVoters} />
-      </Grid.Col>
-    </Grid>
-  </div>
+          <Grid.Col xs={6}>
+            <AddVotersField disabled={!adminWrite} setVoters={setVoters}/>
+          </Grid.Col>
+
+          <Grid.Col xs={6}>
+            <VotersTable voters={voters} setVoters={setVoters} />
+          </Grid.Col>
+        </Grid>
+      </Container>
+    </div>
+  </>
+}
+
+const Info: React.FC = () => {
+  return <Skeleton height={300} animate={false} />
 }
 
 interface AddVotersFieldProps {
-  disabled: boolean
+  disabled: boolean,
+  setVoters: (voters: string[]) => void
 }
 
-const AddVotersField: React.FC<AddVotersFieldProps> = ({disabled}) => {
-  const {authHeader} = useAuthorization()
+const AddVotersField: React.FC<AddVotersFieldProps> = ({disabled, setVoters}) => {
   return <div>
-    
+    <h3 className={classes.sectionTitle}>
+      Add voters
+    </h3>
   </div>
 }
 
