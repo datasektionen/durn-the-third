@@ -1,15 +1,20 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "methone"
 
-import { createStyles, Grid } from "@mantine/core";
+import { Checkbox, createStyles, Grid, ScrollArea, Table, Container, Skeleton, Button, Textarea } from "@mantine/core";
 
 import useAuthorization from "../../hooks/useAuthorization";
+import useMap from "../../util/useMap";
 
-const useStyles = createStyles((theme) => {{
-
+const useStyles = createStyles((theme) => { return {
+  tableContainer: {
+    // border: `solid 1px ${theme.colors.gray[6]}`
+  },
+  sectionTitle: {
+    textAlign: "center",
+  }
 }})
 
 const EditVoters: React.FC = () => {
@@ -76,8 +81,37 @@ interface VotersTableProps {
 }
 
 const VotersTable: React.FC<VotersTableProps> = ({voters, setVoters}) => {
-  return <div>
-    
+  const rows = voters.map((voter) => (
+    <tr key={voter}>
+      <td>
+        <Checkbox
+        />
+      </td>
+      <td>
+        {voter}
+      </td>
+    </tr>
+  ))
+
+  return <div className={classes.tableContainer}>
+    <h3 className={classes.sectionTitle}>
+      Allowed voters
+    </h3>
+    <ScrollArea>
+      <Table withColumnBorders withBorder>
+        <thead>
+          <tr>
+            <th style={{ width: 40 }}>
+              <Checkbox 
+              />
+            </th>
+            <th>
+            </th>
+          </tr>
+        </thead>
+        <tbody>{rows}</tbody>
+      </Table>
+    </ScrollArea>
   </div>
 }
 
