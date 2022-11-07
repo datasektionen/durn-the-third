@@ -13,6 +13,30 @@ import (
 	"gorm.io/gorm"
 )
 
+type electionExportType struct {
+	ID          uuid.UUID            `gorm:"primaryKey" json:"id"`
+	Name        string               `gorm:"not null" json:"name"`
+	Description string               `gorm:"not null" json:"description"`
+	Published   bool                 `gorm:"not null" json:"published"`
+	Finalized   bool                 `gorm:"not null" json:"finalized"`
+	OpenTime    util.NullTime        `json:"openTime"`
+	CloseTime   util.NullTime        `json:"closeTime"`
+	Candidates  []database.Candidate `gorm:"foreignKey:ElectionID;references:ID" json:"candidates"`
+}
+
+func convertElectionToExportType(election database.Election) electionExportType {
+	return electionExportType{
+		ID:          election.ID,
+		Name:        election.Name,
+		Description: election.Description,
+		Published:   election.Published,
+		Finalized:   election.Finalized,
+		OpenTime:    util.ConvertSqlNullTime(election.OpenTime),
+		CloseTime:   util.ConvertSqlNullTime(election.CloseTime),
+		Candidates:  election.Candidates,
+	}
+}
+
 // CreateElection creates an election with the given name.
 // All other fields are set to their defaults and has to be changed
 // using the edit endpoint.
@@ -47,12 +71,14 @@ func CreateElection(c *gin.Context) {
 		Name:         util.VacantCandidate,
 		Presentation: "",
 		ElectionID:   election.ID,
+		Symbolic:     true,
 	}
 	blank := database.Candidate{
 		ID:           uuid.NewV4(),
 		Name:         util.BlankCandidate,
 		Presentation: "",
 		ElectionID:   election.ID,
+		Symbolic:     true,
 	}
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
@@ -72,7 +98,7 @@ func CreateElection(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, election)
+	c.JSON(http.StatusOK, convertElectionToExportType(election))
 }
 
 // EditElection updates specific fields for the specified election.
@@ -131,7 +157,7 @@ func EditElection(c *gin.Context) {
 		c.String(http.StatusInternalServerError, util.RequestFailed)
 		return
 	}
-	c.JSON(http.StatusOK, election)
+	c.JSON(http.StatusOK, convertElectionToExportType(election))
 }
 
 // PublishElection marks an election as published.
@@ -160,7 +186,7 @@ func PublishElection(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, election)
+	c.JSON(http.StatusOK, convertElectionToExportType(election))
 }
 
 // FinalizeElection marks an election as finalized, meaning that voting is finished
@@ -189,7 +215,8 @@ func FinalizeElection(c *gin.Context) {
 		c.String(http.StatusInternalServerError, util.RequestFailed)
 		return
 	}
-	c.JSON(http.StatusOK, election)
+
+	c.JSON(http.StatusOK, convertElectionToExportType(election))
 }
 
 // GetElection fetches a specific election from the database, including
@@ -212,7 +239,7 @@ func GetElection(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, election)
+	c.JSON(http.StatusOK, convertElectionToExportType(election))
 }
 
 // GetElections fetches all elections in the database, including all
@@ -228,7 +255,11 @@ func GetElections(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, elections)
+	var result []electionExportType
+	for _, election := range elections {
+		result = append(result, convertElectionToExportType(election))
+	}
+	c.JSON(http.StatusOK, result)
 }
 
 // GetPublicElections fetches all elections in the database with the
@@ -244,7 +275,11 @@ func GetPublicElections(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, elections)
+	var result []electionExportType
+	for _, election := range elections {
+		result = append(result, convertElectionToExportType(election))
+	}
+	c.JSON(http.StatusOK, result)
 }
 
 // GetPublicElections fetches an elections in the database if the
@@ -270,7 +305,7 @@ func GetPublicElection(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, election)
+	c.JSON(http.StatusOK, convertElectionToExportType(election))
 }
 
 // AddCandidate adds a candidate to the specified election. The name parameter
@@ -321,6 +356,7 @@ func AddCandidate(c *gin.Context) {
 		Name:         body.Name,
 		Presentation: body.Presentation,
 		ElectionID:   electionId,
+		Symbolic:     false,
 	}
 	if err := db.Create(&candidate).Error; err != nil {
 		fmt.Println(err)

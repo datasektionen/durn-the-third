@@ -12,22 +12,21 @@ import useAuthorization from "./hooks/useAuthorization";
 import { Home } from "./views/Home";
 import { Admin } from "./views/admin/Admin";
 import { Login, Logout, Token } from "./components/Authentication";
+import constants from "./util/constants";
 
 const App: React.FC = () => {
-  const { loggedIn, admin } = useAuthorization();
+  const { loggedIn, adminRead, adminWrite } = useAuthorization();
 
   const adminLinks = [
     <Link to="/admin"> Admin </Link>,
   ];
 
-  const color = "indigo";
-
   const config = {
     system_name: "durn",
-    color_scheme: color,
+    color_scheme: constants.themeColor,
     links: [
       <Link to="/">Hem</Link>,
-      ...(admin ? adminLinks : [])
+      ...(adminRead ? adminLinks : [])
     ],
     login_href: loggedIn ? "#/logout" : "#/login",
     login_text: loggedIn ? "Logga ut" : "Logga in",
@@ -35,7 +34,7 @@ const App: React.FC = () => {
 
   return (
     <HashRouter>
-      <div id="application" className={color}>
+      <div id="application" className={constants.themeColor}>
         <Methone config = {config} />
         
         <Routes>

@@ -37,7 +37,8 @@ const config = {
       path: "./.env",
       systemvars: true,
     }),
-  ],
+  ], 
+  devtool: "eval-cheap-source-map"
 };
 
 if (isProd) {

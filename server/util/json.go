@@ -80,7 +80,7 @@ type NullTime struct {
 }
 
 var (
-	NullStr []byte = []byte("Null")
+	NullStr []byte = []byte("null")
 )
 
 func (nullTime *NullTime) UnmarshalJSON(data []byte) (err error) {

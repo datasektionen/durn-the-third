@@ -31,13 +31,18 @@ func Authenticate() gin.HandlerFunc {
 	}
 
 	return func(c *gin.Context) {
-		token := strings.Split(c.GetHeader("Authorization"), " ")[1]
+		authHeader := strings.Split(c.GetHeader("Authorization"), " ")
+		if len(authHeader) < 2 {
+			c.String(http.StatusBadRequest, "Invalid Authorization header provided") // Unauthorized = Unauthenticated in http
+			c.Abort()
+			return
+		}
+		token := authHeader[1]
 		requestURL := fmt.Sprintf("%s/verify/%s?api_key=%s", url, token, key)
 
 		var response loginResponse
 		if err := util.GetValidatedJsonFromURL(requestURL, &response); err != nil {
 			// TODO: proper logging
-			fmt.Println(err)
 			c.String(http.StatusUnauthorized, "Not logged in") // Unauthorized = Unauthenticated in http
 			c.Abort()
 			return
