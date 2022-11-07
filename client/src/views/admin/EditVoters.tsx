@@ -26,15 +26,13 @@ const EditVoters: React.FC = () => {
   //   navigate("/")
   // }
 
-  useEffect(() => {
-    axios("/api/voters", {
-      headers: authHeader
-    }).then((res) => {
-      setVoters(res.data.voters)
-    }).catch((error) => {
-      console.log(error.body)
-    })
-  }, [authHeader])
+  axios("/api/voters", {
+    headers: authHeader
+  }).then((res) => {
+    setVoters(res.data.voters)
+  }).catch((error) => {
+    console.log(error.body)
+  })
 
   return <>
     <Header title="Manage voters" />
