@@ -5,6 +5,7 @@ import { createStyles, Modal } from "@mantine/core";
 
 import useAuthorization from "../hooks/useAuthorization";
 import constants from "../util/constants";
+import { NullTime } from "./DateTime";
 
 export interface Candidate {
   id: string,
@@ -19,8 +20,8 @@ export interface Election {
   description: string,
   published: boolean,
   finalized: boolean,
-  openTime: Date | null,
-  closeTime: Date | null,
+  openTime: NullTime,
+  closeTime: NullTime,
   candidates: Array<Candidate>,
 }
 

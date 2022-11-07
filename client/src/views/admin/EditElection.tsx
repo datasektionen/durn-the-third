@@ -11,6 +11,7 @@ import { DatePicker, TimeInput} from '@mantine/dates';
 
 import { Election, Candidate, electionMock } from "../../components/Election";
 import useAuthorization from "../../hooks/useAuthorization";
+import { DateTimeInput } from "../../components/DateTime";
 
 const EditElection: React.FC = () => {
   const electionId = useParams()["id"]
@@ -52,32 +53,10 @@ const EditElection: React.FC = () => {
       <Grid>
         <Grid.Col span={3}>
           <div style={{ marginBottom: "1rem" }}>
-            <Grid align="flex-end" gutter={0}>
-              <Grid.Col span={7}>
-                <DatePicker
-                  placeholder="YYYY-MM-DD"
-                  inputFormat="YYYY-MM-DD"
-                  label="Valet öppnar"
-                />
-              </Grid.Col>
-              <Grid.Col span={5}>
-                <TimeInput clearable placeholder="HH:MM" />
-              </Grid.Col>
-            </Grid>
+            <DateTimeInput label="Valet Stänger" onChange={() => { }} defaultDate={null} />
           </div>
           <div>
-            <Grid align="flex-end" gutter={0}>
-              <Grid.Col span={7}>
-                <DatePicker
-                  placeholder="YYYY-MM-DD"
-                  inputFormat="YYYY-MM-DD"
-                  label="Valet stänger"
-                />
-              </Grid.Col>
-              <Grid.Col span={5}>
-                <TimeInput clearable placeholder="HH:MM" />
-              </Grid.Col>
-            </Grid>
+            <DateTimeInput label="Valet Stänger" onChange={() => {}} defaultDate={null}/>
           </div>
         </Grid.Col>
 
@@ -88,6 +67,7 @@ const EditElection: React.FC = () => {
     </Container>
   </>
 }
+
 
 
 export default EditElection
