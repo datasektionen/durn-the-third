@@ -21,7 +21,7 @@ export interface Election {
   finalized: boolean,
   openTime: Date | null,
   closeTime: Date | null,
-  candidates: Array<Candidate>,
+  candidates: Candidate[],
 }
 
 export const electionMock = (): Election => {
@@ -130,11 +130,6 @@ export const DisplayElectionInfo: React.FC<{ election: Election, modalContent: R
       <p className={classes.candidateText}>
         {`${props.election.candidates.length - props.election.candidates.filter((c)=>!c.symbolic).length} kandidater`}
       </p>
-      {/* {props.election.candidates.map((candidate) => <>
-        <div className={classes.candidate}>
-          <p className={classes.candidateText}>{candidate.name}</p>
-        </div>
-      </>)} */}
     </div>
   </>
 }
