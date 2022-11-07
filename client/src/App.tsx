@@ -45,7 +45,7 @@ const App: React.FC = () => {
           <Route path="/token/:token" element={<Token />} />
 
           <Route path="/admin" element={<Admin />} />
-          <Route path="/admin/:id" element={<EditElection />} />
+          <Route path="/admin/election/:id" element={<EditElection />} />
           <Route path="/admin/voters" element={<EditVoters />} />
 
 
