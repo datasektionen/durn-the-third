@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   useParams,
 } from "react-router-dom";
@@ -9,10 +9,11 @@ import { Grid, Skeleton, Container, TextInput, Button, Text, Textarea, ScrollAre
 import { useForm } from "@mantine/form";
 import { DatePicker, TimeInput} from '@mantine/dates';
 
-import { Election, Candidate, electionMock } from "../../components/Election";
+import { Election, createEmptyElection } from "../../components/Election";
 import useAuthorization from "../../hooks/useAuthorization";
-import { DateTimeInput } from "../../components/DateTime";
+import { DateTimeInput, NullTime } from "../../components/DateTime";
 import { Plus } from "tabler-icons-react";
+import { ErrorModal, InformationModal } from "../../components/Information";
 
 const useStyles = createStyles((theme) => { return {
   changed: {
@@ -22,26 +23,55 @@ const useStyles = createStyles((theme) => { return {
 
 
 const EditElection: React.FC = () => {
-  const electionId = useParams()["id"]
-  const [election, setElection] = useState<Election>(electionMock())
+  const electionId = useParams()["id"] ?? ""
   const { authHeader } = useAuthorization()
+  const [election, setElection] = useState<Election>(createEmptyElection())
+  const [error, setError] = useState(false)
+  const [updateSuccess, setSuccess] = useState(false)
   const { classes, cx } = useStyles()
-
-
-  axios(`/api/election/${electionId}`, {
-    headers: authHeader
-  }).then((res) => {
-    setElection(res.data)
-  })
-
   const form = useForm({
     initialValues: {
+      name: "",
+      description: "",
+      openTime: null as NullTime,
+      closeTime: null as NullTime
+    }
+  })
+
+  const changeOpenTime = (value: NullTime) => {
+    form.setFieldValue("openTime", value)
+  }
+  const changeCloseTime = (value: NullTime) => {
+    form.setFieldValue("closeTime", value)
+  }
+
+  const submitChanges = useCallback(form.onSubmit((values) => {
+    axios.patch(`/api/election/${electionId}/edit`, values, {
+      headers: authHeader
+    }).then((res) => {
+      setElection(res.data)
+      setSuccess(true)
+    }).catch(() => {
+      setError(true)
+    })
+  }), [form])
+
+  useEffect(() => {
+    axios(`/api/election/${electionId}`, {
+      headers: authHeader
+    }).then((res) => {
+      setElection(res.data)
+    })
+  }, [authHeader])
+  
+  useEffect(() => {
+    form.setValues({
       name: election.name,
       description: election.description,
       openTime: election.openTime,
       closeTime: election.closeTime
-    }
-  })
+    })
+  }, [election])
 
   const candidates = election.candidates
     .filter((candidate) => !candidate.symbolic)
@@ -59,81 +89,89 @@ const EditElection: React.FC = () => {
 
   return <>
     <Header title="Redigerar val" />
-    <Container my="md">
-      <Grid align="center">
-        <Grid.Col span={1}>
-          <Text align="right" fz="lg" fw={700}>Titel: </Text>
-        </Grid.Col>
-        <Grid.Col span={9}>
-          <TextInput size="lg" {...form.getInputProps("name")}/>
-        </Grid.Col>
-        <Grid.Col span={2} >
-          <Button fullWidth>
-            Uppdatera
-          </Button>
-        </Grid.Col>
-      </Grid>
+    <ErrorModal error="Failed to submit election changes to server" 
+      opened={error} onClose={()=>{setError(false)}}
+    />
+    <InformationModal info="Election updated"
+      opened={updateSuccess} onClose={() => { setSuccess(false) }}
+    />
+    <form onSubmit={submitChanges}>
+      <Container my="md">
+        <Grid align="center">
+          <Grid.Col span={1}>
+            <Text align="right" fz="lg" fw={700}>Titel: </Text>
+          </Grid.Col>
+          <Grid.Col span={9}>
+            <TextInput size="lg" {...form.getInputProps("name")}/>
+          </Grid.Col>
+          <Grid.Col span={2} >
+            <Button fullWidth type="submit">
+              Uppdatera
+            </Button>
+          </Grid.Col>
+        </Grid>
 
-      <Grid>
-        <Grid.Col span={3}>
-          <div style={{ marginBottom: "1rem" }}>
-            <DateTimeInput
-              label="Valet öppnar"
-              onChange={() => { }}
-              defaultDate={election.openTime}
-            />
-          </div>
-          <div>
-            <DateTimeInput
-              label="Valet stänger"
-              onChange={() => {}}
-              defaultDate={election.closeTime}
-            />
-          </div>
-        </Grid.Col>
+        <Grid>
+          <Grid.Col span={3}>
+            <div style={{ marginBottom: "1rem" }} >
+              <DateTimeInput
+                label="Valet öppnar"
+                onChange={changeOpenTime}
+                defaultDate={election.openTime}
+              />
+            </div>
+            <div>
+              <DateTimeInput
+                label="Valet stänger"
+                onChange={changeCloseTime}
+                defaultDate={election.closeTime}
+              />
+            </div>
+          </Grid.Col>
 
-        <Grid.Col span={9}>
-          <Textarea {...form.getInputProps("description")}></Textarea>
+          <Grid.Col span={9}>
+            <Textarea {...form.getInputProps("description")}></Textarea>
 
-          <div style={{marginTop: "1rem"}}>
-            <ScrollArea>
-              <Table withBorder withColumnBorders>
-                <thead>
-                  <tr>
-                    <th style={{ width: 30 }}></th>
-                    <th>
-                      <Text style={{ margin: "1rem" }} align="center">
-                        Kandidatens namn
-                      </Text>
-                    </th>
-                    <th>
-                      <Text style={{ margin: "1rem" }} align="center">
-                        Kandidatpresentation
-                      </Text>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {candidates}
+            <div style={{marginTop: "1rem"}}>
+              <ScrollArea>
+                <Table withBorder withColumnBorders>
+                  <thead>
+                    <tr>
+                      <th style={{ width: 30 }}></th>
+                      <th>
+                        <Text style={{ margin: "1rem" }} align="center">
+                          Kandidatens namn
+                        </Text>
+                      </th>
+                      <th>
+                        <Text style={{ margin: "1rem" }} align="center">
+                          Kandidatpresentation
+                        </Text>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {candidates}
 
-                  <tr>
-                    <td><Button compact fullWidth>
-                      <Plus />
-                    </Button></td>
-                    <td>
-                      <TextInput />
-                    </td>
-                    <td>
-                      <TextInput />
-                    </td>
-                  </tr>
-                </tbody>
-              </Table>
-            </ScrollArea>
-          </div>
-        </Grid.Col>
-      </Grid>
-    </Container>
+                    <tr>
+                      <td><Button compact fullWidth>
+                        <Plus />
+                      </Button></td>
+                      <td>
+                        <TextInput />
+                      </td>
+                      <td>
+                        <TextInput />
+                      </td>
+                    </tr>
+                  </tbody>
+                </Table>
+              </ScrollArea>
+            </div>
+          </Grid.Col>
+        </Grid>
+      </Container>
+    </form>
   </>
 }
 

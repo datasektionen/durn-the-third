@@ -25,6 +25,17 @@ export interface Election {
   candidates: Candidate[],
 }
 
+export const createEmptyElection = () => { return {
+  id: "",
+  name: "",
+  description: "",
+  published: false,
+  finalized: false,
+  openTime: null,
+  closeTime: null,
+  candidates: [],
+}}
+
 export const electionMock = (): Election => {
   return {
     id: "fd9d7c4a-ee20-4b63-ae44-cc5760f3d493",
