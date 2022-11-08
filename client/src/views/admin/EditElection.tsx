@@ -74,6 +74,10 @@ const EditElection: React.FC = () => {
     makeRequest("put", `/api/election/${electionId}/publish`, {})
   }
 
+  const unpublishElection = () => {
+    makeRequest("put", `/api/election/${electionId}/unpublish`, {})
+  }
+
   useEffect(() => {
     axios(`/api/election/${electionId}`, {
       headers: authHeader
@@ -105,12 +109,14 @@ const EditElection: React.FC = () => {
     <Modal centered opened={openFinalize} onClose={() => setOpenFinalize(false)} 
       title="Finalisera val"
     >
-      <p style={}>
-        Vill du finalisera valet? Det går inte att ångra att finalisera ett val.
-      </p>
-      <Button onClick={finalizeElection}>
-        Finalisera
-      </Button>
+      <div style={{ alignItems: "center" }}>
+        <p>
+          Vill du finalisera valet? Det går inte att ångra att finalisera ett val.
+        </p>
+        <Button onClick={finalizeElection}>
+          Finalisera
+        </Button>
+      </div>
     </Modal>
 
     <form onSubmit={submitChanges}>
@@ -146,14 +152,20 @@ const EditElection: React.FC = () => {
               />
             </div>
             <div style={{ marginTop: "3rem"}}>
-                <Button onClick={publishElection} fullWidth>
-                  Publisera
+              {election.published ? 
+                <Button onClick={unpublishElection} fullWidth>
+                  Avpublicera
                 </Button>
+                :
+                <Button onClick={publishElection} fullWidth>
+                  Publicera
+                </Button>
+              }
             </div>
 
-            <div style={{ marginTop: "3rem" }}>
+            <div style={{ marginTop: "2rem" }}>
               <Button fullWidth disabled={election.finalized} onClick={() => setOpenFinalize(true)}>
-                Finalisera
+                {election.finalized ? "Finalicerat" : "Finalicera"}
               </Button>
             </div>
 

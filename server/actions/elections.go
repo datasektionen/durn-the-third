@@ -160,9 +160,8 @@ func EditElection(c *gin.Context) {
 	c.JSON(http.StatusOK, convertElectionToExportType(election))
 }
 
-// PublishElection marks an election as published.
-// Note that there is no endpoint for unpublishing elections.
-func PublishElection(c *gin.Context) {
+// setElectionPublishedStatus sets the published status as specified
+func setElectionPublishedStatus(c *gin.Context, publishedStatus bool) {
 	electionId, err := uuid.FromString(c.Param("id"))
 	if err != nil {
 		fmt.Println(err)
@@ -179,7 +178,7 @@ func PublishElection(c *gin.Context) {
 		return
 	}
 
-	election.Published = true
+	election.Published = publishedStatus
 	if err := db.Save(&election).Error; err != nil {
 		fmt.Println(err)
 		c.String(http.StatusInternalServerError, util.RequestFailed)
@@ -187,6 +186,16 @@ func PublishElection(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, convertElectionToExportType(election))
+}
+
+// PublishElection marks an election as published.
+func PublishElection(c *gin.Context) {
+	setElectionPublishedStatus(c, true)
+}
+
+// PublishElection marks an election as unpublished.
+func UnpublishElection(c *gin.Context) {
+	setElectionPublishedStatus(c, false)
 }
 
 // FinalizeElection marks an election as finalized, meaning that voting is finished
