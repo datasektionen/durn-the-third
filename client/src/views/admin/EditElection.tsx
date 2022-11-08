@@ -5,7 +5,7 @@ import {
 import { Header } from "methone"
 import axios from "axios";
 
-import { Grid, Container, TextInput, Button, Text, Textarea, ScrollArea, Table, createStyles, Modal } from "@mantine/core";
+import { Grid, Container, TextInput, Button, Text, Textarea, ScrollArea, Table, createStyles, Modal, Center } from "@mantine/core";
 import { useForm } from "@mantine/form";
 
 import { Election, createEmptyElection, NullTime, parseElectionResponse, Candidate } from "../../util/ElectionTypes";
@@ -13,6 +13,7 @@ import useAuthorization from "../../hooks/useAuthorization";
 import { DateTimeInput } from "../../components/DateTime";
 import { Plus } from "tabler-icons-react";
 import { ErrorModal, InformationModal } from "../../components/Information";
+import useMap from "../../util/useMap";
 
 const useStyles = createStyles((theme) => { return {
   changed: {
@@ -31,6 +32,8 @@ const EditElection: React.FC = () => {
   const [updateSuccess, setSuccess] = useState(false)
   const [openFinalize, setOpenFinalize] = useState(false)
   const { classes, cx } = useStyles()
+  const [changedCandidates, changedCandidatesActions] = useMap<string, Candidate>()
+
   const form = useForm({
     initialValues: {
       name: "",
@@ -63,7 +66,32 @@ const EditElection: React.FC = () => {
 
   const submitChanges = useCallback(form.onSubmit((values) => {
     makeRequest("patch", `/api/election/${electionId}/edit`, values)
-  }), [form])
+    election.candidates.
+      filter((candidate) => changedCandidates.has(candidate.id)).
+      forEach((candidate) => {
+        axios.put(`/api/election/candidate/${candidate.id}/edit`, {
+          name: candidate.name,
+          presentation: candidate.presentation
+        }, { headers: authHeader}).catch(() => {
+          changedCandidatesActions.remove(candidate.id)
+        })
+      })
+
+    setElection({
+      ...election,
+      candidates: election.candidates.map((candidate): Candidate => {
+        return {
+          ...candidate,
+          ...(changedCandidates.get(candidate.id) ?? {})
+        }
+      })
+    })
+    changedCandidatesActions.reset()
+  }), [form, changedCandidates])
+
+  const onCandidateChanged = (candidate: Candidate) => {
+    changedCandidatesActions.set(candidate.id, candidate)
+  }
 
   const finalizeElection = () => {
     setOpenFinalize(false)
@@ -103,20 +131,20 @@ const EditElection: React.FC = () => {
     />
 
     <InformationModal info="Election updated"
-      opened={updateSuccess} onClose={() => { setSuccess(false) }}
+      opened={updateSuccess} onClose={() => {setSuccess(false)}}
     />
 
-    <Modal centered opened={openFinalize} onClose={() => setOpenFinalize(false)} 
-      title="Finalisera val"
+    <Modal centered opened={openFinalize} title="Finalisera val"
+      onClose={() => setOpenFinalize(false)}
     >
-      <div style={{ alignItems: "center" }}>
-        <p>
+      <Center>
+        <Text align="center">
           Vill du finalisera valet? Det går inte att ångra att finalisera ett val.
-        </p>
+        </Text>
         <Button onClick={finalizeElection}>
           Finalisera
         </Button>
-      </div>
+      </Center>
     </Modal>
 
     <form onSubmit={submitChanges}>
@@ -165,7 +193,7 @@ const EditElection: React.FC = () => {
 
             <div style={{ marginTop: "2rem" }}>
               <Button fullWidth disabled={election.finalized} onClick={() => setOpenFinalize(true)}>
-                {election.finalized ? "Finalicerat" : "Finalicera"}
+                {election.finalized ? "Finaliserat" : "Finalisera"}
               </Button>
             </div>
 
@@ -178,10 +206,12 @@ const EditElection: React.FC = () => {
               <CandidateList
                 candidates={election.candidates}
                 electionId={electionId}
-                onCandidateAdded={(candidate) => setElection((election) => {
-                  let copy: Election = {...election}
-                  copy.candidates.push(candidate)
-                  return copy
+                onCandidateChanged={onCandidateChanged}
+                onCandidateAdded={(candidate) => setElection((election): Election => {
+                  return {
+                    ...election,
+                    candidates: election.candidates.concat([candidate])
+                  }
                 })}
               />
             </div>
@@ -196,9 +226,12 @@ interface CandidateListProps {
   candidates: Candidate[]
   electionId: string
   onCandidateAdded: (candidate: Candidate) => void
+  onCandidateChanged: (candidate: Candidate) => void
 }
 
-const CandidateList: React.FC<CandidateListProps> = ({ candidates, electionId, onCandidateAdded }) => {
+const CandidateList: React.FC<CandidateListProps> = (
+  { candidates, electionId, onCandidateAdded, onCandidateChanged }
+) => {
   const { authHeader } = useAuthorization()
   const {classes} = useStyles()
   const [name, setName] = useState("")
@@ -217,21 +250,15 @@ const CandidateList: React.FC<CandidateListProps> = ({ candidates, electionId, o
         presentation: data.presentation,
         symbolic: data.symbolic
       })
+      setName("")
+      setPresentation("")
     })
   }, [name, presentation])
 
   const candidateElements = candidates.filter(
     (candidate) => !candidate.symbolic
   ).map((candidate) => (
-    <tr>
-      <td></td>
-      <td>
-        <TextInput value={candidate.name} />
-      </td>
-      <td>
-        <TextInput value={candidate.presentation} />
-      </td>
-    </tr>
+    <CandidateRow candidate={candidate} onCandidateChanged={onCandidateChanged}/>
   ))
 
   return <>
@@ -259,15 +286,55 @@ const CandidateList: React.FC<CandidateListProps> = ({ candidates, electionId, o
               <Plus />
             </Button></td>
             <td>
-              <TextInput onChange={(element) => setName(element.target.value)} />
+              <TextInput value={name}
+                onChange={(element) => setName(element.target.value)}
+              />
             </td>
             <td>
-              <TextInput onChange={(element) => setPresentation(element.target.value)} />
+              <TextInput value={presentation}
+                onChange={(element) => setPresentation(element.target.value)}
+              />
             </td>
           </tr>
         </tbody>
       </Table>
     </ScrollArea>
+  </>
+}
+
+interface CandidateRowProps {
+  candidate: Candidate,
+  onCandidateChanged: (candidate: Candidate) => void
+}
+
+const CandidateRow: React.FC<CandidateRowProps> = ({ candidate, onCandidateChanged }) => {
+  const [name, setName] = useState(candidate.name)
+  const [presentation, setPresentation] = useState(candidate.presentation)
+
+  useEffect(() => {
+    onCandidateChanged({
+      ...candidate,
+      name: name,
+      presentation: presentation,
+    })
+  }, [name, presentation])
+
+  return <>
+    <tr>
+      <td></td>
+      <td>
+        <TextInput
+          value={name}
+          onChange={(element) => setName(element.target.value)}
+        />
+      </td>
+      <td>
+        <TextInput
+          value={presentation}
+          onChange={(element) => setPresentation(element.target.value)}
+        />
+      </td>
+    </tr>
   </>
 }
 

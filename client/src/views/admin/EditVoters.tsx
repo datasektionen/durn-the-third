@@ -148,7 +148,6 @@ const VotersTable: React.FC<VotersTableProps> = ({voters, setVoters}) => {
     })
   }
 
-
   const rows = voters.map((voter) => (
     <tr key={voter}>
       <td>
@@ -180,7 +179,7 @@ const VotersTable: React.FC<VotersTableProps> = ({voters, setVoters}) => {
               />
             </th>
             <th>
-              <Button compact onClick={deleteVoters}> 
+              <Button compact onClick={deleteVoters}>
                 Delete selected Users
               </Button>
             </th>
