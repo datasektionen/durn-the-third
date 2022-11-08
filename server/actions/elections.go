@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"time"
 
 	database "durn/server/db"
 	"durn/server/util"
@@ -416,4 +417,49 @@ func EditCandidate(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, candidate)
+}
+
+// RemoveCandidate removes the specified candidate from an election,
+// provided that the election it is in is not opened, finalized, or has any votes
+func RemoveCandidate(c *gin.Context) {
+	candidateId, err := uuid.FromString(c.Param("id"))
+
+	if err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadUUID)
+		return
+	}
+
+	candidate := database.Candidate{ID: candidateId}
+	db := database.GetDB()
+	defer database.ReleaseDB()
+	if err := db.Preload("Election.Votes").First(&candidate).Error; err != nil {
+		c.String(http.StatusBadRequest, "Invalid candidate specified")
+		return
+	}
+
+	openTime := candidate.Election.OpenTime
+
+	if openTime.Valid && time.Now().After(openTime.Time) {
+		c.String(http.StatusBadRequest, "Can't remove candidate from opened election")
+		return
+	}
+
+	if candidate.Election.Finalized {
+		c.String(http.StatusBadRequest, "Can't remove candidate from finalized election")
+		return
+	}
+
+	if len(candidate.Election.Votes) > 0 {
+		c.String(http.StatusBadRequest, "Can't remove candidate from election with votes")
+		return
+	}
+
+	if err := db.Delete(&candidate).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusInternalServerError, util.RequestFailed)
+		return
+	}
+
+	c.String(http.StatusOK, "")
 }
