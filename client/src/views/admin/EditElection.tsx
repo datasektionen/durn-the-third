@@ -5,7 +5,7 @@ import {
 import { Header } from "methone"
 import axios from "axios";
 
-import { Grid, Skeleton, Container, TextInput, Button, Text, Textarea, ScrollArea, Table, createStyles } from "@mantine/core";
+import { Grid, Container, TextInput, Button, Text, Textarea, ScrollArea, Table, createStyles } from "@mantine/core";
 import { useForm } from "@mantine/form";
 
 import { Election, createEmptyElection, NullTime, parseElectionResponse } from "../../util/ElectionTypes";
@@ -47,8 +47,8 @@ const EditElection: React.FC = () => {
   const submitChanges = useCallback(form.onSubmit((values) => {
     axios.patch(`/api/election/${electionId}/edit`, values, {
       headers: authHeader
-    }).then((res) => {
-      setElection(res.data)
+    }).then(({data}) => {
+      setElection(parseElectionResponse(data))
       setSuccess(true)
     }).catch(() => {
       setError(true)
@@ -58,8 +58,8 @@ const EditElection: React.FC = () => {
   useEffect(() => {
     axios(`/api/election/${electionId}`, {
       headers: authHeader
-    }).then((res) => {
-      setElection(res.data)
+    }).then(({ data }) => {
+      setElection(parseElectionResponse(data))
     })
   }, [authHeader])
   
@@ -129,7 +129,7 @@ const EditElection: React.FC = () => {
           </Grid.Col>
 
           <Grid.Col span={9}>
-            <Textarea {...form.getInputProps("description")}></Textarea>
+            <Textarea {...form.getInputProps("description")} />
 
             <div style={{marginTop: "1rem"}}>
               <ScrollArea>

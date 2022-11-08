@@ -112,6 +112,7 @@ func getAllVoters(db *gorm.DB) (votersResponse, error) {
 	if err := db.Find(&voters).Error; err != nil {
 		return result, err
 	}
+	result.Voters = []string{}
 	for _, voter := range voters {
 		result.Voters = append(result.Voters, voter.Email)
 	}

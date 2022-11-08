@@ -23,14 +23,14 @@ export interface DateTimeInputProps {
 }
 
 export const DateTimeInput: React.FC<DateTimeInputProps> = ({ label, onChange, defaultDate }) => {
-  const [value, setValue] = useState<NullTime>(defaultDate)
-  const [time, setTime] = useState<NullTime>(value)
-  const [date, setDate] = useState<NullTime>(value)
+  const [time, setTime] = useState<NullTime>(defaultDate)
+  const [date, setDate] = useState<NullTime>(defaultDate)
 
-  useEffect(() => { onChange(value) }, [value])
-  useEffect(() => {
-    setValue(combineTimeAndDate(time, date))
-  }, [time, date])
+  useEffect(() => { 
+    setTime(defaultDate)
+    setDate(defaultDate)
+   }, [defaultDate])
+  useEffect(() => { onChange(combineTimeAndDate(time, date)) }, [time, date])
 
   return <>
     <Grid align="flex-end" gutter={0}>
