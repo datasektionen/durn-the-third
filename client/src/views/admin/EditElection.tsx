@@ -8,7 +8,7 @@ import axios from "axios";
 import { Grid, Container, TextInput, Button, Text, Textarea, ScrollArea, Table, createStyles } from "@mantine/core";
 import { useForm } from "@mantine/form";
 
-import { Election, createEmptyElection, NullTime, parseElectionResponse } from "../../util/ElectionTypes";
+import { Election, createEmptyElection, NullTime, parseElectionResponse, Candidate } from "../../util/ElectionTypes";
 import useAuthorization from "../../hooks/useAuthorization";
 import { DateTimeInput } from "../../components/DateTime";
 import { Plus } from "tabler-icons-react";
@@ -72,20 +72,6 @@ const EditElection: React.FC = () => {
     })
   }, [election])
 
-  const candidates = election.candidates
-    .filter((candidate) => !candidate.symbolic)
-    .map((candidate) => (
-      <tr>
-        <td></td>
-        <td>
-          <TextInput value={candidate.name} />
-        </td>
-        <td>
-          <TextInput value={candidate.presentation} />
-        </td>
-      </tr>
-    ))
-
   return <>
     <Header title="Redigerar val" />
     <ErrorModal error="Failed to submit election changes to server" 
@@ -130,42 +116,16 @@ const EditElection: React.FC = () => {
 
           <Grid.Col span={9}>
             <Textarea {...form.getInputProps("description")} />
-
             <div style={{marginTop: "1rem"}}>
-              <ScrollArea>
-                <Table withBorder withColumnBorders>
-                  <thead>
-                    <tr>
-                      <th style={{ width: 30 }}></th>
-                      <th>
-                        <Text style={{ margin: "1rem" }} align="center">
-                          Kandidatens namn
-                        </Text>
-                      </th>
-                      <th>
-                        <Text style={{ margin: "1rem" }} align="center">
-                          Kandidatpresentation
-                        </Text>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {candidates}
-
-                    <tr>
-                      <td><Button compact fullWidth>
-                        <Plus />
-                      </Button></td>
-                      <td>
-                        <TextInput />
-                      </td>
-                      <td>
-                        <TextInput />
-                      </td>
-                    </tr>
-                  </tbody>
-                </Table>
-              </ScrollArea>
+              <CandidateList
+                candidates={election.candidates}
+                electionId={electionId}
+                onCandidateAdded={(candidate) => setElection((election) => {
+                  let copy: Election = {...election}
+                  copy.candidates.push(candidate)
+                  return copy
+                })}
+              />
             </div>
           </Grid.Col>
         </Grid>
@@ -173,6 +133,86 @@ const EditElection: React.FC = () => {
     </form>
   </>
 }
+
+interface CandidateListProps {
+  candidates: Candidate[]
+  electionId: string
+  onCandidateAdded: (candidate: Candidate) => void
+}
+
+const CandidateList: React.FC<CandidateListProps> = ({ candidates, electionId, onCandidateAdded }) => {
+  const { authHeader } = useAuthorization()
+  const [name, setName] = useState("")
+  const [presentation, setPresentation] = useState("")
+
+  const addCandidate = useCallback(() => {
+    axios.post(`/api/election/${electionId}/candidate/add`, {
+      name: name,
+      presentation: presentation
+    }, {
+      headers: authHeader
+    }).then(({data}) => {
+      onCandidateAdded({
+        id: data.id,
+        name: data.name,
+        presentation: data.presentation,
+        symbolic: data.symbolic
+      })
+    })
+  }, [name, presentation])
+
+  const candidateElements = candidates.filter(
+    (candidate) => !candidate.symbolic
+  ).map((candidate) => (
+    <tr>
+      <td></td>
+      <td>
+        <TextInput value={candidate.name} />
+      </td>
+      <td>
+        <TextInput value={candidate.presentation} />
+      </td>
+    </tr>
+  ))
+
+  return <>
+    <ScrollArea>
+      <Table withBorder withColumnBorders>
+        <thead>
+          <tr>
+            <th style={{ width: 30 }}></th>
+            <th>
+              <Text style={{ margin: "1rem" }} align="center">
+                Kandidatens namn
+              </Text>
+            </th>
+            <th>
+              <Text style={{ margin: "1rem" }} align="center">
+                Kandidatpresentation
+              </Text>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {candidateElements}
+          <tr>
+            <td><Button compact fullWidth onClick={addCandidate}>
+              <Plus />
+            </Button></td>
+            <td>
+              <TextInput onChange={(element) => setName(element.target.value)} />
+            </td>
+            <td>
+              <TextInput onChange={(element) => setPresentation(element.target.value)} />
+            </td>
+          </tr>
+        </tbody>
+      </Table>
+    </ScrollArea>
+  </>
+}
+
+
 
 
 
