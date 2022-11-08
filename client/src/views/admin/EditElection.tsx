@@ -7,11 +7,10 @@ import axios from "axios";
 
 import { Grid, Skeleton, Container, TextInput, Button, Text, Textarea, ScrollArea, Table, createStyles } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { DatePicker, TimeInput} from '@mantine/dates';
 
-import { Election, createEmptyElection } from "../../components/Election";
+import { Election, createEmptyElection, NullTime, parseElectionResponse } from "../../util/ElectionTypes";
 import useAuthorization from "../../hooks/useAuthorization";
-import { DateTimeInput, NullTime } from "../../components/DateTime";
+import { DateTimeInput } from "../../components/DateTime";
 import { Plus } from "tabler-icons-react";
 import { ErrorModal, InformationModal } from "../../components/Information";
 

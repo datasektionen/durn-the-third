@@ -3,8 +3,7 @@ import dayjs from "dayjs";
 
 import { Grid } from "@mantine/core";
 import { DatePicker, TimeInput } from '@mantine/dates';
-
-export type NullTime = Date | null
+import { NullTime } from "../util/ElectionTypes";
 
 const combineTimeAndDate = (time: NullTime, date: NullTime) => {
   if (!date) return null;

@@ -115,7 +115,6 @@ const InfoBox: React.FC = () => {
   </div>
 }
 
-
 export const Voting: React.FC<{ election: Election }> = (props) => {
   const keys = new Map (props.election.candidates.map((candidate)=>
     [candidate.id, [(candidate.symbolic ? 1 : 0), Math.random()]]
@@ -210,7 +209,6 @@ export const Voting: React.FC<{ election: Election }> = (props) => {
     () => updateDisplayIndex(new Map(voteOrder.map((candidate, index) => [candidate.id, index]))),
     [voteOrder]
   )
-
 
   const items = voteOrder.map((candidate, index) =>
     <Draggable key={candidate.id} index={index} draggableId={candidate.id} isDragDisabled={disabled}>
