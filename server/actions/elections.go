@@ -349,15 +349,24 @@ func AddCandidate(c *gin.Context) {
 	defer database.ReleaseDB()
 
 	election := database.Election{ID: electionId}
-	if err := db.First(&election).Error; err != nil {
+	if err := db.Preload("Votes").First(&election).Error; err != nil {
 		fmt.Println(err)
 		c.String(http.StatusBadRequest, util.InvalidElection)
 		return
 	}
 
-	if election.Published {
-		fmt.Println("User tried to add candidate to published election")
-		c.String(http.StatusMethodNotAllowed, "Can't add candidate to published Election")
+	if election.Published || election.Finalized {
+		c.String(http.StatusBadRequest, "Can't add candidate to published or finalized Election")
+		return
+	}
+
+	if election.OpenTime.Valid && time.Now().After(election.OpenTime.Time) {
+		c.String(http.StatusBadRequest, "Can't add candidate to opened Election")
+		return
+	}
+
+	if len(election.Votes) > 0 {
+		c.String(http.StatusBadRequest, "Can't add candidate to election with votes")
 		return
 	}
 
