@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Header } from "methone";
 import axios from "axios";
 
-import { Grid, Skeleton, Container, createStyles } from "@mantine/core";
+import { Grid, Skeleton, Container } from "@mantine/core";
 
-import { electionMock, DisplayElectionInfo, Election } from "../components/Election";
+import { DisplayElectionInfo } from "../components/Election";
+import { electionMock, Election, parseElectionResponse } from "../util/ElectionTypes"
 import { Voting } from "../components/Voting";
 import useAuthorization from "../hooks/useAuthorization";
 
@@ -20,12 +21,13 @@ export const Home: React.FC = () => {
   const [elections, setElections] = useState<Election[]>([]);
   const {authHeader} = useAuthorization()
   useEffect(() => {
+    console.log(authHeader)
     axios(`/api/elections/public`, {
       headers: authHeader
-    }).then((res) => {
-      setElections(res.data)
-    }).catch((reason) => {
-      setElections(getMockElections());
+    }).then(({data}) => {
+      setElections(data.map(parseElectionResponse))
+    }).catch(() => {
+      // setElections(getMockElections());
     })
   }, [authHeader]);
 

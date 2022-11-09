@@ -122,7 +122,7 @@ const EditElection: React.FC = () => {
       headers: authHeader
     }).then(({ data }) => {
       setElection(parseElectionResponse(data))
-    })
+    }).catch()
   }, [authHeader])
   
   useEffect(() => {

@@ -265,7 +265,7 @@ func GetElections(c *gin.Context) {
 		return
 	}
 
-	var result []electionExportType
+	result := []electionExportType{}
 	for _, election := range elections {
 		result = append(result, convertElectionToExportType(election))
 	}
@@ -285,7 +285,7 @@ func GetPublicElections(c *gin.Context) {
 		return
 	}
 
-	var result []electionExportType
+	result := []electionExportType{}
 	for _, election := range elections {
 		result = append(result, convertElectionToExportType(election))
 	}

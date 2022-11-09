@@ -1,7 +1,6 @@
 import React from "react";
-import Methone, { Header } from "methone";
+import Methone from "methone";
 import {
-  BrowserRouter,
   HashRouter,
   Routes,
   Route,
@@ -24,9 +23,10 @@ const App: React.FC = () => {
     system_name: "durn",
     color_scheme: constants.themeColor,
     links: [
-      <Link to="/">Hem</Link>,
       ...(adminRead ? [
-        <Link to="/admin"> Admin </Link>,
+        <Link to="/">Hem</Link>,
+        <Link to="/admin">Administrera val</Link>,
+        <Link to="/admin/voters">Administrera väljare </Link>
       ] : [])
     ],
     login_href: loggedIn ? "#/logout" : "#/login",
