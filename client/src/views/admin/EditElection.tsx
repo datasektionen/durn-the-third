@@ -13,7 +13,7 @@ import useAuthorization from "../../hooks/useAuthorization";
 import { DateTimeInput } from "../../components/DateTime";
 import { Plus, X } from "tabler-icons-react";
 import { ErrorModal, InformationModal } from "../../components/Information";
-import useMap from "../../util/useMap";
+import useMap from "../../hooks/useMap";
 
 const useStyles = createStyles((theme) => { return {
   changed: {

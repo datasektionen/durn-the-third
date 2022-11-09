@@ -6,7 +6,7 @@ import { Header } from "methone"
 import { Checkbox, createStyles, Grid, ScrollArea, Table, Container, Skeleton, Button, Textarea } from "@mantine/core";
 
 import useAuthorization from "../../hooks/useAuthorization";
-import useMap from "../../util/useMap";
+import useMap from "../../hooks/useMap";
 
 const useStyles = createStyles((theme) => { return {
   tableContainer: {
