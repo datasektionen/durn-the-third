@@ -11,7 +11,7 @@ import { useForm } from "@mantine/form";
 import { Election, createEmptyElection, NullTime, parseElectionResponse, Candidate } from "../../util/ElectionTypes";
 import useAuthorization from "../../hooks/useAuthorization";
 import { DateTimeInput } from "../../components/DateTime";
-import { Plus } from "tabler-icons-react";
+import { Plus, X } from "tabler-icons-react";
 import { ErrorModal, InformationModal } from "../../components/Information";
 import useMap from "../../util/useMap";
 
@@ -20,7 +20,7 @@ const useStyles = createStyles((theme) => { return {
     backgroundColor: "#d3f8d3"
   },
   adding: {
-    backgroundColor: theme.colors.gray[2]
+    backgroundColor: theme.colors.gray[1]
   }
 }})
 
@@ -28,7 +28,7 @@ const EditElection: React.FC = () => {
   const electionId = useParams()["id"] ?? ""
   const { authHeader } = useAuthorization()
   const [election, setElection] = useState<Election>(createEmptyElection())
-  const [error, setError] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [updateSuccess, setSuccess] = useState(false)
   const [openFinalize, setOpenFinalize] = useState(false)
   const { classes, cx } = useStyles()
@@ -60,7 +60,7 @@ const EditElection: React.FC = () => {
       setElection(parseElectionResponse(data))
       setSuccess(true)
     }).catch(() => {
-      setError(true)
+      setError("Failed to submit election changes to server")
     })
   }
 
@@ -91,6 +91,17 @@ const EditElection: React.FC = () => {
 
   const onCandidateChanged = (candidate: Candidate) => {
     changedCandidatesActions.set(candidate.id, candidate)
+  }
+
+  const onCandidateRemoved = (candidate: Candidate, success: boolean) => {
+    if (!success) {
+      setError(`Failed to remove candidate "${candidate.name}"`)
+    } else {
+      setElection({
+        ...election,
+        candidates: election.candidates.filter((c) => c.id != candidate.id)
+      })
+    }
   }
 
   const finalizeElection = () => {
@@ -126,8 +137,8 @@ const EditElection: React.FC = () => {
   return <>
     <Header title="Redigerar val" />
 
-    <ErrorModal error="Failed to submit election changes to server" 
-      opened={error} onClose={()=>{setError(false)}}
+    <ErrorModal error={error ?? ""}
+      opened={error != null} onClose={() => {setError(null)}}
     />
 
     <InformationModal info="Election updated"
@@ -207,6 +218,7 @@ const EditElection: React.FC = () => {
                 candidates={election.candidates}
                 electionId={electionId}
                 onCandidateChanged={onCandidateChanged}
+                onCandidateRemoved={onCandidateRemoved}
                 onCandidateAdded={(candidate) => setElection((election): Election => {
                   return {
                     ...election,
@@ -227,10 +239,11 @@ interface CandidateListProps {
   electionId: string
   onCandidateAdded: (candidate: Candidate) => void
   onCandidateChanged: (candidate: Candidate) => void
+  onCandidateRemoved: (candidate: Candidate, success: boolean) => void
 }
 
 const CandidateList: React.FC<CandidateListProps> = (
-  { candidates, electionId, onCandidateAdded, onCandidateChanged }
+  { candidates, electionId, onCandidateAdded, onCandidateChanged, onCandidateRemoved }
 ) => {
   const { authHeader } = useAuthorization()
   const {classes} = useStyles()
@@ -258,12 +271,12 @@ const CandidateList: React.FC<CandidateListProps> = (
   const candidateElements = candidates.filter(
     (candidate) => !candidate.symbolic
   ).map((candidate) => (
-    <CandidateRow candidate={candidate} onCandidateChanged={onCandidateChanged}/>
+    <CandidateRow candidate={candidate} onCandidateChanged={onCandidateChanged} onCandidateRemoved={onCandidateRemoved}/>
   ))
 
   return <>
     <ScrollArea>
-      <Table withBorder withColumnBorders>
+      <Table withBorder withColumnBorders striped>
         <thead>
           <tr>
             <th style={{ width: 30 }}></th>
@@ -305,11 +318,25 @@ const CandidateList: React.FC<CandidateListProps> = (
 interface CandidateRowProps {
   candidate: Candidate,
   onCandidateChanged: (candidate: Candidate) => void
+  onCandidateRemoved: (candidate: Candidate, success: boolean) => void
 }
 
-const CandidateRow: React.FC<CandidateRowProps> = ({ candidate, onCandidateChanged }) => {
+const CandidateRow: React.FC<CandidateRowProps> = (
+  { candidate, onCandidateChanged, onCandidateRemoved }
+) => {
   const [name, setName] = useState(candidate.name)
   const [presentation, setPresentation] = useState(candidate.presentation)
+  const { authHeader } = useAuthorization()
+
+  const removeCandidate = () => {
+    axios.post(`/api/election/candidate/${candidate.id}/delete`, {}, {
+      headers: authHeader
+    }).then(() => {
+      onCandidateRemoved(candidate, true)
+    }).catch(() => {
+      onCandidateRemoved(candidate, false)
+    })
+  }
 
   useEffect(() => {
     onCandidateChanged({
@@ -321,7 +348,11 @@ const CandidateRow: React.FC<CandidateRowProps> = ({ candidate, onCandidateChang
 
   return <>
     <tr>
-      <td></td>
+      <td>
+        <Button color={"red"} compact fullWidth onClick={removeCandidate}>
+          <X/>
+        </Button>
+      </td>
       <td>
         <TextInput
           value={name}
