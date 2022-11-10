@@ -15,6 +15,7 @@ import useAuthorization from "../../hooks/useAuthorization";
 import { DateTimeInput } from "../../components/DateTime";
 import { ErrorModal, InformationModal } from "../../components/PopupModals";
 import useMap from "../../hooks/useMap";
+import { DisplayResult } from "../../components/DisplayResult";
 
 const useStyles = createStyles((theme) => { return {
   changed: {
@@ -393,6 +394,7 @@ const ButtonsColumn: React.FC<ButtonsColumnProps> = ({
 
   const [openFinalize, setOpenFinalize] = useState(false)
   const [openDelete, setOpenDelete] = useState(false)
+  const [openCounting, setOpenCounting] = useState(false)
 
 
   return <>
@@ -432,6 +434,10 @@ const ButtonsColumn: React.FC<ButtonsColumnProps> = ({
       </Center>
     </Modal>
 
+    <Modal centered opened={openCounting} title={election.name} onClose={() => setOpenCounting(false)}>
+      <DisplayResult electionId={election.id} />
+    </Modal>
+
 
     <div style={{ marginTop: "3rem" }}>
       {election.published ?
@@ -448,6 +454,12 @@ const ButtonsColumn: React.FC<ButtonsColumnProps> = ({
     <div style={{ marginTop: "2rem" }}>
       <Button fullWidth disabled={election.finalized} onClick={() => setOpenFinalize(true)}>
         {election.finalized ? "Finaliserat" : "Finalisera"}
+      </Button>
+    </div>
+
+    <div style={{ marginTop: "2rem" }}>
+      <Button fullWidth disabled={!election.finalized} onClick={() => setOpenCounting(true)}>
+        Räkna röster
       </Button>
     </div>
 
