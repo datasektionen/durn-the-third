@@ -26,7 +26,7 @@ const useStyles = createStyles((theme) => { return {
 
 const EditElection: React.FC = () => {
   const electionId = useParams()["id"] ?? ""
-  const { authHeader } = useAuthorization()
+  const { loggedIn, authHeader } = useAuthorization()
   const [election, setElection] = useState<Election>(createEmptyElection())
   const [error, setError] = useState<string | null>(null)
   const [updateSuccess, setSuccess] = useState(false)
@@ -93,13 +93,26 @@ const EditElection: React.FC = () => {
     changedCandidatesActions.set(candidate.id, candidate)
   }
 
-  const onCandidateRemoved = (candidate: Candidate, success: boolean) => {
-    if (!success) {
-      setError(`Failed to remove candidate "${candidate.name}"`)
+  const onCandidateRemoved = (candidate: Candidate, error: string | null) => {
+    if (error) {
+      setError(`Failed to remove candidate "${candidate.name}", sever gave reason: "${error}".`)
     } else {
       setElection({
         ...election,
         candidates: election.candidates.filter((c) => c.id != candidate.id)
+      })
+    }
+  }
+
+  const onCandidateAdded = (candidate: Candidate, error: string | null) => {
+    if (error) {
+      setError(`Failed to add candidate "${candidate.name}", sever gave reason: "${error}".`)
+    } else {
+      setElection((election): Election => {
+        return {
+          ...election,
+          candidates: election.candidates.concat([candidate])
+        }
       })
     }
   }
@@ -118,12 +131,13 @@ const EditElection: React.FC = () => {
   }
 
   useEffect(() => {
+    if (!loggedIn) return;
     axios(`/api/election/${electionId}`, {
       headers: authHeader
     }).then(({ data }) => {
       setElection(parseElectionResponse(data))
     }).catch()
-  }, [authHeader])
+  }, [loggedIn, authHeader])
   
   useEffect(() => {
     form.setValues({
@@ -219,12 +233,7 @@ const EditElection: React.FC = () => {
                 electionId={electionId}
                 onCandidateChanged={onCandidateChanged}
                 onCandidateRemoved={onCandidateRemoved}
-                onCandidateAdded={(candidate) => setElection((election): Election => {
-                  return {
-                    ...election,
-                    candidates: election.candidates.concat([candidate])
-                  }
-                })}
+                onCandidateAdded={onCandidateAdded}
               />
             </div>
           </Grid.Col>
@@ -237,9 +246,9 @@ const EditElection: React.FC = () => {
 interface CandidateListProps {
   candidates: Candidate[]
   electionId: string
-  onCandidateAdded: (candidate: Candidate) => void
+  onCandidateAdded: (candidate: Candidate, error: string | null) => void
   onCandidateChanged: (candidate: Candidate) => void
-  onCandidateRemoved: (candidate: Candidate, success: boolean) => void
+  onCandidateRemoved: (candidate: Candidate, error: string | null) => void
 }
 
 const CandidateList: React.FC<CandidateListProps> = (
@@ -262,10 +271,17 @@ const CandidateList: React.FC<CandidateListProps> = (
         name: data.name,
         presentation: data.presentation,
         symbolic: data.symbolic
-      })
+      }, null)
       setName("")
       setPresentation("")
-    })
+    }).catch(({response}) => {
+      onCandidateAdded({
+        id: "",
+        name: name,
+        presentation: presentation,
+        symbolic: false
+      }, response.data)
+    }) 
   }, [name, presentation])
 
   const candidateElements = candidates.filter(
@@ -318,7 +334,7 @@ const CandidateList: React.FC<CandidateListProps> = (
 interface CandidateRowProps {
   candidate: Candidate,
   onCandidateChanged: (candidate: Candidate) => void
-  onCandidateRemoved: (candidate: Candidate, success: boolean) => void
+  onCandidateRemoved: (candidate: Candidate, error: string | null) => void
 }
 
 const CandidateRow: React.FC<CandidateRowProps> = (
@@ -332,9 +348,9 @@ const CandidateRow: React.FC<CandidateRowProps> = (
     axios.post(`/api/election/candidate/${candidate.id}/delete`, {}, {
       headers: authHeader
     }).then(() => {
-      onCandidateRemoved(candidate, true)
-    }).catch(() => {
-      onCandidateRemoved(candidate, false)
+      onCandidateRemoved(candidate, null)
+    }).catch(({response}) => {
+      onCandidateRemoved(candidate, `${response.data}`)
     })
   }
 
