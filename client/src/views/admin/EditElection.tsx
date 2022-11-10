@@ -72,9 +72,10 @@ const EditElection: React.FC = () => {
     election.candidates.
       filter((candidate) => changedCandidates.has(candidate.id)).
       forEach((candidate) => {
+        const newCandidate = changedCandidates.get(candidate.id) ?? candidate
         axios.put(`/api/election/candidate/${candidate.id}/edit`, {
-          name: candidate.name,
-          presentation: candidate.presentation
+          name: newCandidate.name,
+          presentation: newCandidate.presentation
         }, { headers: authHeader}).catch(() => {
           changedCandidatesActions.remove(candidate.id)
         })
