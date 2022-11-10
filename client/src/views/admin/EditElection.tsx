@@ -31,8 +31,6 @@ const EditElection: React.FC = () => {
   const [election, setElection] = useState<Election>(createEmptyElection())
   const [error, setError] = useState<string | null>(null)
   const [updateSuccess, setSuccess] = useState(false)
-  const [openFinalize, setOpenFinalize] = useState(false)
-  const [openDelete, setOpenDelete] = useState(false)
   const { classes, cx } = useStyles()
   const [changedCandidates, changedCandidatesActions] = useMap<string, Candidate>()
   const navigate = useNavigate()
@@ -122,7 +120,6 @@ const EditElection: React.FC = () => {
   }
 
   const finalizeElection = () => {
-    setOpenFinalize(false)
     makeEditingRequest("put", `/api/election/${electionId}/finalize`, {})
   }
 
@@ -135,7 +132,6 @@ const EditElection: React.FC = () => {
   }
 
   const deleteElection = () => {
-    setOpenDelete(false)
     axios.post(`/api/election/${electionId}/delete`, {}, {
       headers: authHeader
     }).then(() => {
@@ -176,36 +172,6 @@ const EditElection: React.FC = () => {
       opened={updateSuccess} onClose={() => {setSuccess(false)}}
     />
 
-    <Modal centered opened={openFinalize} title="Finalisera val"
-      onClose={() => setOpenFinalize(false)}
-    >
-      <Center>
-        <Stack>
-          <Text align="center">
-            Vill du finalisera valet? Det går inte att ångra att finalisera ett val.
-          </Text>
-          <Button onClick={finalizeElection}>
-            Finalisera
-          </Button>
-        </Stack>
-      </Center>
-    </Modal>
-
-    <Modal centered opened={openDelete} title="Radera val"
-      onClose={() => setOpenDelete(false)}
-    >
-      <Center>
-        <Stack>
-          <Text align="center">
-            Vill du radera valet? Det går inte att ångra.
-          </Text>
-          <Button onClick={deleteElection} color={"red"}>
-            Radera val
-          </Button>
-        </Stack>
-      </Center>
-    </Modal>
-
     <form onSubmit={submitChanges}>
       <Container my="md">
         <Grid align="center">
@@ -224,6 +190,7 @@ const EditElection: React.FC = () => {
 
         <Grid>
           <Grid.Col span={3}>
+
             <div style={{ marginBottom: "1rem" }} >
               <DateTimeInput
                 label="Valet öppnar"
@@ -238,31 +205,13 @@ const EditElection: React.FC = () => {
                 defaultDate={election.closeTime}
               />
             </div>
-            <div style={{ marginTop: "3rem"}}>
-              {election.published ? 
-                <Button onClick={unpublishElection} fullWidth>
-                  Avpublicera
-                </Button>
-                :
-                <Button onClick={publishElection} fullWidth>
-                  Publicera
-                </Button>
-              }
-            </div>
 
-            <div style={{ marginTop: "2rem" }}>
-              <Button fullWidth disabled={election.finalized} onClick={() => setOpenFinalize(true)}>
-                {election.finalized ? "Finaliserat" : "Finalisera"}
-              </Button>
-            </div>
-
-
-            <div style={{ marginTop: "5rem" }}>
-              <Button fullWidth onClick={() => setOpenDelete(true)} color={"red"}>
-                Radera val
-              </Button>
-            </div>
-            
+            <ButtonsColumn election={election}
+              onPublish={publishElection}
+              onUnpublish={unpublishElection}
+              onFinalize={finalizeElection}
+              onDelete={deleteElection}
+            />
           </Grid.Col>
 
           <Grid.Col span={9}>
@@ -282,6 +231,8 @@ const EditElection: React.FC = () => {
     </form>
   </>} </>
 }
+
+
 
 interface CandidateListProps {
   candidates: Candidate[]
@@ -371,6 +322,8 @@ const CandidateList: React.FC<CandidateListProps> = (
   </>
 }
 
+
+
 interface CandidateRowProps {
   candidate: Candidate,
   onCandidateChanged: (candidate: Candidate) => void
@@ -426,7 +379,85 @@ const CandidateRow: React.FC<CandidateRowProps> = (
 }
 
 
+interface ButtonsColumnProps {
+  election:  Election
+  onPublish: () => void
+  onUnpublish: () => void
+  onFinalize: () => void
+  onDelete: () => void
+}
 
+const ButtonsColumn: React.FC<ButtonsColumnProps> = ({
+  onUnpublish, onPublish, election, onFinalize, onDelete
+}) => {
+
+  const [openFinalize, setOpenFinalize] = useState(false)
+  const [openDelete, setOpenDelete] = useState(false)
+
+
+  return <>
+    <Modal centered opened={openFinalize} title="Finalisera val"
+      onClose={() => setOpenFinalize(false)}
+    >
+      <Center>
+        <Stack>
+          <Text align="center">
+            Vill du finalisera valet? Det går inte att ångra att finalisera ett val.
+          </Text>
+          <Button onClick={() => {
+            setOpenFinalize(false)
+            onFinalize()
+          }}>
+            Finalisera
+          </Button>
+        </Stack>
+      </Center>
+    </Modal>
+
+    <Modal centered opened={openDelete} title="Radera val"
+      onClose={() => setOpenDelete(false)}
+    >
+      <Center>
+        <Stack>
+          <Text align="center">
+            Vill du radera valet? Det går inte att ångra.
+          </Text>
+          <Button color={"red"} onClick={() => {
+            setOpenDelete(false)
+            onDelete()
+          }}>
+            Radera val
+          </Button>
+        </Stack>
+      </Center>
+    </Modal>
+
+
+    <div style={{ marginTop: "3rem" }}>
+      {election.published ?
+        <Button onClick={onUnpublish} fullWidth>
+          Avpublicera
+        </Button>
+        :
+        <Button onClick={onPublish} fullWidth>
+          Publicera
+        </Button>
+      }
+    </div>
+
+    <div style={{ marginTop: "2rem" }}>
+      <Button fullWidth disabled={election.finalized} onClick={() => setOpenFinalize(true)}>
+        {election.finalized ? "Finaliserat" : "Finalisera"}
+      </Button>
+    </div>
+
+    <div style={{ marginTop: "5rem" }}>
+      <Button fullWidth onClick={() => setOpenDelete(true)} color={"red"}>
+        Radera val
+      </Button>
+    </div>
+  </>
+}
 
 
 export default EditElection
