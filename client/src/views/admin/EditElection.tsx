@@ -12,7 +12,7 @@ import { Plus, X } from "tabler-icons-react";
 import { Election, createEmptyElection, NullTime, parseElectionResponse, Candidate } from "../../util/ElectionTypes";
 import useAuthorization from "../../hooks/useAuthorization";
 import { DateTimeInput } from "../../components/DateTime";
-import { ErrorModal, InformationModal } from "../../components/Information";
+import { ErrorModal, InformationModal } from "../../components/PopupModals";
 import useMap from "../../hooks/useMap";
 
 const useStyles = createStyles((theme) => { return {

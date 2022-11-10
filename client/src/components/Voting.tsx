@@ -11,7 +11,7 @@ import { Election } from "./Election";
 import useAuthorization from "../hooks/useAuthorization";
 import constants from "../util/constants";
 import { compareList } from "../util/funcs";
-import { ErrorModal, InformationModal } from "./Information";
+import { ErrorModal, InformationModal } from "./PopupModals";
 
 interface candidateInfo {
   id: string,

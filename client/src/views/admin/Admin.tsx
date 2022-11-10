@@ -11,7 +11,7 @@ import { Election, parseElectionResponse } from "../../util/ElectionTypes";
 import { useApiRequester } from "../../hooks/useAxios";
 import { DisplayElectionInfo } from "../../components/Election";
 import constants from "../../util/constants"
-import { ErrorModal } from "../../components/Information";
+import { ErrorModal } from "../../components/PopupModals";
 
 const useStyles = createStyles((theme) => { return {
   electionBox: {
