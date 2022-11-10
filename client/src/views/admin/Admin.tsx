@@ -3,8 +3,7 @@ import axios from "axios";
 import { Header } from "methone"
 
 import { useNavigate } from "react-router-dom";
-import { Plus } from "tabler-icons-react";
-import { Center, Container, createStyles, Grid, Stack, TextInput } from "@mantine/core";
+import { Container, createStyles, Grid } from "@mantine/core";
 
 import useAuthorization from "../../hooks/useAuthorization";
 import { Election, parseElectionResponse } from "../../util/ElectionTypes";
@@ -29,12 +28,13 @@ const useStyles = createStyles((theme) => { return {
 }})
 
 const Admin: React.FC = () => {
-  const { authHeader } = useAuthorization()
+  const { adminRead, authHeader } = useAuthorization()
   const [elections, setElections] = useState<Election[]>([])
   const client = useApiRequester()
   const [error, setError] = useState<string | null>(null)
   const { classes, cx } = useStyles()
   const navigate = useNavigate()
+
 
   useEffect(() => {
     client("get", "/api/elections", {}, (data) => {
@@ -52,7 +52,9 @@ const Admin: React.FC = () => {
     })
   }
 
-  return <>
+  if (!adminRead) navigate("/", { replace: true })
+
+  return <> {adminRead && <>
     <Header title="Administrera val" action={{
       onClick: createElection, text: "Skapa Nytt Val"
     }} />
@@ -71,8 +73,7 @@ const Admin: React.FC = () => {
         ))}
       </Grid>
     </Container>
-
-  </>
+  </>} </>
 }
 
 export default Admin

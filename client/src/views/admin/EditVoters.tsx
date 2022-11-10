@@ -22,10 +22,6 @@ const EditVoters: React.FC = () => {
   const navigate = useNavigate()
   const [voters, setVoters] = useState<string[]>([])
 
-  if (!adminRead) {
-    navigate("/")
-  }
-
   useEffect(() => {
     console.log(authHeader)
     axios("/api/voters", {
@@ -38,7 +34,9 @@ const EditVoters: React.FC = () => {
 
   }, [authHeader])
 
-  return <>
+  if (!adminRead) navigate("/", {replace: true})
+
+  return <> { adminRead && <>
     <Header title="Administrera väljare" />
     <div> { adminRead &&
       <Container my="md">
@@ -57,7 +55,7 @@ const EditVoters: React.FC = () => {
         </Grid>
       </Container>
     } </div>
-  </>
+  </>} </>
 }
 
 

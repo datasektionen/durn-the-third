@@ -18,7 +18,7 @@ const App: React.FC = () => {
     system_name: "durn",
     color_scheme: constants.themeColor,
     links: [
-      ...(adminRead ? [
+      ...( loggedIn && adminRead ? [
         <Link to="/">Hem</Link>,
         <Link to="/admin">Administrera val</Link>,
         <Link to="/admin/voters">Administrera väljare </Link>

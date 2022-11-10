@@ -27,7 +27,7 @@ const useStyles = createStyles((theme) => { return {
 
 const EditElection: React.FC = () => {
   const electionId = useParams()["id"] ?? ""
-  const { loggedIn, authHeader } = useAuthorization()
+  const { adminRead, loggedIn, authHeader } = useAuthorization()
   const [election, setElection] = useState<Election>(createEmptyElection())
   const [error, setError] = useState<string | null>(null)
   const [updateSuccess, setSuccess] = useState(false)
@@ -150,7 +150,7 @@ const EditElection: React.FC = () => {
       headers: authHeader
     }).then(({ data }) => {
       setElection(parseElectionResponse(data))
-    }).catch()
+    }).catch(()=>{})
   }, [loggedIn, authHeader])
   
   useEffect(() => {
@@ -162,7 +162,9 @@ const EditElection: React.FC = () => {
     })
   }, [election])
 
-  return <>
+  if (!adminRead) navigate("/", { replace: true })
+  
+  return <> {adminRead && <>
     <Header title="Redigerar val" />
 
     <ErrorModal error={error ?? ""}
@@ -277,7 +279,7 @@ const EditElection: React.FC = () => {
         </Grid>
       </Container>
     </form>
-  </>
+  </>} </>
 }
 
 interface CandidateListProps {
