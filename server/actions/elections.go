@@ -47,11 +47,11 @@ func convertElectionToExportType(election database.Election) electionExportType 
 // - Published, Finalized: false
 func CreateElection(c *gin.Context) {
 	body := struct {
-		Name string `json:"name" binding:"required"`
-	}{}
-
+		Name string `json:"name"`
+	}{
+		Name: "",
+	}
 	if err := c.BindJSON(&body); err != nil {
-		fmt.Println(err)
 		c.String(http.StatusBadRequest, util.BadParameters)
 		return
 	}
@@ -99,7 +99,7 @@ func CreateElection(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, convertElectionToExportType(election))
+	c.JSON(http.StatusOK, election.ID)
 }
 
 // EditElection updates specific fields for the specified election.
