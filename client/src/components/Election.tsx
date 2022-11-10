@@ -15,14 +15,15 @@ const useStyle = createStyles((theme) => {
       backgroundColor: "#eeeeee",
       padding: "0.8rem",
       borderRadius: "0.2rem",
+      overflowWrap: "break-word"
     },
     electionBox: {
-      boxShadow: "3px 3px 2px 2px rgba(0,0,0,0.15)",
+      boxShadow: "1px 1px 2px 2px rgba(0,0,0,0.15)",
       position: "relative",
       padding: "1rem",
       borderRadius: "0.2rem",
       ":hover": {
-        boxShadow: "3px 3px 5px 5px rgba(0,0,0,0.15)",
+        boxShadow: "0 0 6px 6px rgba(0,0,150,0.15)",
         position: "relative",
         padding: "1rem",
         borderRadius: "0.2rem",
