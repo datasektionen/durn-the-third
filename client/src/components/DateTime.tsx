@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
 
-import { Grid } from "@mantine/core";
+import { Grid, Indicator } from "@mantine/core";
 import { DatePicker, TimeInput } from '@mantine/dates';
 import { NullTime } from "../util/ElectionTypes";
 
@@ -40,7 +40,18 @@ export const DateTimeInput: React.FC<DateTimeInputProps> = ({ label, onChange, d
           inputFormat="YYYY-MM-DD"
           value={date}
           label={label}
+          allowFreeInput
           onChange={(value) => setDate(value)}
+          renderDay={(date) => {
+            const today = dayjs(Date.now())
+            return (
+              <Indicator size={6} color="blue" offset = {8} disabled = {
+                today.format("YYYYMMDD") != dayjs(date).format("YYYYMMDD")
+              }>
+                <div>{date.getDate()}</div>
+              </Indicator>
+            )
+          }}
         />
       </Grid.Col>
       <Grid.Col span={5}>
