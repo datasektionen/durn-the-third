@@ -322,7 +322,7 @@ func HasVoted(c *gin.Context) {
 	db := database.GetDB()
 	defer database.ReleaseDB()
 
-	if err := db.First(&database.CastedVote{ElectionID: electionId, Email: user}).Error; err != nil {
+	if db.Find(&database.CastedVote{ElectionID: electionId, Email: user}).RowsAffected == 0 {
 		c.String(http.StatusOK, "false")
 		return
 	}
