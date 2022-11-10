@@ -39,7 +39,7 @@ const EditVoters: React.FC = () => {
   }, [authHeader])
 
   return <>
-    <Header title="Manage voters" />
+    <Header title="Administrera väljare" />
     <div> { adminRead &&
       <Container my="md">
         <Grid>

@@ -7,11 +7,11 @@ import axios from "axios";
 
 import { Grid, Container, TextInput, Button, Text, Textarea, ScrollArea, Table, createStyles, Modal, Center } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { Plus, X } from "tabler-icons-react";
 
 import { Election, createEmptyElection, NullTime, parseElectionResponse, Candidate } from "../../util/ElectionTypes";
 import useAuthorization from "../../hooks/useAuthorization";
 import { DateTimeInput } from "../../components/DateTime";
-import { Plus, X } from "tabler-icons-react";
 import { ErrorModal, InformationModal } from "../../components/Information";
 import useMap from "../../hooks/useMap";
 
@@ -165,7 +165,7 @@ const EditElection: React.FC = () => {
             <Text align="right" fz="lg" fw={700}>Titel: </Text>
           </Grid.Col>
           <Grid.Col span={9}>
-            <TextInput size="lg" {...form.getInputProps("name")}/>
+            <TextInput size="lg" {...form.getInputProps("name")} placeholder="titlel"/>
           </Grid.Col>
           <Grid.Col span={2} >
             <Button fullWidth type="submit">
@@ -212,7 +212,7 @@ const EditElection: React.FC = () => {
           </Grid.Col>
 
           <Grid.Col span={9}>
-            <Textarea {...form.getInputProps("description")} />
+            <Textarea {...form.getInputProps("description")} placeholder="beskrivning"/>
             <div style={{marginTop: "1rem"}}>
               <CandidateList
                 candidates={election.candidates}

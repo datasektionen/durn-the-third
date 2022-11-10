@@ -26,9 +26,7 @@ export const Home: React.FC = () => {
       headers: authHeader
     }).then(({data}) => {
       setElections(data.map(parseElectionResponse))
-    }).catch(() => {
-      // setElections(getMockElections());
-    })
+    }).catch()
   }, [authHeader]);
 
   return (<>
@@ -39,9 +37,8 @@ export const Home: React.FC = () => {
         <Grid>
           <Grid.Col xs={12}>{<Info />}</Grid.Col>
           {elections.map((e) => 
-            <Grid.Col xs={4}>{<DisplayElectionInfo election={e} modalContent={Voting}/>}</Grid.Col>
+            <Grid.Col xs={4}>{<DisplayElectionInfo election={e} ModalContent={Voting}/>}</Grid.Col>
           )}
-          
         </Grid>
       </Container>
     </div>  
