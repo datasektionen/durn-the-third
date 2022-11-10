@@ -1,21 +1,21 @@
 import { useLocalStorage } from "@mantine/hooks";
 
 const useAuthorization = () => {
-  const [loggedIn, setLoggedIn, removeLoggedIn] = useLocalStorage({
+  const [loggedIn] = useLocalStorage({
     key: "loggedIn", defaultValue: false
   });
-  const [user, setUser, removeUser] = useLocalStorage<string>({
+  const [user] = useLocalStorage<string>({
     key: "user", defaultValue: ""
   });
-  const [perms, setPerms, removePerms] = useLocalStorage<string[]>({
+  const [perms] = useLocalStorage<string[]>({
     key: "perms", defaultValue: []
   });
-  const [header, setHeader, removeHeader] = useLocalStorage<object>({
+  const [header] = useLocalStorage<object>({
     key: "header", defaultValue: {}
   })
-  const [token, setToken, removeToken] = useLocalStorage<string | null>({
-    key: "token", defaultValue: null
-  })
+  // const [token] = useLocalStorage<string | null>({
+  //   key: "token", defaultValue: null
+  // })
 
   return {
     loggedIn,

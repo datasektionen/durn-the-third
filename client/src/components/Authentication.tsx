@@ -37,6 +37,7 @@ export const Logout: React.FC = () => {
   removeUser()
   removePerms()
   navigate("/", { replace: true });
+  window.location.reload()
   return <div />;
 }
 
