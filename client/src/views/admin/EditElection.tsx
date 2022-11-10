@@ -212,7 +212,7 @@ const EditElection: React.FC = () => {
             <Text align="right" fz="lg" fw={700}>Titel: </Text>
           </Grid.Col>
           <Grid.Col span={9}>
-            <TextInput size="lg" {...form.getInputProps("name")} placeholder="titlel"/>
+            <TextInput size="lg" {...form.getInputProps("name")} placeholder="titel"/>
           </Grid.Col>
           <Grid.Col span={2} >
             <Button fullWidth type="submit">

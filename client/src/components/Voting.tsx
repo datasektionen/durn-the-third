@@ -7,7 +7,7 @@ import { useForm } from "@mantine/form"
 import { useListState } from "@mantine/hooks";
 import { Button, createStyles, TextInput } from "@mantine/core";
 
-import { Election } from "./Election";
+import { Election } from "../util/ElectionTypes";
 import useAuthorization from "../hooks/useAuthorization";
 import constants from "../util/constants";
 import { compareList } from "../util/funcs";
@@ -194,8 +194,8 @@ export const Voting: React.FC<{ election: Election }> = (props) => {
   useEffect(() => {
     axios(`/api/election/${props.election.id}/has-voted`, {
       headers: authHeader
-    }).then((res) => {
-      setDisabled(res.data == "true")
+    }).then(({data}) => {
+      setDisabled(data)
     }).catch((reason) => {
       setDisabled(false)
     })
