@@ -6,8 +6,8 @@
   "author": "Herman Karlsson",
   "license": "MIT",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development webpack-dev-server --config ./client/webpack.config.js --disable-host-check",
-    "build": "cross-env NODE_ENV=production webpack --config ./client/webpack.config.js",
+    "dev": "cross-env NODE_ENV=development NODE_OPTIONS=--openssl-legacy-provider webpack-dev-server --config ./client/webpack.config.js --disable-host-check",
+    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider NODE_ENV=production webpack --config ./client/webpack.config.js ",
     "start": "serve dist"
   },
   "dependencies": {
@@ -39,6 +39,7 @@
     "babel-loader": "^8.0.6",
     "cross-env": "^6.0.3",
     "dotenv-webpack": "^8.0.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "html-webpack-plugin": "^3.2.0",
     "serve": "^11.3.0",
     "terser-webpack-plugin": "^2.3.2",
@@ -53,9 +54,5 @@
       "PLS_URL"
     ]
   },
-  "proxy": {
-    "/api/": {
-      "target": "http://localhost.datasektionen.se:3000"
-    }
-  }
+  "proxy":"http://127.0.0.1:3000/"
 }
