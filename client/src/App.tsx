@@ -1,11 +1,6 @@
-import React from "react";
+import React, { useMemo } from "react";
 import Methone from "methone";
-import {
-  HashRouter,
-  Routes,
-  Route,
-  Link,
-} from "react-router-dom";
+import { HashRouter, Routes, Route, Link, } from "react-router-dom";
 import useAuthorization from "./hooks/useAuthorization";
 
 import { Home } from "./views/Home";
@@ -19,7 +14,7 @@ import EditVoters from "./views/admin/EditVoters";
 const App: React.FC = () => {
   const { loggedIn, adminRead, adminWrite } = useAuthorization();
 
-  const config = {
+  const config = useMemo(() => ({
     system_name: "durn",
     color_scheme: constants.themeColor,
     links: [
@@ -31,7 +26,7 @@ const App: React.FC = () => {
     ],
     login_href: loggedIn ? "#/logout" : "#/login",
     login_text: loggedIn ? "Logga ut" : "Logga in",
-  }
+  }), [adminRead, loggedIn])
 
   return (
     <HashRouter>

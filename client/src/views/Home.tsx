@@ -21,12 +21,11 @@ export const Home: React.FC = () => {
   const [elections, setElections] = useState<Election[]>([]);
   const {authHeader} = useAuthorization()
   useEffect(() => {
-    console.log(authHeader)
     axios(`/api/elections/public`, {
       headers: authHeader
     }).then(({data}) => {
       setElections(data.map(parseElectionResponse))
-    }).catch()
+    }).catch(()=>{})
   }, [authHeader]);
 
   return (<>

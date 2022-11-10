@@ -31,13 +31,14 @@ export const Logout: React.FC = () => {
     key: "token", defaultValue: null
   })
 
-  setLoggedIn(false)
-  removeToken()
-  removeHeader()
-  removeUser()
-  removePerms()
+  if (loggedIn) {
+    setLoggedIn(false)
+    removeToken()
+    removeHeader()
+    removeUser()
+    removePerms()
+  }
   navigate("/", { replace: true });
-  window.location.reload()
   return <div />;
 }
 
@@ -72,7 +73,7 @@ export const Token: React.FC = () => {
       setPerms(data.perms)
       setHeader(header)
       setToken(token)
-    }).catch() // login token likely invalid
+    }).catch(()=>{}) // login token likely invalid
   }
 
   navigate("/", { replace: true });
