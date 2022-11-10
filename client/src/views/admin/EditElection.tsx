@@ -53,7 +53,7 @@ const EditElection: React.FC = () => {
     form.setFieldValue("closeTime", value)
   }
 
-  const makeRequest = (method: string, url: string, data: any) => {
+  const makeEditingRequest = useCallback((method: string, url: string, data: any) => {
     axios({
       method: method,
       url: url,
@@ -65,10 +65,10 @@ const EditElection: React.FC = () => {
     }).catch(({reason}) => {
       setError(`Failed to submit election changes to server. Reason given: "${reason.data}"`)
     })
-  }
+  }, [authHeader])
 
   const submitChanges = useCallback(form.onSubmit((values) => {
-    makeRequest("patch", `/api/election/${electionId}/edit`, values)
+    makeEditingRequest("patch", `/api/election/${electionId}/edit`, values)
     election.candidates.
       filter((candidate) => changedCandidates.has(candidate.id)).
       forEach((candidate) => {
@@ -122,15 +122,15 @@ const EditElection: React.FC = () => {
 
   const finalizeElection = () => {
     setOpenFinalize(false)
-    makeRequest("put", `/api/election/${electionId}/finalize`, {})
+    makeEditingRequest("put", `/api/election/${electionId}/finalize`, {})
   }
 
   const publishElection = () => {
-    makeRequest("put", `/api/election/${electionId}/publish`, {})
+    makeEditingRequest("put", `/api/election/${electionId}/publish`, {})
   }
 
   const unpublishElection = () => {
-    makeRequest("put", `/api/election/${electionId}/unpublish`, {})
+    makeEditingRequest("put", `/api/election/${electionId}/unpublish`, {})
   }
 
   const deleteElection = () => {
