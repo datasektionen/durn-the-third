@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
+  useNavigate,
   useParams,
 } from "react-router-dom";
 import { Header } from "methone"
 import axios from "axios";
 
-import { Grid, Container, TextInput, Button, Text, Textarea, ScrollArea, Table, createStyles, Modal, Center } from "@mantine/core";
+import { Grid, Container, TextInput, Button, Text, Textarea, ScrollArea, Table, createStyles, Modal, Center, Stack } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { Plus, X } from "tabler-icons-react";
 
@@ -31,8 +32,10 @@ const EditElection: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [updateSuccess, setSuccess] = useState(false)
   const [openFinalize, setOpenFinalize] = useState(false)
+  const [openDelete, setOpenDelete] = useState(false)
   const { classes, cx } = useStyles()
   const [changedCandidates, changedCandidatesActions] = useMap<string, Candidate>()
+  const navigate = useNavigate()
 
   const form = useForm({
     initialValues: {
@@ -59,8 +62,8 @@ const EditElection: React.FC = () => {
     }).then(({ data }) => {
       setElection(parseElectionResponse(data))
       setSuccess(true)
-    }).catch(() => {
-      setError("Failed to submit election changes to server")
+    }).catch(({reason}) => {
+      setError(`Failed to submit election changes to server. Reason given: "${reason.data}"`)
     })
   }
 
@@ -130,6 +133,17 @@ const EditElection: React.FC = () => {
     makeRequest("put", `/api/election/${electionId}/unpublish`, {})
   }
 
+  const deleteElection = () => {
+    setOpenDelete(false)
+    axios.post(`/api/election/${electionId}/delete`, {}, {
+      headers: authHeader
+    }).then(() => {
+      navigate("/admin")
+    }).catch(({ reason }) => {
+      setError(`Misslyckades med att radera valet. Servern svarade: "${reason.data}"`)
+    })
+  }
+
   useEffect(() => {
     if (!loggedIn) return;
     axios(`/api/election/${electionId}`, {
@@ -163,12 +177,29 @@ const EditElection: React.FC = () => {
       onClose={() => setOpenFinalize(false)}
     >
       <Center>
-        <Text align="center">
-          Vill du finalisera valet? Det går inte att ångra att finalisera ett val.
-        </Text>
-        <Button onClick={finalizeElection}>
-          Finalisera
-        </Button>
+        <Stack>
+          <Text align="center">
+            Vill du finalisera valet? Det går inte att ångra att finalisera ett val.
+          </Text>
+          <Button onClick={finalizeElection}>
+            Finalisera
+          </Button>
+        </Stack>
+      </Center>
+    </Modal>
+
+    <Modal centered opened={openDelete} title="Radera val"
+      onClose={() => setOpenDelete(false)}
+    >
+      <Center>
+        <Stack>
+          <Text align="center">
+            Vill du radera valet? Det går inte att ångra.
+          </Text>
+          <Button onClick={deleteElection} color={"red"}>
+            Radera val
+          </Button>
+        </Stack>
       </Center>
     </Modal>
 
@@ -222,6 +253,12 @@ const EditElection: React.FC = () => {
               </Button>
             </div>
 
+
+            <div style={{ marginTop: "5rem" }}>
+              <Button fullWidth onClick={() => setOpenDelete(true)} color={"red"}>
+                Radera val
+              </Button>
+            </div>
             
           </Grid.Col>
 

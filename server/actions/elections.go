@@ -229,6 +229,45 @@ func FinalizeElection(c *gin.Context) {
 	c.JSON(http.StatusOK, convertElectionToExportType(election))
 }
 
+// DeleteElection tries to remove a specified election
+// only works if the election does not have any votes
+func DeleteElection(c *gin.Context) {
+	electionId, err := uuid.FromString(c.Param("id"))
+	if err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadUUID)
+		return
+	}
+
+	election := database.Election{ID: electionId}
+	db := database.GetDB()
+	defer database.ReleaseDB()
+	if err := db.Preload("Votes").First(&election).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.InvalidElection)
+		return
+	}
+
+	if len(election.Votes) > 0 {
+		c.String(http.StatusBadRequest, "Can't delete election with votes")
+		return
+	}
+	if err := db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("election_id = ?", electionId).Delete(&database.Candidate{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Delete(&election).Error; err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.RequestFailed)
+	}
+
+	c.JSON(http.StatusOK, "")
+}
+
 // GetElection fetches a specific election from the database, including
 // all candidates in the election.
 func GetElection(c *gin.Context) {
