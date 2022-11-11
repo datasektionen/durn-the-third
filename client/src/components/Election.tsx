@@ -9,7 +9,6 @@ import { Election } from "../util/ElectionTypes";
 const useStyle = createStyles((theme) => {
   return {
     electionTitle: {
-      fontFamily: "lato",
       marginTop: "0",
       marginBottom: "0",
       backgroundColor: "#eeeeee",

@@ -133,7 +133,6 @@ const VotersTable: React.FC<VotersTableProps> = ({voters, setVoters}) => {
   const deleteVoters = () => {
     if (selection.size == 0) return
     const removedVoters = Array.from(selection.keys())
-    console.log(removedVoters)
 
     axios.delete("/api/voters/remove", {
       headers: authHeader,
