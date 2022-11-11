@@ -34,7 +34,7 @@ const useStyle = createStyles((theme) => ({
   },
 
   droppable: {
-    // overflowY: "scroll",
+    overflowY: "scroll",
   },
 
   dragHandle: {
