@@ -35,6 +35,7 @@ const useStyle = createStyles((theme) => {
       marginLeft: "1rem",
     }, 
     electionDescription: {
+      overflowWrap: "break-word",
       marginTop: "1.6rem",
       marginLeft: "1rem",
     }

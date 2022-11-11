@@ -82,7 +82,7 @@ const DisplayVoteStage: React.FC<DisplayVoteStageProps> = ({stage}) => {
       <div style={{marginBottom: "0.5rem"}}>
        <Text>Blanka röster: {stage.blanks}</Text>
       </div>
-      <Table striped rules="rows">
+      <Table striped>
         <thead>
           <th>
             Kandidat
@@ -94,19 +94,21 @@ const DisplayVoteStage: React.FC<DisplayVoteStageProps> = ({stage}) => {
             Andel
           </th>
         </thead>
-        {stage.candidates.map((candidateResult, index) => (
-          <tr>
-            <td><Text 
-              td={candidateResult.eliminated && stage.candidates.length > 2 ? "line-through" : ""} 
-              fw={candidateResult.eliminated ? 700 : 400}
-              fs={candidateResult.eliminated && stage.candidates.length > 2 ? "italic" : "" }
-            >
-              {candidateResult.name}
-            </Text></td>
-            <td>{candidateResult.votes}</td>
-            <td>{(candidateResult.votes/totalVotes*100).toFixed(2)} %</td>
-          </tr>
-        ))}
+        <tbody>
+          {stage.candidates.map((candidateResult) => (
+            <tr>
+              <td><Text 
+                td={candidateResult.eliminated && stage.candidates.length > 2 ? "line-through" : ""} 
+                fw={candidateResult.eliminated ? 700 : 400}
+                fs={candidateResult.eliminated && stage.candidates.length > 2 ? "italic" : "" }
+              >
+                {candidateResult.name}
+              </Text></td>
+              <td>{candidateResult.votes}</td>
+              <td>{(candidateResult.votes/totalVotes*100).toFixed(2)} %</td>
+            </tr>
+          ))}
+        </tbody>
       </Table>
     </div>
   </>

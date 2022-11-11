@@ -6,7 +6,7 @@ import {
 import { Header } from "methone"
 import axios from "axios";
 
-import { Grid, Container, TextInput, Button, Text, Textarea, ScrollArea, Table, createStyles, Modal, Center, Stack } from "@mantine/core";
+import { Grid, Container, TextInput, Button, Text, Textarea, ScrollArea, Table, createStyles, Modal, Center, Stack, Tooltip } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { Plus, X } from "tabler-icons-react";
 
@@ -312,7 +312,7 @@ const CandidateList: React.FC<CandidateListProps> = (
               />
             </td>
             <td>
-              <TextInput value={presentation} placeholder="länkt till kandidatpresentation"
+              <TextInput value={presentation} placeholder="länk till kandidatpresentation"
                 onChange={(element) => setPresentation(element.target.value)}
               />
             </td>
@@ -459,9 +459,13 @@ const ButtonsColumn: React.FC<ButtonsColumnProps> = ({
     </div>
 
     <div style={{ marginTop: "2rem" }}>
-      <Button fullWidth disabled={!election.finalized} onClick={() => setOpenCounting(true)}>
-        Räkna röster
-      </Button>
+      <Tooltip label={"Valet måste finaliseras innan rösterna kan räknas"} disabled={election.finalized}>
+        <div>
+          <Button fullWidth disabled={!election.finalized} onClick={() => setOpenCounting(true)}>
+            Räkna röster
+          </Button>
+        </div>
+      </Tooltip>
     </div>
 
     <div style={{ marginTop: "5rem" }}>
