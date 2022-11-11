@@ -1,11 +1,13 @@
-import { createStyles } from "@mantine/core"
+import { createStyles, Stack, Table, Text } from "@mantine/core"
 import axios from "axios"
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import useAuthorization from "../hooks/useAuthorization"
 
 const useStyles = createStyles((theme) => ({
   voteStageBox: {
-    border: "1px solid"
+    border: "1px solid",
+    borderRadius: "1rem",
+    padding: "1rem"
   }
 }))
 
@@ -13,7 +15,7 @@ interface VoteStage {
   blanks: number,
   candidates: {
     name: string,
-    Votes: number,
+    votes: number,
     eliminated: boolean
   }[]
 }
@@ -31,21 +33,23 @@ export const DisplayResult: React.FC<DisplayResultProps> = (
   const { authHeader } = useAuthorization()
   
   useEffect(() => {
-    axios(`/api/election/${electionId}/count`,{
-      headers: authHeader
-    }).then(({data}) => {
-      setLoading(false)
-      setVoteStages(data)
-    }).catch(({response}) => {
-      setError(response.data)
-    })
+    if ("Authorization" in authHeader) {
+      axios(`/api/election/${electionId}/count`,{
+        headers: authHeader
+      }).then(({data}) => {
+        setLoading(false)
+        setError(null)
+        setVoteStages(data)
+      }).catch(({response}) => {
+        setError(response.data)
+      })
+    }
   }, [authHeader])
 
-  
   return <>
     {loading && <>
       <p>
-        loading results
+        Counting votes
       </p>
     </>}
 
@@ -65,10 +69,40 @@ interface DisplayVoteStageProps {
 
 const DisplayVoteStage: React.FC<DisplayVoteStageProps> = ({stage}) => {
   const {classes, cx} = useStyles()
+  const totalVotes = useMemo(() => (
+    stage.candidates.reduce((prev, elem) => (prev + elem.votes), 0)
+  ), [stage])
+
 
   return <>
-    <div className={classes.voteStageBox}>
+    <div className={classes.voteStageBox} style={{marginTop:"1rem"}}>
 
+      <Text>Blanka röster: {stage.blanks}</Text>
+      <Table striped >
+        <thead>
+          <th>
+            Kandidat
+          </th>
+          <th>
+            Röster
+          </th>
+          <th>
+            Andel
+          </th>
+        </thead>
+        {stage.candidates.map((candidateResult, index) => (
+          <tr>
+            <td><Text 
+              td={candidateResult.eliminated && index < stage.candidates.length-1? "line-through" : ""} 
+              fw={candidateResult.eliminated ? 700 : 400}
+            >
+              {candidateResult.name}
+            </Text></td>
+            <td>{candidateResult.votes}</td>
+            <td>{(candidateResult.votes/totalVotes*100).toFixed(2)} %</td>
+          </tr>
+        ))}
+      </Table>
     </div>
   </>
 } 
