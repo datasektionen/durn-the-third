@@ -176,13 +176,13 @@ const EditElection: React.FC = () => {
     <form onSubmit={submitChanges}>
       <Container my="md">
         <Grid align="center">
-          <Grid.Col span={1}>
+          <Grid.Col md={1}>
             <Text align="right" fz="lg" fw={700}>Titel: </Text>
           </Grid.Col>
-          <Grid.Col span={9}>
+          <Grid.Col md={9}>
             <TextInput size="lg" {...form.getInputProps("name")} placeholder="titel"/>
           </Grid.Col>
-          <Grid.Col span={2} >
+          <Grid.Col md={2} >
             <Button fullWidth type="submit">
               Uppdatera
             </Button>
@@ -190,7 +190,7 @@ const EditElection: React.FC = () => {
         </Grid>
 
         <Grid>
-          <Grid.Col span={3}>
+          <Grid.Col md={3}>
 
             <div style={{ marginBottom: "1rem" }} >
               <DateTimeInput
@@ -215,7 +215,7 @@ const EditElection: React.FC = () => {
             />
           </Grid.Col>
 
-          <Grid.Col span={9}>
+          <Grid.Col md={9}>
             <Textarea {...form.getInputProps("description")} placeholder="beskrivning"/>
             <div style={{marginTop: "1rem"}}>
               <CandidateList

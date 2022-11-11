@@ -95,7 +95,9 @@ const AddVotersField: React.FC<AddVotersFieldProps> = ({disabled, setVoters}) =>
     <h3 className={classes.sectionTitle}>
       Add voters
     </h3>
-    <Button onClick={handleButtonClick}>Submit</Button>
+    <Button onClick={handleButtonClick} fullWidth>
+      Submit
+    </Button>
     <div style={{marginTop: "1rem"}}>
       <Textarea autosize ref={ref} />
     </div>

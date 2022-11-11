@@ -64,7 +64,7 @@ const Admin: React.FC = () => {
     <Container my="md">
       <Grid>
         {elections.map((election) => (
-          <Grid.Col span={4}>
+          <Grid.Col md={4}>
             <DisplayElectionInfo
               election={election}
               redirectURL={`/admin/election/${election.id}`}
