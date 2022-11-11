@@ -160,7 +160,9 @@ const EditElection: React.FC = () => {
     })
   }, [election])
 
-  if (!adminRead) navigate("/", { replace: true })
+  useEffect(() => {
+    if (loggedIn && !adminRead) navigate("/", { replace: true })
+  }, [loggedIn, adminRead])
   
   return <> {adminRead && <>
     <Header title="Redigerar val" />
@@ -357,7 +359,7 @@ const CandidateRow: React.FC<CandidateRowProps> = (
   }, [name, presentation])
 
   return <>
-    <tr>
+    <tr key={candidate.id}>
       <td>
         <Button color={"red"} compact fullWidth onClick={removeCandidate}>
           <X/>

@@ -19,9 +19,9 @@ const App: React.FC = () => {
     color_scheme: constants.themeColor,
     links: [
       ...( loggedIn && adminRead ? [
-        <Link to="/">Hem</Link>,
-        <Link to="/admin">Administrera val</Link>,
-        <Link to="/admin/voters">Administrera väljare </Link>
+        <Link key="1" to="/">Hem</Link>,
+        <Link key="2" to="/admin">Administrera val</Link>,
+        <Link key="3" to="/admin/voters">Administrera väljare </Link>
       ] : [])
     ],
     login_href: loggedIn ? "#/logout" : "#/login",

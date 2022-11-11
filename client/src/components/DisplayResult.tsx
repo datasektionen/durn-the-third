@@ -84,19 +84,21 @@ const DisplayVoteStage: React.FC<DisplayVoteStageProps> = ({stage}) => {
       </div>
       <Table striped>
         <thead>
-          <th>
-            Kandidat
-          </th>
-          <th>
-            Röster
-          </th>
-          <th>
-            Andel
-          </th>
+          <tr>
+            <th>
+              Kandidat
+            </th>
+            <th>
+              Röster
+            </th>
+            <th>
+              Andel
+            </th>
+          </tr>
         </thead>
         <tbody>
-          {stage.candidates.map((candidateResult) => (
-            <tr>
+          {stage.candidates.map((candidateResult, index) => (
+            <tr key={index}>
               <td><Text 
                 td={candidateResult.eliminated && stage.candidates.length > 2 ? "line-through" : ""} 
                 fw={candidateResult.eliminated ? 700 : 400}
