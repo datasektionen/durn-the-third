@@ -27,6 +27,7 @@ const useStyle = createStyles((theme) => {
         position: "relative",
         padding: "1rem",
         borderRadius: "0.2rem",
+        cursor: "pointer"
       }
     },
     candidateText: {

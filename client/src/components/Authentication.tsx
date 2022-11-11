@@ -64,7 +64,6 @@ export const Token: React.FC = () => {
 
   if (token) {
     const header = { "Authorization": `Bearer ${token}` }
-    console.log(header)
     axios.get('/api/validate-token', {
       headers: header
     }).then(({ data }) => {

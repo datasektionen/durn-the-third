@@ -312,7 +312,7 @@ const CandidateList: React.FC<CandidateListProps> = (
               />
             </td>
             <td>
-              <TextInput value={presentation}
+              <TextInput value={presentation} placeholder="länkt till kandidatpresentation"
                 onChange={(element) => setPresentation(element.target.value)}
               />
             </td>
@@ -434,7 +434,8 @@ const ButtonsColumn: React.FC<ButtonsColumnProps> = ({
       </Center>
     </Modal>
 
-    <Modal centered opened={openCounting} title={election.name} onClose={() => setOpenCounting(false)}>
+    <Modal centered opened={openCounting} title={election.name} 
+           size="600px" onClose={() => setOpenCounting(false)}>
       <DisplayResult electionId={election.id} />
     </Modal>
 
