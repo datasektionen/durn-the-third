@@ -7,7 +7,9 @@ const useStyles = createStyles((theme) => ({
   voteStageBox: {
     border: "1px solid",
     borderRadius: "1rem",
-    padding: "1rem"
+    boxShadow: "1px 1px 3px 3px rgba(0,0,0,0.15)",
+    padding: "1rem",
+    backgroundColor: "#F7F7F7" 
   }
 }))
 
@@ -77,8 +79,10 @@ const DisplayVoteStage: React.FC<DisplayVoteStageProps> = ({stage}) => {
   return <>
     <div className={classes.voteStageBox} style={{marginTop:"1rem"}}>
 
-      <Text>Blanka röster: {stage.blanks}</Text>
-      <Table striped >
+      <div style={{marginBottom: "0.5rem"}}>
+       <Text>Blanka röster: {stage.blanks}</Text>
+      </div>
+      <Table striped rules="rows">
         <thead>
           <th>
             Kandidat
@@ -93,8 +97,9 @@ const DisplayVoteStage: React.FC<DisplayVoteStageProps> = ({stage}) => {
         {stage.candidates.map((candidateResult, index) => (
           <tr>
             <td><Text 
-              td={candidateResult.eliminated && index < stage.candidates.length-1? "line-through" : ""} 
+              td={candidateResult.eliminated && stage.candidates.length > 2 ? "line-through" : ""} 
               fw={candidateResult.eliminated ? 700 : 400}
+              fs={candidateResult.eliminated && stage.candidates.length > 2 ? "italic" : "" }
             >
               {candidateResult.name}
             </Text></td>
