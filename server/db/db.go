@@ -16,7 +16,7 @@ var m sync.Mutex
 
 func InitDB() {
 	c := config.GetConfig()
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d", c.DB_URL, c.DB_USER, c.DB_PSWD, c.DB_NAME, c.DB_PORT)
+	dsn := fmt.Sprintf("host=%s user=%s password=%s database=%s port=%d", c.DB_HOST, c.DB_USER, c.DB_PSWD, c.DB_NAME, c.DB_PORT)
 
 	var err error
 

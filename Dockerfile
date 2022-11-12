@@ -1,6 +1,6 @@
 # Can't be heigher than node 16 since 17+ uses a newer version of OpenSSL
 # which webpack apparently does not sypport (at 2022-09-26)
-FROM node:16-alpine AS webpack_builder 
+FROM node:19-alpine AS webpack_builder 
 COPY . /app
 WORKDIR /app
 RUN npm install
