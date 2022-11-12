@@ -34,7 +34,7 @@ const useStyle = createStyles((theme) => ({
   },
 
   droppable: {
-    // overflowY: "scroll",
+    overflowY: "scroll",
   },
 
   dragHandle: {
@@ -78,7 +78,8 @@ const useStyle = createStyles((theme) => ({
     gap: "1rem"
   },
 
-  box : {
+  box: {
+    boxShadow: "1px 1px 1px 1px rgba(0,0,0,0.15)",
     border: `1px solid ${theme.colors.gray[5]}`,
     width: "3.2rem",
     textAlign: "center",
@@ -87,11 +88,16 @@ const useStyle = createStyles((theme) => ({
     paddingRight: "1rem",
     paddingTop: "0.4rem",
     paddingBottom: "0.4rem",
+    userSelect: "none",
+    whiteSpace: "nowrap",
   },
 
-  description : {
-
+  boxtext: {
+    textAlign: "center",
+    marginLeft: "-50%",
+    marginRight: "-50%"
   },
+
 
   info : {
     padding: "1rem",
@@ -235,7 +241,9 @@ export const Voting: React.FC<{ election: Election }> = (props) => {
               <div {...provided.dragHandleProps} className={classes.dragHandle}>
                 <Selector size={18} strokeWidth={2} color={'black'} />
               </div>
-              <div className={classes.box}> <span> {displayIndex.get(candidate.id) ?? '-'} </span> </div>
+              <div className={classes.box}> <span className={classes.boxtext}>
+                {displayIndex.get(candidate.id) ?? '-'}
+              </span> </div>
               <div> <span> {candidate.name} </span> </div>
             </div>
             {candidate.presentation != "" ?
@@ -249,7 +257,7 @@ export const Voting: React.FC<{ election: Election }> = (props) => {
   )
 
   return <div>
-    <div className={classes.description}>
+    <div>
       <p>{props.election.description}</p>
     </div>
 

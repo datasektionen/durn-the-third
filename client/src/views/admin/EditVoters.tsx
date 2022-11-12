@@ -95,7 +95,9 @@ const AddVotersField: React.FC<AddVotersFieldProps> = ({disabled, setVoters}) =>
     <h3 className={classes.sectionTitle}>
       Add voters
     </h3>
-    <Button onClick={handleButtonClick}>Submit</Button>
+    <Button onClick={handleButtonClick} fullWidth>
+      Submit
+    </Button>
     <div style={{marginTop: "1rem"}}>
       <Textarea autosize ref={ref} />
     </div>
@@ -131,7 +133,6 @@ const VotersTable: React.FC<VotersTableProps> = ({voters, setVoters}) => {
   const deleteVoters = () => {
     if (selection.size == 0) return
     const removedVoters = Array.from(selection.keys())
-    console.log(removedVoters)
 
     axios.delete("/api/voters/remove", {
       headers: authHeader,

@@ -19,7 +19,6 @@ export const useApiRequester = () => {
     onError: (error: ErrorData) => void = () => {},
     headers: any = {}
   ) => {
-    console.log(data)
     axios({
       method: method,
       url: url,

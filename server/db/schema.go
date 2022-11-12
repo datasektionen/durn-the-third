@@ -44,7 +44,8 @@ type Candidate struct {
 // possible for two hashes to be the same, albeit quite unlikely. If it was
 // the case, however, it would prevent someone from voting, which is not good
 type VoteHash struct {
-	Hash string
+	Hash       string    `gorm:"not null"`
+	ElectionID uuid.UUID `gorm:"not null"`
 }
 
 type Vote struct {
