@@ -7,11 +7,11 @@ import { useForm } from "@mantine/form"
 import { useListState } from "@mantine/hooks";
 import { Button, createStyles, TextInput } from "@mantine/core";
 
-import { Election } from "./Election";
+import { Election } from "../util/ElectionTypes";
 import useAuthorization from "../hooks/useAuthorization";
 import constants from "../util/constants";
 import { compareList } from "../util/funcs";
-import { ErrorModal, InformationModal } from "./Information";
+import { ErrorModal, InformationModal } from "./PopupModals";
 
 interface candidateInfo {
   id: string,
@@ -115,7 +115,6 @@ const InfoBox: React.FC = () => {
   </div>
 }
 
-
 export const Voting: React.FC<{ election: Election }> = (props) => {
   const keys = new Map (props.election.candidates.map((candidate)=>
     [candidate.id, [(candidate.symbolic ? 1 : 0), Math.random()]]
@@ -195,8 +194,8 @@ export const Voting: React.FC<{ election: Election }> = (props) => {
   useEffect(() => {
     axios(`/api/election/${props.election.id}/has-voted`, {
       headers: authHeader
-    }).then((res) => {
-      setDisabled(res.data == "true")
+    }).then(({data}) => {
+      setDisabled(data)
     }).catch((reason) => {
       setDisabled(false)
     })
@@ -210,7 +209,6 @@ export const Voting: React.FC<{ election: Election }> = (props) => {
     () => updateDisplayIndex(new Map(voteOrder.map((candidate, index) => [candidate.id, index]))),
     [voteOrder]
   )
-
 
   const items = voteOrder.map((candidate, index) =>
     <Draggable key={candidate.id} index={index} draggableId={candidate.id} isDragDisabled={disabled}>

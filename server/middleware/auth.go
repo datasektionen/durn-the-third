@@ -33,7 +33,7 @@ func Authenticate() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := strings.Split(c.GetHeader("Authorization"), " ")
 		if len(authHeader) < 2 {
-			c.String(http.StatusBadRequest, "Invalid Authorization header provided") // Unauthorized = Unauthenticated in http
+			c.String(http.StatusUnauthorized, "Invalid Authorization header provided") // Unauthorized = Unauthenticated in http
 			c.Abort()
 			return
 		}

@@ -1,39 +1,21 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useLocalStorage } from "@mantine/hooks";
 
 const useAuthorization = () => {
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [user, setUser] = useState("");
-  const [perms, setPerms] = useState<string[]>([]);
-  const [header, setHeader] = useState<object>({})
-  const [token, setToken] = useState("")
-
-  useEffect(() => {
-    const tempToken = localStorage.getItem("token");
-    if (tempToken === null) {
-      setToken("")
-      return;
-    }
-    if (tempToken != token) {
-      setToken(tempToken)
-    }
-  }, [localStorage])
-
-  useEffect(() => {
-    if (token == "") return;
-    const header = { "Authorization": `Bearer ${token}` }
-    axios.get('/api/validate-token', {
-      headers: header
-    }).then(res => {
-      console.log(res);
-      setLoggedIn(true);
-      setUser(res.data.user);
-      setPerms(res.data.perms);
-      setHeader(header)
-    }).catch(() => { // login token invalid, possibly because it has expired
-      localStorage.removeItem("token")
-    })
-  }, [token])
+  const [loggedIn] = useLocalStorage({
+    key: "loggedIn", defaultValue: false
+  });
+  const [user] = useLocalStorage<string>({
+    key: "user", defaultValue: ""
+  });
+  const [perms] = useLocalStorage<string[]>({
+    key: "perms", defaultValue: []
+  });
+  const [header] = useLocalStorage<object>({
+    key: "header", defaultValue: {}
+  })
+  // const [token] = useLocalStorage<string | null>({
+  //   key: "token", defaultValue: null
+  // })
 
   return {
     loggedIn,

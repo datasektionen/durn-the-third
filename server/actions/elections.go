@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"time"
 
 	database "durn/server/db"
 	"durn/server/util"
@@ -46,11 +47,11 @@ func convertElectionToExportType(election database.Election) electionExportType 
 // - Published, Finalized: false
 func CreateElection(c *gin.Context) {
 	body := struct {
-		Name string `json:"name" binding:"required"`
-	}{}
-
+		Name string `json:"name"`
+	}{
+		Name: "",
+	}
 	if err := c.BindJSON(&body); err != nil {
-		fmt.Println(err)
 		c.String(http.StatusBadRequest, util.BadParameters)
 		return
 	}
@@ -98,7 +99,7 @@ func CreateElection(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, convertElectionToExportType(election))
+	c.JSON(http.StatusOK, election.ID)
 }
 
 // EditElection updates specific fields for the specified election.
@@ -160,9 +161,8 @@ func EditElection(c *gin.Context) {
 	c.JSON(http.StatusOK, convertElectionToExportType(election))
 }
 
-// PublishElection marks an election as published.
-// Note that there is no endpoint for unpublishing elections.
-func PublishElection(c *gin.Context) {
+// setElectionPublishedStatus sets the published status as specified
+func setElectionPublishedStatus(c *gin.Context, publishedStatus bool) {
 	electionId, err := uuid.FromString(c.Param("id"))
 	if err != nil {
 		fmt.Println(err)
@@ -179,7 +179,7 @@ func PublishElection(c *gin.Context) {
 		return
 	}
 
-	election.Published = true
+	election.Published = publishedStatus
 	if err := db.Save(&election).Error; err != nil {
 		fmt.Println(err)
 		c.String(http.StatusInternalServerError, util.RequestFailed)
@@ -187,6 +187,16 @@ func PublishElection(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, convertElectionToExportType(election))
+}
+
+// PublishElection marks an election as published.
+func PublishElection(c *gin.Context) {
+	setElectionPublishedStatus(c, true)
+}
+
+// PublishElection marks an election as unpublished.
+func UnpublishElection(c *gin.Context) {
+	setElectionPublishedStatus(c, false)
 }
 
 // FinalizeElection marks an election as finalized, meaning that voting is finished
@@ -217,6 +227,45 @@ func FinalizeElection(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, convertElectionToExportType(election))
+}
+
+// DeleteElection tries to remove a specified election
+// only works if the election does not have any votes
+func DeleteElection(c *gin.Context) {
+	electionId, err := uuid.FromString(c.Param("id"))
+	if err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadUUID)
+		return
+	}
+
+	election := database.Election{ID: electionId}
+	db := database.GetDB()
+	defer database.ReleaseDB()
+	if err := db.Preload("Votes").First(&election).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.InvalidElection)
+		return
+	}
+
+	if len(election.Votes) > 0 {
+		c.String(http.StatusBadRequest, "Can't delete election with votes")
+		return
+	}
+	if err := db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("election_id = ?", electionId).Delete(&database.Candidate{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Delete(&election).Error; err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.RequestFailed)
+	}
+
+	c.JSON(http.StatusOK, "")
 }
 
 // GetElection fetches a specific election from the database, including
@@ -255,7 +304,7 @@ func GetElections(c *gin.Context) {
 		return
 	}
 
-	var result []electionExportType
+	result := []electionExportType{}
 	for _, election := range elections {
 		result = append(result, convertElectionToExportType(election))
 	}
@@ -275,7 +324,7 @@ func GetPublicElections(c *gin.Context) {
 		return
 	}
 
-	var result []electionExportType
+	result := []electionExportType{}
 	for _, election := range elections {
 		result = append(result, convertElectionToExportType(election))
 	}
@@ -339,15 +388,24 @@ func AddCandidate(c *gin.Context) {
 	defer database.ReleaseDB()
 
 	election := database.Election{ID: electionId}
-	if err := db.First(&election).Error; err != nil {
+	if err := db.Preload("Votes").First(&election).Error; err != nil {
 		fmt.Println(err)
 		c.String(http.StatusBadRequest, util.InvalidElection)
 		return
 	}
 
-	if election.Published {
-		fmt.Println("User tried to add candidate to published election")
-		c.String(http.StatusMethodNotAllowed, "Can't add candidate to published Election")
+	if election.Published || election.Finalized {
+		c.String(http.StatusBadRequest, "Can't add candidate to published or finalized Election")
+		return
+	}
+
+	if election.OpenTime.Valid && time.Now().After(election.OpenTime.Time) {
+		c.String(http.StatusBadRequest, "Can't add candidate to opened Election")
+		return
+	}
+
+	if len(election.Votes) > 0 {
+		c.String(http.StatusBadRequest, "Can't add candidate to election with votes")
 		return
 	}
 
@@ -407,4 +465,49 @@ func EditCandidate(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, candidate)
+}
+
+// RemoveCandidate removes the specified candidate from an election,
+// provided that the election it is in is not opened, finalized, or has any votes
+func RemoveCandidate(c *gin.Context) {
+	candidateId, err := uuid.FromString(c.Param("id"))
+
+	if err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadUUID)
+		return
+	}
+
+	candidate := database.Candidate{ID: candidateId}
+	db := database.GetDB()
+	defer database.ReleaseDB()
+	if err := db.Preload("Election.Votes").First(&candidate).Error; err != nil {
+		c.String(http.StatusBadRequest, "Invalid candidate specified")
+		return
+	}
+
+	openTime := candidate.Election.OpenTime
+
+	if openTime.Valid && time.Now().After(openTime.Time) {
+		c.String(http.StatusBadRequest, "Can't remove candidate from opened election")
+		return
+	}
+
+	if candidate.Election.Finalized {
+		c.String(http.StatusBadRequest, "Can't remove candidate from finalized election")
+		return
+	}
+
+	if len(candidate.Election.Votes) > 0 {
+		c.String(http.StatusBadRequest, "Can't remove candidate from election with votes")
+		return
+	}
+
+	if err := db.Delete(&candidate).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusInternalServerError, util.RequestFailed)
+		return
+	}
+
+	c.String(http.StatusOK, "")
 }

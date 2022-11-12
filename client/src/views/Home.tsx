@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Header } from "methone";
 import axios from "axios";
 
-import { Grid, Skeleton, Container, createStyles } from "@mantine/core";
+import { Grid, Skeleton, Container } from "@mantine/core";
 
-import { electionMock, DisplayElectionInfo, Election } from "../components/Election";
+import { DisplayElectionInfo } from "../components/Election";
+import { electionMock, Election, parseElectionResponse } from "../util/ElectionTypes"
 import { Voting } from "../components/Voting";
 import useAuthorization from "../hooks/useAuthorization";
 
@@ -22,11 +23,9 @@ export const Home: React.FC = () => {
   useEffect(() => {
     axios(`/api/elections/public`, {
       headers: authHeader
-    }).then((res) => {
-      setElections(res.data)
-    }).catch((reason) => {
-      setElections(getMockElections());
-    })
+    }).then(({data}) => {
+      setElections(data.map(parseElectionResponse))
+    }).catch(()=>{})
   }, [authHeader]);
 
   return (<>
@@ -37,9 +36,8 @@ export const Home: React.FC = () => {
         <Grid>
           <Grid.Col xs={12}>{<Info />}</Grid.Col>
           {elections.map((e) => 
-            <Grid.Col xs={4}>{<DisplayElectionInfo election={e} modalContent={Voting}/>}</Grid.Col>
+            <Grid.Col xs={4}>{<DisplayElectionInfo election={e} ModalContent={Voting}/>}</Grid.Col>
           )}
-          
         </Grid>
       </Container>
     </div>  
