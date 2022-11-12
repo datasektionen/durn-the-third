@@ -69,14 +69,14 @@ const EditElection: React.FC = () => {
   const submitChanges = useCallback(form.onSubmit((values) => {
     makeEditingRequest("patch", `/api/election/${electionId}/edit`, values)
     let candidateError: string | null = null 
-    election.candidates.
-      filter((candidate) => changedCandidates.has(candidate.id)).
-      forEach((candidate) => {
+    election.candidates
+      .filter((candidate) => changedCandidates.has(candidate.id))
+      .forEach((candidate) => {
         const newCandidate = changedCandidates.get(candidate.id) ?? candidate
         axios.put(`/api/election/candidate/${candidate.id}/edit`, {
           name: newCandidate.name,
           presentation: newCandidate.presentation
-        }, { headers: authHeader}).catch(() => {
+        }, { headers: authHeader } ).catch(() => {
           changedCandidatesActions.remove(candidate.id)
         }).catch(({reason}) => {
           candidateError = `Failed to submit election changes to server.Reason given: "${reason.data}"`
