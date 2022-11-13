@@ -1,17 +1,19 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd'
 import { Selector } from 'tabler-icons-react'
 import { useForm } from "@mantine/form"
 import { useListState } from "@mantine/hooks";
-import { Button, createStyles, TextInput } from "@mantine/core";
+import { Button, Center, createStyles, TextInput } from "@mantine/core";
 
-import { Election } from "../util/ElectionTypes";
+import { Candidate, Election } from "../util/ElectionTypes";
 import useAuthorization from "../hooks/useAuthorization";
 import constants from "../util/constants";
 import { compareList } from "../util/funcs";
 import { ErrorModal, InformationModal } from "./PopupModals";
+import { time } from "console";
+import dayjs from "dayjs";
 
 interface candidateInfo {
   id: string,
@@ -20,7 +22,7 @@ interface candidateInfo {
   symbolic: boolean
 }
 
-const useStyle = createStyles((theme) => ({
+const useStyles = createStyles((theme) => ({
   item: {
     display: 'flex',
     alignItems: 'center',
@@ -104,12 +106,20 @@ const useStyle = createStyles((theme) => ({
     marginBottom: "1rem",
     borderRadius: "0.5rem",
     backgroundColor: "rgb(197, 202, 233)",
+  },
+
+  votingDisabledInfo: {
+    margin: "2rem",
+    padding: "0.5rem",
+    textAlign: "center",
+    borderRadius: "0.6rem",
+    backgroundColor: "#ffcccb"
   }
 
 }));
 
 const InfoBox: React.FC = () => {
-  const { classes, cx } = useStyle()
+  const { classes, cx } = useStyles()
 
   return <div className={cx(constants.themeColor, "lighten-4", classes.info)}>
     <p>
@@ -121,12 +131,18 @@ const InfoBox: React.FC = () => {
   </div>
 }
 
-export const Voting: React.FC<{ election: Election }> = (props) => {
-  const keys = new Map (props.election.candidates.map((candidate)=>
+export interface VotingProps {
+  election: Election
+}
+
+export const Voting: React.FC<VotingProps> = ({
+  election
+}) => {
+  const keys = new Map (election.candidates.map((candidate)=>
     [candidate.id, [(candidate.symbolic ? 1 : 0), Math.random()]]
   ))
-  const [voteOrder, voteOrderHandlers] = useListState<candidateInfo>(props.election.candidates.map(
-    (candidate, index) => {return {
+  const [voteOrder, voteOrderHandlers] = useListState<candidateInfo>(election.candidates.map(
+    (candidate) => {return {
       id: candidate.id,
       name: candidate.name,
       presentation: candidate.presentation,
@@ -138,9 +154,9 @@ export const Voting: React.FC<{ election: Election }> = (props) => {
     return compareList(aKey, bKey)
   }))
 
-  const { classes, cx } = useStyle()
+  const { classes, cx } = useStyles()
   const [displayIndex, setDisplayIndex] = useState<Map<string, string>>(new Map<string, string>())
-  const [disabled, setDisabled] = useState(true)
+  const [hasVoted, setHasVoted] = useState(true)
   const [hash, setHash] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const { authHeader } = useAuthorization()
@@ -153,6 +169,18 @@ export const Voting: React.FC<{ election: Election }> = (props) => {
       secret: (s: string) => (s.length < 10 ? "Secret should be at least 10 characters long" : null)
     }
   })
+
+  const hasOpened = useMemo(() => (
+    (election.openTime ? dayjs(Date.now()).isAfter(election.openTime) : false)
+  ), [election.openTime])
+
+  const hasClosed = useMemo(() => (
+    (election.closeTime ? dayjs(Date.now()).isAfter(election.closeTime) : true)
+  ), [election.closeTime])
+
+  const disabled = useMemo(() => (
+    hasVoted || election.finalized || !hasOpened || hasClosed
+  ), [hasVoted, election.finalized, hasOpened, hasClosed])
 
   const updateDisplayIndex = useCallback((indexes: Map<string, number>) => {
     let firstSymbolic = voteOrder.length
@@ -186,24 +214,24 @@ export const Voting: React.FC<{ election: Election }> = (props) => {
   }, [voteOrderHandlers])
 
   const submitForm = useCallback(form.onSubmit((values) => {
-    axios.post(`/api/election/${props.election.id}/vote`, values, {
+    axios.post(`/api/election/${election.id}/vote`, values, {
       headers: authHeader
-    }).then((res) => {
-      setHash(res.data)
-      setDisabled(true)
-    }).catch((reason) => {
-      setError(reason.message)
+    }).then(({data}) => {
+      setHash(data)
+      setHasVoted(true)
+    }).catch(({reason}) => {
+      setError(reason.data)
     })
   }), [form])
 
 
   useEffect(() => {
-    axios(`/api/election/${props.election.id}/has-voted`, {
+    axios(`/api/election/${election.id}/has-voted`, {
       headers: authHeader
     }).then(({data}) => {
-      setDisabled(data)
-    }).catch((reason) => {
-      setDisabled(false)
+      setHasVoted(data)
+    }).catch(() => {
+      setHasVoted(false)
     })
   }, [authHeader])
 
@@ -216,7 +244,80 @@ export const Voting: React.FC<{ election: Election }> = (props) => {
     [voteOrder]
   )
 
-  const items = voteOrder.map((candidate, index) =>
+  const items = voteOrder.map((candidate, index) => (
+    <DraggableCandidate candidate={candidate} index={index} disabled={disabled} displayIndex={displayIndex}/>
+  ))
+
+  return <div>
+    <div>
+
+      <p>{election.description}</p>
+    </div>
+
+    <InfoBox />
+
+    {disabled &&
+      <div className={classes.votingDisabledInfo}>
+        {(election.finalized || (hasClosed && hasOpened)) &&
+          <p> Det går inte lägre att rösta i det här valet. </p>
+        }
+
+        {!election.finalized && !hasOpened &&
+          <p>Det här valet har inte öppnat ännu</p>
+        }
+
+        {!(election.finalized || hasClosed || !hasOpened) && hasVoted &&
+          <p>Du har redan röstat i det här valet. </p>
+        }
+      </div>
+    }
+
+    <form onSubmit={submitForm}>
+
+      <div className={classes.flexRow} style={{marginBottom:"1rem"}}>
+        <div className={classes.flexSubRow}>
+          <p style={{marginTop: "0.6rem"}}>Secret: </p>
+          <TextInput disabled={disabled} placeholder="Secret" {...form.getInputProps('secret')} />
+        </div>
+        <Button disabled={disabled} type="submit">
+          Rösta
+        </Button>
+      </div>
+
+      <DragDropContext onDragEnd={handleItemDrop} onDragUpdate={handleItemUpdate}>
+        <Droppable droppableId="vote-ordering" direction="vertical">
+          {(provided) => (
+            <div {...provided.droppableProps} ref={provided.innerRef} className={classes.droppable}>
+              {items}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
+    </form>
+
+    {hash && <InformationModal opened={!!hash} onClose={() => setHash(null)} info={
+      `Din röst är registrerad och fick hashen ${hash}, den kan användas för att kolla att din röst har räknats`
+    } />}
+    {error && <ErrorModal opened={!!error} onClose={() => setError(null)} error={
+      "Misslyckades skicka rösten till databasen, kontakta IOR"
+    } />}
+
+  </div>
+}
+
+interface DraggableCandidateProps {
+  candidate: Candidate
+  index: number
+  disabled: boolean
+  displayIndex: Map<string, string>
+}
+
+const DraggableCandidate: React.FC<DraggableCandidateProps> = ({
+  candidate, index, disabled, displayIndex
+}) => {
+  const {classes, cx} = useStyles()
+  return <>
     <Draggable key={candidate.id} index={index} draggableId={candidate.id} isDragDisabled={disabled}>
       {(provided, snapshot) => {
         // https://github.com/atlassian/react-beautiful-dnd/issues/958#issuecomment-980548919
@@ -254,43 +355,5 @@ export const Voting: React.FC<{ election: Election }> = (props) => {
         </div>
       }}
     </Draggable>
-  )
-
-  return <div>
-    <div>
-      <p>{props.election.description}</p>
-    </div>
-
-    <InfoBox />
-
-    <form onSubmit={submitForm}>
-
-      <div className={classes.flexRow} style={{marginBottom:"1rem"}}>
-        <div className={classes.flexSubRow}>
-          <p style={{marginTop: "0.6rem"}}>Secret: </p>
-          <TextInput disabled={disabled} placeholder="Secret" {...form.getInputProps('secret')} />
-        </div>
-        <Button disabled={disabled} type="submit">
-          Rösta
-        </Button>
-      </div>
-
-      <DragDropContext onDragEnd={handleItemDrop} onDragUpdate={handleItemUpdate}>
-        <Droppable droppableId="vote-ordering" direction="vertical">
-          {(provided) => <div {...provided.droppableProps} ref={provided.innerRef} className={classes.droppable}>
-            {items}
-            {provided.placeholder}
-          </div>}
-        </Droppable>
-      </DragDropContext>
-    </form>
-
-    {hash && <InformationModal opened={!!hash} onClose={() => setHash(null)} info={
-      `Din röst är registrerad och fick hashen ${hash}, den kan användas för att kolla att din röst har räknats`
-    } />}
-    {error && <ErrorModal opened={!!error} onClose={() => setError(null)} error={
-      "Misslyckades skicka rösten till databasen, kontakta IOR"
-    } />}
-
-  </div>
+  </>
 }
