@@ -2,21 +2,23 @@ import React, { useEffect, useState } from "react";
 import { Modal } from "@mantine/core";
 
 export const ErrorModal: React.FC<
-  { error: string, opened: boolean, onClose: () => void }
+  { error: string | JSX.Element, opened: boolean, onClose: () => void }
 > = ({error, opened, onClose}) => {
   return <Modal opened={opened} onClose={onClose} centered title={"Error"}
     styles={{ modal: { backgroundColor: "#ffcccb" } }}
   >
-    <div>
+    <div style={{textAlign: "center"}}>
       {error}
     </div>
   </Modal>
 }
 
 export const InformationModal: React.FC<
-  { info: string, opened: boolean, onClose: () => void }
+  { info: string | JSX.Element, opened: boolean, onClose: () => void }
 > = ({info, opened, onClose}) => {
   return <Modal opened={opened} onClose={onClose} centered>
-    {info}
+    <div style={{ textAlign: "center" }}>
+      {info}
+    </div>
   </Modal>
 }

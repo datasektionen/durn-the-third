@@ -126,7 +126,7 @@ const InfoBox: React.FC = () => {
       Rangordna kandidater i den ordningen som du föredrar dem. Om du lägger <strong>Blank</strong> eller <strong>Vakant</strong> ovanför en kandidat betyder det att du hellre vill rösta blankt 
       eller vakanssätta posten än att den kandidaten blir vald. Allt som ligger under Blank eller Vakant spelar ordningen ingen roll på.
       <br /><br />
-      <strong>Secret</strong> ska innehålla en minst 10 karaktärer lång sträng som kan användas för att varifiera att din röst registrerats i systemet efter att rösterna räknats.
+      <strong>Secret</strong> ska innehålla en minst 10 karaktärer lång sträng som kan användas för att verifiera att din röst registrerats i systemet efter att rösterna räknats.
     </p>
   </div>
 }
@@ -154,7 +154,7 @@ export const Voting: React.FC<VotingProps> = ({
     return compareList(aKey, bKey)
   }))
 
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const [displayIndex, setDisplayIndex] = useState<Map<string, string>>(new Map<string, string>())
   const [hasVoted, setHasVoted] = useState(true)
   const [hash, setHash] = useState<string | null>(null)
@@ -252,7 +252,7 @@ export const Voting: React.FC<VotingProps> = ({
     <div>
       <p>{election.description}</p>
     </div>
-    
+
     {election.openTime && election.closeTime &&
       <Grid my="md">
         <Grid.Col md={6}>
@@ -311,7 +311,9 @@ export const Voting: React.FC<VotingProps> = ({
     </form>
 
     {hash && <InformationModal opened={!!hash} onClose={() => setHash(null)} info={
-      `Din röst är registrerad och fick hashen ${hash}, den kan användas för att kolla att din röst har räknats`
+      <p>Din röst är registrerad och fick hashen:<br /> 
+      <code>{hash}</code><br />
+       Den kan användas för att kolla att din röst har räknats efter att valet är avslutat.</p>
     } />}
     {error && <ErrorModal opened={!!error} onClose={() => setError(null)} error={
       "Misslyckades skicka rösten till databasen, kontakta IOR"
