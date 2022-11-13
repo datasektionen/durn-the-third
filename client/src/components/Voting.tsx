@@ -5,7 +5,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautif
 import { Selector } from 'tabler-icons-react'
 import { useForm } from "@mantine/form"
 import { useListState } from "@mantine/hooks";
-import { Button, Center, createStyles, TextInput } from "@mantine/core";
+import { Button, Center, createStyles, Grid, TextInput } from "@mantine/core";
 
 import { Candidate, Election } from "../util/ElectionTypes";
 import useAuthorization from "../hooks/useAuthorization";
@@ -250,9 +250,23 @@ export const Voting: React.FC<VotingProps> = ({
 
   return <div>
     <div>
-
       <p>{election.description}</p>
     </div>
+    
+    {election.openTime && election.closeTime &&
+      <Grid my="md">
+        <Grid.Col md={6}>
+          <p style={{ textAlign: "left" }}>
+            Valet öppnar: {election.openTime.toLocaleString()}
+          </p>
+        </Grid.Col>
+        <Grid.Col md={6}>
+          <p style={{textAlign: "right"}}>
+            Valet stänger: {election.closeTime.toLocaleString()}
+          </p>
+        </Grid.Col>
+      </Grid>
+    }
 
     <InfoBox />
 
