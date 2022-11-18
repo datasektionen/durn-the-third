@@ -76,9 +76,7 @@ const AddVotersField: React.FC<AddVotersFieldProps> = ({disabled, setVoters}) =>
       headers: authHeader
     }).then((res) => {
       setVoters(res.data.voters)
-    }).catch((err) => {
-      console.log(err.message)
-    })
+    }).catch((err) => { })
   }
 
   const handleButtonClick = () => {
