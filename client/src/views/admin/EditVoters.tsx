@@ -23,15 +23,11 @@ const EditVoters: React.FC = () => {
   const [voters, setVoters] = useState<string[]>([])
 
   useEffect(() => {
-    console.log(authHeader)
     axios("/api/voters", {
       headers: authHeader
     }).then((res) => {
       setVoters(res.data.voters)
-    }).catch((error) => {
-      console.log(error)
-    })
-
+    }).catch(() => {})
   }, [authHeader])
 
   if (!adminRead) navigate("/", {replace: true})

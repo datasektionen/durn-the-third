@@ -16,11 +16,8 @@ var m sync.Mutex
 
 func InitDB() {
 	c := config.GetConfig()
-	// dsn := fmt.Sprintf("host=%s user=%s password=%s database=%s", c.DB_HOST, c.DB_USER, c.DB_PSWD, c.DB_NAME)
-	dsn := c.DB_URL
-
+	dsn := c.DATABASE_URL
 	var err error
-
 	if db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{}); err != nil {
 		fmt.Println(err)
 		os.Exit(5)

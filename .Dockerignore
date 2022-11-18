@@ -2,3 +2,5 @@
 tmp
 dist
 node_modules
+Dockerfile
+.Dockerignore

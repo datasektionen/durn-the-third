@@ -16,7 +16,8 @@ type Config struct {
 	LOGIN_KEY string
 	PLS_URL   string
 
-	DB_URL  string
+	DATABASE_URL string
+
 	DB_HOST string
 	DB_PORT int
 	DB_NAME string
@@ -64,7 +65,8 @@ func GetConfig() *Config {
 		LOGIN_KEY: loadStringEnv("LOGIN_KEY", ""),
 		PLS_URL:   loadStringEnv("PLS_URL", "https://pls.datasektionen.se"),
 
-		DB_URL:  loadStringEnv("DB_URL", ""),
+		DATABASE_URL: loadStringEnv("DATABASE_URL", ""),
+
 		DB_HOST: loadStringEnv("DB_HOST", ""),
 		DB_PORT: loadIntEnv("DB_PORT", 5432),
 		DB_NAME: loadStringEnv("DB_NAME", "durn"),
