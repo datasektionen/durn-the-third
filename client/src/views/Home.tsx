@@ -2,19 +2,31 @@ import React, { useEffect, useState } from "react";
 import { Header } from "methone";
 import axios from "axios";
 
-import { Grid, Skeleton, Container } from "@mantine/core";
+import { Grid, Text, Container, createStyles} from "@mantine/core";
 
 import { DisplayElectionInfo } from "../components/Election";
-import { electionMock, Election, parseElectionResponse } from "../util/ElectionTypes"
+import { Election, parseElectionResponse } from "../util/ElectionTypes"
 import { Voting } from "../components/Voting";
 import useAuthorization from "../hooks/useAuthorization";
+import constants from "../util/constants";
+
+const useStyles = createStyles((theme) => ({
+  infoBox: {
+    borderRadius: "0.5rem",
+    padding: "2rem",
+  }
+}))
 
 const Info: React.FC = () => {
-  return <Skeleton height={300} animate={false}> </Skeleton>
-}
-
-const getMockElections = (): Election[] =>  {
-  return [electionMock(), electionMock(), electionMock()];
+  const { classes, cx } = useStyles()
+  return <div className={cx(constants.themeColor, "lighten-4", classes.infoBox)}>
+    <p>
+      Om det finns några publicerade val så ser du dem nedan. <br />
+      <br />
+      Vid frågor, kontakta vaberedningen (<a href="mailto:valberedning@datasektionen.se">valberedning@datasektionen.se</a>)
+      eller IOR (<a href="mailto:ior@d.kth.se">ior@d.kth.se</a>)
+    </p>
+  </div>
 }
 
 export const Home: React.FC = () => {
@@ -29,7 +41,7 @@ export const Home: React.FC = () => {
   }, [authHeader]);
 
   return (<>
-    <Header title="Hem" />
+    <Header title="dUrn - digitala urnval" />
     
     <div>
       <Container my="md">

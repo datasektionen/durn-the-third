@@ -7,7 +7,8 @@ import {
 } from "react-router-dom";
 
 export const Login: React.FC = () => {
-  const loginURL = process.env.LOGIN_URL ?? "https://login.datasektionen.se"
+  const loginURL = "https://login.datasektionen.se"
+
   const callback = encodeURIComponent(`${window.location.origin}/#/token/`)
   const url = `${loginURL}/login?callback=${callback}`;
   window.location.replace(url);
