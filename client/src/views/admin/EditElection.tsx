@@ -6,7 +6,7 @@ import {
 import { Header } from "methone"
 import axios from "axios";
 
-import { Grid, Container, TextInput, Button, Text, Textarea, ScrollArea, Table, createStyles, Modal, Center, Stack, Tooltip } from "@mantine/core";
+import { Grid, Container, TextInput, Button, Text, Textarea, ScrollArea, Table, createStyles, Modal, Center, Stack, Tooltip, List } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { Plus, X } from "tabler-icons-react";
 
@@ -16,6 +16,8 @@ import { DateTimeInput } from "../../components/DateTime";
 import { ErrorModal, InformationModal } from "../../components/PopupModals";
 import useMap from "../../hooks/useMap";
 import { DisplayResult } from "../../components/DisplayResult";
+import constants from "../../util/constants";
+
 
 const useStyles = createStyles((theme) => { return {
   changed: {
@@ -23,8 +25,31 @@ const useStyles = createStyles((theme) => { return {
   },
   adding: {
     backgroundColor: theme.colors.gray[1]
+  },
+
+  info: {
+    padding: "3rem",
+    marginBottom: "1rem",
+    borderRadius: "0.5rem",
+    backgroundColor: "rgb(197, 202, 233)",
   }
 }})
+
+
+const Info: React.FC = () => {
+  const { classes, cx } = useStyles()
+  return <div className={cx(constants.themeColor, "lighten-4", classes.info)}>
+    Regler för redigering för att försäkra sig om val som inte går sönder: 
+    <ul>
+      <li>Efter att valet har öppnat, publicerats eller har röster så går det inte att lägga till kandidater.</li>
+      <li>När ett val har finaliserats går det inte att rösta i det.</li>
+      <li>Röster kan bara räknas efter att valet har finaliserats.</li>
+      <li>Det går inte att avfinalisera ett val.</li>
+      <li>Ordningen som kandidater är inlagda i spelar ingen roll, det slumpas för varje röstsedel.</li>
+    </ul>
+  </div>
+}
+
 
 const EditElection: React.FC = () => {
   const electionId = useParams()["id"] ?? ""
@@ -182,6 +207,8 @@ const EditElection: React.FC = () => {
 
     <form onSubmit={submitChanges}>
       <Container my="md">
+
+        <Info />
         <Grid align="center">
           <Grid.Col md={1}>
             <Text align="right" fz="lg" fw={700}>Titel: </Text>
