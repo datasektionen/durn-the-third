@@ -23,7 +23,7 @@ const Info: React.FC = () => {
     <p>
       Om det finns några publicerade val så ser du dem nedan. <br />
       <br />
-      Vid frågor, kontakta vaberedningen (<a href="mailto:valberedning@datasektionen.se">valberedning@datasektionen.se</a>)
+      Vid frågor, kontakta vaberedningen (<a href="mailto:valberedningen@datasektionen.se">valberedningen@datasektionen.se</a>)
       eller IOR (<a href="mailto:ior@d.kth.se">ior@d.kth.se</a>)
     </p>
   </div>

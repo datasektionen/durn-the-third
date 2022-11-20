@@ -111,6 +111,7 @@ const useStyles = createStyles((theme) => ({
   votingDisabledInfo: {
     margin: "2rem",
     padding: "0.5rem",
+    paddingTop: "1rem",
     textAlign: "center",
     borderRadius: "0.6rem",
     backgroundColor: "#ffcccb"
@@ -156,7 +157,7 @@ export const Voting: React.FC<VotingProps> = ({
 
   const { classes } = useStyles()
   const [displayIndex, setDisplayIndex] = useState<Map<string, string>>(new Map<string, string>())
-  const [hasVoted, setHasVoted] = useState(true)
+  const [hasVoted, setHasVoted] = useState(false)
   const [mayVote, setMayVote] = useState(true)
   const [hash, setHash] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -231,7 +232,7 @@ export const Voting: React.FC<VotingProps> = ({
       headers: authHeader
     }).then(({data}) => {
       setHasVoted(data)
-    }).catch(() => {
+    }).catch(({response}) => {
       setHasVoted(false)
     })
   }, [authHeader])
@@ -294,8 +295,9 @@ export const Voting: React.FC<VotingProps> = ({
         {!mayVote && !hasVoted &&
           <p>
             Du har inte fått rösträtt i det här valet.<br/>
-            kontakta valberedningen (<a href="mailto:valberedning@datasektionen.se">valberedning@datasektionen.se</a>) 
-            om du ska ha det.
+            Kontakta valberedningen om är medlem och ska ha det.<br/>
+            (<a href="mailto:valberedningen@datasektionen.se">valberedningen@datasektionen.se</a>) 
+            
           </p>
         }
 
