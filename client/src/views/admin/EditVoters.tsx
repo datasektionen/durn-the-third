@@ -7,6 +7,7 @@ import { Checkbox, createStyles, Grid, ScrollArea, Table, Container, Skeleton, B
 
 import useAuthorization from "../../hooks/useAuthorization";
 import useMap from "../../hooks/useMap";
+import constants from "../../util/constants";
 
 const useStyles = createStyles((theme) => { return {
   tableContainer: {
@@ -14,7 +15,14 @@ const useStyles = createStyles((theme) => { return {
   },
   sectionTitle: {
     textAlign: "center",
-  }
+  },
+
+  info: {
+    padding: "3rem",
+    marginBottom: "1rem",
+    borderRadius: "0.5rem",
+    backgroundColor: "rgb(197, 202, 233)",
+  },
 }})
 
 const EditVoters: React.FC = () => {
@@ -56,7 +64,18 @@ const EditVoters: React.FC = () => {
 
 
 const Info: React.FC = () => {
-  return <Skeleton height={300} animate={false} />
+  const { classes, cx } = useStyles()
+  return <div className={cx(constants.themeColor, "lighten-4", classes.info)}>
+    I den här menyn administreras vilka som har rösträtt.<br /><br />
+    
+    Vid systemets utvecklingstillfälle så går vilka medlemmar vi har endast att få ut genom att få ett spredsheet av THS.
+    Detta behöver föras över till systemet, och detta är menat att göras genom att kopiera över kolumnen med <strong>e-mailaddresser </strong> 
+    till fältet för att lägga till röstberättigade. <br /><br />
+
+    Enstaka användare kan läggas till och tas bort. Om en användare som redan existerar läggs till så händer inget, d.v.s. när en lista av 
+    användare läggs till filtreras alla som redan är röstberättigade bort, så att inga dubbletter skapas.
+    Allt som inte är en mailaddress på formen <code>[...]@kth.se</code> filtreras också bort. 
+  </div>
 }
 
 interface AddVotersFieldProps {
@@ -87,10 +106,10 @@ const AddVotersField: React.FC<AddVotersFieldProps> = ({disabled, setVoters}) =>
 
   return <div>
     <h3 className={classes.sectionTitle}>
-      Add voters
+      Lägg till röstberättigade
     </h3>
     <Button onClick={handleButtonClick} fullWidth>
-      Submit
+      Spara
     </Button>
     <div style={{marginTop: "1rem"}}>
       <Textarea autosize ref={ref} />
@@ -157,7 +176,7 @@ const VotersTable: React.FC<VotersTableProps> = ({voters, setVoters}) => {
 
   return <div className={classes.tableContainer}>
     <h3 className={classes.sectionTitle}>
-      Allowed voters
+      Alla röstberättigade
     </h3>
     <ScrollArea>
       <Table withColumnBorders withBorder>
@@ -173,7 +192,7 @@ const VotersTable: React.FC<VotersTableProps> = ({voters, setVoters}) => {
             </th>
             <th>
               <Button compact onClick={deleteVoters}>
-                Delete selected Users
+                Ta bort valda användare
               </Button>
             </th>
           </tr>
