@@ -101,6 +101,12 @@ func GetVoters(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
+// UserAllowedToVote checks if the logged in voter is allowed to vote.
+// Assumes that voting-privilege middleware has been run before the handler
+func UserAllowedToVote(c *gin.Context) {
+	c.JSON(http.StatusOK, "true")
+}
+
 type votersResponse struct {
 	Voters []string `json:"voters"`
 }
