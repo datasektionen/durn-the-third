@@ -104,7 +104,10 @@ func CastVote(c *gin.Context) {
 		}).Error; err != nil {
 			return err
 		}
-		if err := tx.Create(&database.VoteHash{Hash: hash}).Error; err != nil {
+		if err := tx.Create(&database.VoteHash{
+			Hash:       hash,
+			ElectionID: electionId,
+		}).Error; err != nil {
 			return err
 		}
 
