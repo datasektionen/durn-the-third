@@ -72,6 +72,7 @@ export const DisplayElectionInfo: React.FC<DisplayElectionInfoProps> = (
           <h2>{election.name}</h2>
         }
         closeOnClickOutside={false}
+        closeOnEscape={false}
         overlayOpacity={0.2}
         size="600px"
       >
