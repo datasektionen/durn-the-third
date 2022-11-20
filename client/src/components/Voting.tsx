@@ -157,6 +157,7 @@ export const Voting: React.FC<VotingProps> = ({
   const { classes } = useStyles()
   const [displayIndex, setDisplayIndex] = useState<Map<string, string>>(new Map<string, string>())
   const [hasVoted, setHasVoted] = useState(true)
+  const [mayVote, setMayVote] = useState(true)
   const [hash, setHash] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const { authHeader } = useAuthorization()
@@ -179,8 +180,8 @@ export const Voting: React.FC<VotingProps> = ({
   ), [election.closeTime])
 
   const disabled = useMemo(() => (
-    hasVoted || election.finalized || !hasOpened || hasClosed
-  ), [hasVoted, election.finalized, hasOpened, hasClosed])
+    hasVoted || election.finalized || !hasOpened || hasClosed || !mayVote
+  ), [hasVoted, election.finalized, hasOpened, hasClosed, mayVote])
 
   const updateDisplayIndex = useCallback((indexes: Map<string, number>) => {
     let firstSymbolic = voteOrder.length
@@ -219,8 +220,8 @@ export const Voting: React.FC<VotingProps> = ({
     }).then(({data}) => {
       setHash(data)
       setHasVoted(true)
-    }).catch(({reason}) => {
-      setError(reason.data)
+    }).catch(({response}) => {
+      setError(response.data)
     })
   }), [form])
 
@@ -232,6 +233,17 @@ export const Voting: React.FC<VotingProps> = ({
       setHasVoted(data)
     }).catch(() => {
       setHasVoted(false)
+    })
+  }, [authHeader])
+
+  useEffect(() => {
+    axios(`/api/voter/allowed`, {
+      headers: authHeader
+    }).then(() => {
+      setMayVote(true)
+    }).catch(({response}) => {
+      if (response.status == 403) 
+        setMayVote(false)
     })
   }, [authHeader])
 
@@ -257,12 +269,14 @@ export const Voting: React.FC<VotingProps> = ({
       <Grid my="md">
         <Grid.Col md={6}>
           <p style={{ textAlign: "left" }}>
-            Valet öppnar: {election.openTime.toLocaleString()}
+            <b>Valet öppnar</b> <br/>
+            {election.openTime.toLocaleString()}
           </p>
         </Grid.Col>
         <Grid.Col md={6}>
           <p style={{textAlign: "right"}}>
-            Valet stänger: {election.closeTime.toLocaleString()}
+            <b>Valet stänger</b> <br/>
+            {election.closeTime.toLocaleString()}
           </p>
         </Grid.Col>
       </Grid>
@@ -272,11 +286,20 @@ export const Voting: React.FC<VotingProps> = ({
 
     {disabled &&
       <div className={classes.votingDisabledInfo}>
+        
         {(election.finalized || (hasClosed && hasOpened)) &&
           <p> Det går inte lägre att rösta i det här valet. </p>
         }
 
-        {!election.finalized && !hasOpened &&
+        {!mayVote && !hasVoted &&
+          <p>
+            Du har inte fått rösträtt i det här valet.<br/>
+            kontakta valberedningen (<a href="mailto:valberedning@datasektionen.se">valberedning@datasektionen.se</a>) 
+            om du ska ha det.
+          </p>
+        }
+
+        {!election.finalized && !hasOpened && !mayVote &&
           <p>Det här valet har inte öppnat ännu</p>
         }
 
