@@ -10,6 +10,7 @@ import constants from "./util/constants";
 import Admin from "./views/admin/Admin";
 import EditElection from "./views/admin/EditElection";
 import EditVoters from "./views/admin/EditVoters";
+import AdminActions from "./views/admin/AdminActions"
 
 const App: React.FC = () => {
   const { loggedIn, adminRead, adminWrite } = useAuthorization();
@@ -21,7 +22,8 @@ const App: React.FC = () => {
       ...( loggedIn && adminRead ? [
         <Link key="1" to="/">Hem</Link>,
         <Link key="2" to="/admin">Administrera val</Link>,
-        <Link key="3" to="/admin/voters">Administrera väljare </Link>
+        <Link key="3" to="/admin/voters">Administrera väljare </Link>,
+        <Link key="4" to="/admin/actions">Admin-meny</Link>
       ] : [])
     ],
     login_href: loggedIn ? "#/logout" : "#/login",
@@ -42,6 +44,7 @@ const App: React.FC = () => {
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/election/:id" element={<EditElection />} />
           <Route path="/admin/voters" element={<EditVoters />} />
+          <Route path="/admin/actions" element={<AdminActions />} />
 
 
         </Routes>
