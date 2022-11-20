@@ -189,7 +189,7 @@ const EditElection: React.FC = () => {
           <Grid.Col md={9}>
             <TextInput size="lg" {...form.getInputProps("name")} placeholder="titel"/>
           </Grid.Col>
-          <Grid.Col md={2} >
+          <Grid.Col md={2}>
             <Button fullWidth type="submit">
               Uppdatera
             </Button>

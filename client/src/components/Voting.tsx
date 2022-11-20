@@ -5,7 +5,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautif
 import { Selector } from 'tabler-icons-react'
 import { useForm } from "@mantine/form"
 import { useListState } from "@mantine/hooks";
-import { Button, Center, createStyles, Grid, TextInput } from "@mantine/core";
+import { Button, Center, createStyles, Grid, TextInput, Text } from "@mantine/core";
 
 import { Candidate, Election } from "../util/ElectionTypes";
 import useAuthorization from "../hooks/useAuthorization";
@@ -384,9 +384,12 @@ const DraggableCandidate: React.FC<DraggableCandidateProps> = ({
               <div className={classes.box}> <span className={classes.boxtext}>
                 {displayIndex.get(candidate.id) ?? '-'}
               </span> </div>
-              <div> <span> {candidate.name} </span> </div>
+              <div> <Text fs={candidate.symbolic ? "italic" : ""} fw={candidate.symbolic ? 500 : 400}
+                sx={{ fontFamily: 'Lato' }}>
+                {candidate.name}
+              </Text> </div>
             </div>
-            {candidate.presentation != "" ?
+            {candidate.presentation != "" && !candidate.symbolic ?
               <div style={{ whiteSpace: "nowrap", marginLeft: "0.5rem" }}> <span>
                 <a href={candidate.presentation} target="_blank"> Presentation </a>
               </span> </div> : <></>}
