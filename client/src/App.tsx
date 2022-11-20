@@ -13,19 +13,17 @@ import EditVoters from "./views/admin/EditVoters";
 import AdminActions from "./views/admin/AdminActions"
 
 const App: React.FC = () => {
-  const { loggedIn, adminRead, adminWrite } = useAuthorization();
+  const { loggedIn, adminRead } = useAuthorization();
 
   const config = useMemo(() => ({
     system_name: "durn",
     color_scheme: constants.themeColor,
-    links: [
-      ...( loggedIn && adminRead ? [
-        <Link key="1" to="/">Hem</Link>,
-        <Link key="2" to="/admin">Administrera val</Link>,
-        <Link key="3" to="/admin/voters">Administrera väljare </Link>,
-        <Link key="4" to="/admin/actions">Admin-meny</Link>
-      ] : [])
-    ],
+    links: ( loggedIn && adminRead ? [
+      <Link key="1" to="/">Hem</Link>,
+      <Link key="2" to="/admin">Administrera val</Link>,
+      <Link key="3" to="/admin/voters">Administrera väljare </Link>,
+      <Link key="4" to="/admin/actions">Admin-meny</Link>
+    ] : [] ),
     login_href: loggedIn ? "#/logout" : "#/login",
     login_text: loggedIn ? "Logga ut" : "Logga in",
   }), [adminRead, loggedIn])
@@ -45,10 +43,7 @@ const App: React.FC = () => {
           <Route path="/admin/election/:id" element={<EditElection />} />
           <Route path="/admin/voters" element={<EditVoters />} />
           <Route path="/admin/actions" element={<AdminActions />} />
-
-
         </Routes>
-
       </div>
     </HashRouter>
   );
