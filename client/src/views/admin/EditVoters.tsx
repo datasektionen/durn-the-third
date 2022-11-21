@@ -68,11 +68,11 @@ const Info: React.FC = () => {
   return <div className={cx(constants.themeColor, "lighten-4", classes.info)}>
     I den här menyn administreras vilka som har rösträtt.<br /><br />
     
-    Vid systemets utvecklingstillfälle så går vilka medlemmar vi har endast att få ut genom att få ett spredsheet av THS.
-    Detta behöver föras över till systemet, och detta är menat att göras genom att kopiera över kolumnen med <strong>e-mailaddresser </strong> 
+    Vid systemets utvecklingstillfälle så går det endast att få ut vilka medlemmar vi har genom att få ett spreadsheet av THS.
+    Detta behöver föras över till systemet, och detta är menat att göras genom att kopiera över kolumnen med <strong>mailaddresser </strong> 
     till fältet för att lägga till röstberättigade. <br /><br />
 
-    Enstaka användare kan läggas till och tas bort. Om en användare som redan existerar läggs till så händer inget, d.v.s. när en lista av 
+    Enstaka användare kan läggas till och tas bort. Om en användare som redan existerar läggs till så händer inget. D.v.s. när en lista av 
     användare läggs till filtreras alla som redan är röstberättigade bort, så att inga dubbletter skapas.
     Allt som inte är en mailaddress på formen <code>[...]@kth.se</code> filtreras också bort. 
   </div>
