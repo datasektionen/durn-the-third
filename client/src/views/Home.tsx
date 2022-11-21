@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Header } from "methone";
 import axios from "axios";
 
-import { Grid, Text, Container, createStyles} from "@mantine/core";
+import { Grid, Text, Container, createStyles, Center} from "@mantine/core";
 
 import { DisplayElectionInfo } from "../components/Election";
 import { Election, parseElectionResponse } from "../util/ElectionTypes"
@@ -15,6 +15,13 @@ const useStyles = createStyles((theme) => ({
     borderRadius: "0.3rem",
     padding: "2rem",
     marginTop: "10rem"
+  },
+
+  loginBox: {
+    borderRadius: "0.3rem",
+    padding: "3rem",
+    marginTop: "3rem",
+    fontSize: "x-large"
   }
 }))
 
@@ -62,7 +69,9 @@ const Info: React.FC = () => {
 
 export const Home: React.FC = () => {
   const [elections, setElections] = useState<Election[]>([]);
-  const {authHeader} = useAuthorization()
+  const {loggedIn, authHeader} = useAuthorization()
+  const { cx, classes } = useStyles()
+
   useEffect(() => {
     axios(`/api/elections/public`, {
       headers: authHeader
@@ -74,10 +83,29 @@ export const Home: React.FC = () => {
   return (<>
     <Header title="dUrn - digitala urnval" />
     
-    <div>
+    <div style={{marginTop: "2rem"}}>
       <Container my="md">
+
+        {!loggedIn &&
+          <div >
+            <Center>
+              <p className={cx(constants.themeColor, "lighten-4", classes.loginBox)}>
+                Logga in för att se de aktuella urnvalen.
+              </p>
+            </Center>
+          </div>  
+        }
+        {loggedIn && elections.length == 0 && 
+          <div >
+            <Center>
+              <p className={cx(constants.themeColor, "lighten-4", classes.loginBox)}>
+                Det finns inga publicerade urnval just nu.
+              </p>
+            </Center>
+          </div>
+        }
         <Grid>
-          {elections.map((e) => 
+          {loggedIn && elections.map((e) => 
             <Grid.Col xs={4}>{<DisplayElectionInfo election={e} ModalContent={Voting}/>}</Grid.Col>
             )}
           {/* <Grid.Col xs={12}>{}</Grid.Col>l */}
