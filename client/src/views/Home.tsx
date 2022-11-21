@@ -44,7 +44,7 @@ const Info: React.FC = () => {
       <p>
         Exakt hur rösterna räknas bestäms av <></>
         <a href="https://styrdokument.datasektionen.se/reglemente">sektionens reglemente</a>, 
-        i §3.12.7., som säger att de ska räknas med algoritmen <></>
+        i §3.12.7, som säger att de ska räknas med algoritmen <></>
         <a href="https://sv.wikipedia.org/wiki/Alternativr%C3%B6stning">Alternativomröstning</a>, 
         där man även kan rangordna <em>Blank</em> och <em>Vakans</em>.
         Den kan sammanfattas som:
