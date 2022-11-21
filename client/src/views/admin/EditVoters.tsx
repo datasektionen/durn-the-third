@@ -100,7 +100,7 @@ const AddVotersField: React.FC<AddVotersFieldProps> = ({disabled, setVoters}) =>
 
   const handleButtonClick = () => {
     const input = ref.current?.value ?? ""
-    const values = input.split(/\s*[\n,]\s*/)
+    const values = input.split(/\s*[\n,]\s*/).map((v) => v.trim())
     addVoters(values)
   }
 

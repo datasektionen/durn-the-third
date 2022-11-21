@@ -301,7 +301,7 @@ export const Voting: React.FC<VotingProps> = ({
           </p>
         }
 
-        {!election.finalized && !hasOpened && !mayVote &&
+        {!election.finalized && !hasOpened && mayVote &&
           <p>Det här valet har inte öppnat ännu</p>
         }
 

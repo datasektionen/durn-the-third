@@ -107,8 +107,7 @@ export const Home: React.FC = () => {
         <Grid>
           {loggedIn && elections.map((e) => 
             <Grid.Col xs={4}>{<DisplayElectionInfo election={e} ModalContent={Voting}/>}</Grid.Col>
-            )}
-          {/* <Grid.Col xs={12}>{}</Grid.Col>l */}
+          )}
         </Grid>
         <Info />
       </Container>
