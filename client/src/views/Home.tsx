@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Header } from "methone";
 import axios from "axios";
 
-import { Grid, Text, Container, createStyles, Center} from "@mantine/core";
+import { Grid, Container, createStyles, Center} from "@mantine/core";
 
 import { DisplayElectionInfo } from "../components/Election";
 import { Election, parseElectionResponse } from "../util/ElectionTypes"
@@ -51,7 +51,7 @@ const Info: React.FC = () => {
         <ul>
           <li>Varje valsedel ger sin röst till den kandidat som är högst rankad.</li>
           <li>Den kandidat med minst antal röster stryks ur valet.</li>
-          <li>Om en valsedels högst rankade kandidat är struken ur valet, ge rösten till den högst rankade kandidaten som inte är struken.</li>
+          <li>Om en valsedels högst rankade kandidat är struken ur valet, ges rösten till den högst rankade kandidaten som inte är struken.</li>
           <li><em>Vakans</em> kan aldrig strykas.</li>
           <li>Om en röstsedel har rankat <em>Blank</em> högst så kommer den räknas som en blankröst framöver.</li>
           <li>När en kandidat har en majoritet av rösterna så har den vunnit valet.</li>
@@ -61,7 +61,7 @@ const Info: React.FC = () => {
       <h4><b>Frågor eller tekniska problem?</b></h4>
 
       <p>
-        Vid frågor, kontakta vaberedningen (<a href="mailto:valberedningen@datasektionen.se">valberedningen@datasektionen.se</a>)
+        Kontakta vaberedningen (<a href="mailto:valberedningen@datasektionen.se">valberedningen@datasektionen.se</a>)
         eller Systemansvarig (<a href="mailto:d-sys@datasektionen.se">d-sys@datasektionen.se</a>)
       </p>
   </div>
