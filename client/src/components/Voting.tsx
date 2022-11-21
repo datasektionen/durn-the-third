@@ -125,7 +125,7 @@ const InfoBox: React.FC = () => {
   return <div className={cx(constants.themeColor, "lighten-4", classes.info)}>
     <p>
       Rangordna kandidater i den ordningen som du föredrar dem. Om du lägger <strong>Blank</strong> eller <strong>Vakant</strong> ovanför en kandidat betyder det att du hellre vill rösta blankt 
-      eller vakanssätta posten än att den kandidaten blir vald. Allt som ligger under Blank eller Vakant spelar ordningen ingen roll på, och allt under är därför makerat med <strong>-</strong> istället för en siffra.
+      eller vakanssätta posten än att den kandidaten blir vald. Allt som ligger under Blank eller Vakant spelar ordningen ingen roll på, och allt under är därför makerat med "<strong>-</strong>" istället för en siffra.
       <br /><br />
       <strong>Secret</strong> ska innehålla en minst 10 karaktärer lång sträng, den behövs för att räkna ut en unik hash (eller id) för din röst och kommer kunna användas för att verifiera din röst efter att valet har avslutats.
     </p>
@@ -295,7 +295,7 @@ export const Voting: React.FC<VotingProps> = ({
         {!mayVote && !hasVoted &&
           <p>
             Du har inte fått rösträtt i det här valet.<br/>
-            Kontakta valberedningen om är medlem och ska ha det.<br/>
+            Kontakta valberedningen om du är medlem och ska ha det.<br/>
             (<a href="mailto:valberedningen@datasektionen.se">valberedningen@datasektionen.se</a>) 
             
           </p>
