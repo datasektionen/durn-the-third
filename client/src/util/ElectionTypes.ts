@@ -6,7 +6,8 @@ export interface Candidate {
   id: string,
   name: string,
   presentation: string,
-  symbolic: boolean
+  symbolic: boolean,
+  changed?: boolean,
 }
 
 export interface Election {
@@ -47,7 +48,7 @@ export const electionMock = (): Election => {
         id: "724619af-aa6b-4299-ae25-5307904d8636",
         name: "adsfasdfasdfasdfasdfadsfadfsafasdfsadf",
         presentation: "https://dsekt.se/data",
-        symbolic: false
+        symbolic: false,
       },
       {
         id: "937e4bfe-d0e7-4390-b73e-e36219e838a4",
