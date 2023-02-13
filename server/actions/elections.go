@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"database/sql"
 	"fmt"
 	"net/http"
 	"time"
@@ -38,18 +37,28 @@ func convertElectionToExportType(election database.Election) electionExportType 
 	}
 }
 
-// CreateElection creates an election with the given name.
-// All other fields are set to their defaults and has to be changed
-// using the edit endpoint.
+// CreateElection creates an election with the given name, description and .
+// Omitted fields are set to their defaults values..
 // Default values:
+// - Name: ""
 // - Description: ""
 // - OpenTime, CloseTime: null
 // - Published, Finalized: false
 func CreateElection(c *gin.Context) {
 	body := struct {
-		Name string `json:"name"`
+		Name          string        `json:"name"`
+		Description   string        `json:"description"`
+		OpenTime      util.NullTime `json:"openTime"`
+		CloseTime     util.NullTime `json:"closeTime"`
+		Mandates      int           `json:"mandates"`
+		ExtraMandates int           `json:"extraMandates"`
 	}{
-		Name: "",
+		Name:          "",
+		Description:   "",
+		OpenTime:      util.NullTime{Valid: false},
+		CloseTime:     util.NullTime{Valid: false},
+		Mandates:      1,
+		ExtraMandates: 0,
 	}
 	if err := c.BindJSON(&body); err != nil {
 		c.String(http.StatusBadRequest, util.BadParameters)
@@ -59,13 +68,15 @@ func CreateElection(c *gin.Context) {
 	db := database.GetDB()
 	defer database.ReleaseDB()
 	election := database.Election{
-		ID:          uuid.NewV4(),
-		Name:        body.Name,
-		Description: "",
-		OpenTime:    sql.NullTime{Valid: false},
-		CloseTime:   sql.NullTime{Valid: false},
-		Published:   false,
-		Finalized:   false,
+		ID:            uuid.NewV4(),
+		Name:          body.Name,
+		Description:   body.Description,
+		Mandates:      body.Mandates,
+		ExtraMandates: body.ExtraMandates,
+		OpenTime:      util.ConvertNullTime(body.OpenTime),
+		CloseTime:     util.ConvertNullTime(body.CloseTime),
+		Published:     false,
+		Finalized:     false,
 	}
 	vacant := database.Candidate{
 		ID:           uuid.NewV4(),

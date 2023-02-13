@@ -8,15 +8,17 @@ import (
 )
 
 type Election struct {
-	ID          uuid.UUID    `gorm:"primaryKey" json:"id"`
-	Name        string       `gorm:"not null" json:"name"`
-	Description string       `gorm:"not null" json:"description"`
-	Published   bool         `gorm:"not null" json:"published"`
-	Finalized   bool         `gorm:"not null" json:"finalized"`
-	OpenTime    sql.NullTime `json:"openTime"`
-	CloseTime   sql.NullTime `json:"closeTime"`
-	Candidates  []Candidate  `gorm:"foreignKey:ElectionID;references:ID" json:"candidates"`
-	Votes       []Vote       `json:"-"`
+	ID            uuid.UUID    `gorm:"primaryKey" json:"id"`
+	Name          string       `gorm:"not null" json:"name"`
+	Description   string       `gorm:"not null;default:''" json:"description"`
+	Published     bool         `gorm:"not null" json:"published"`
+	Finalized     bool         `gorm:"not null" json:"finalized"`
+	Mandates      int          `gorm:"not null;default:1" json:"mandates"`
+	ExtraMandates int          `gorm:"not null;default:0" json:"extraMandates"`
+	OpenTime      sql.NullTime `json:"openTime"`
+	CloseTime     sql.NullTime `json:"closeTime"`
+	Candidates    []Candidate  `gorm:"foreignKey:ElectionID;references:ID" json:"candidates"`
+	Votes         []Vote       `json:"-"`
 }
 
 type ValidVoter struct {
