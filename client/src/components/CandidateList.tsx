@@ -9,10 +9,12 @@ const useStyles = createStyles((theme) => {
     changed: {
       backgroundColor: "#e2e19380"
     },
-    adding: {
+    row: {
       backgroundColor: theme.colors.gray[1]
     },
-
+    add: {
+      borderTop: "2px solid " + theme.colors.gray[4]
+    },
     info: {
       padding: "3rem",
       marginBottom: "1rem",
@@ -21,7 +23,6 @@ const useStyles = createStyles((theme) => {
     }
   }
 });
-
 
 export interface CandidateListProps {
   candidates: Candidate[]
@@ -33,7 +34,7 @@ export interface CandidateListProps {
 export const CandidateList: React.FC<CandidateListProps> = (
   { candidates, onCandidateAdded, onCandidateChanged, onCandidateRemoved }
 ) => {
-  const { classes } = useStyles();
+  const { classes, cx } = useStyles();
   const [name, setName] = useState("");
   const [presentation, setPresentation] = useState("");
 
@@ -54,7 +55,7 @@ export const CandidateList: React.FC<CandidateListProps> = (
   // ));
 
   const addCandidateRow = <>
-    <tr className={classes.adding} key="new-candidate">
+    <tr className={cx(classes.row, classes.add)} key="new-candidate">
       <td><Button compact fullWidth onClick={addCandidate}>
         <Plus />
       </Button></td>
@@ -78,7 +79,7 @@ export const CandidateList: React.FC<CandidateListProps> = (
     <ScrollArea>
       <Table withBorder withColumnBorders>
         <thead>
-          <tr key="head">
+          <tr key="head" className={ classes.row }>
             <th style={{ width: 30 }}></th>
             <th>
               <Text style={{ margin: "1rem" }} align="center">
@@ -117,7 +118,7 @@ const CandidateRow: React.FC<CandidateRowProps> = (
     presentation, 
     setPresentation
   ] = useDebouncedState(candidate.presentation, 500);
-  const { classes, cx } = useStyles();
+  const { classes } = useStyles();
 
   console.log(candidate);
 
@@ -131,7 +132,7 @@ const CandidateRow: React.FC<CandidateRowProps> = (
   }, [name, presentation])
 
   return <>
-    <tr key={candidate.id} className={candidate.changed ? classes.changed : "" }>
+    <tr key={candidate.id} className={ candidate.changed ? classes.changed : classes.row }>
       <td>
         <Button color={"red"} compact fullWidth onClick={
           () => onCandidateRemoved(candidate)
