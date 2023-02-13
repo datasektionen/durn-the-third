@@ -43,20 +43,14 @@ const Admin: React.FC = () => {
   }, [authHeader])
 
   const createElection = () => {
-    axios.post("/api/election/create", {}, {
-      headers:authHeader
-    }).then(({data}) => {
-      navigate(`/admin/election/${data}`)
-    }).catch(({response}) => {
-      setError(response.data)
-    })
+    navigate("/admin/create");
   }
 
   if (!adminRead) navigate("/", { replace: true })
 
   return <> {adminRead && <>
     <Header title="Administrera val" action={{
-      onClick: createElection, text: "Skapa Nytt Val"
+      onClick: createElection, text: "Create election"
     }} />
     <ErrorModal opened={error != null} error={
       `Server responded with: ${error ?? ""}`
