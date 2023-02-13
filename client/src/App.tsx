@@ -11,6 +11,7 @@ import Admin from "./views/admin/Admin";
 import EditElection from "./views/admin/EditElection";
 import EditVoters from "./views/admin/EditVoters";
 import AdminActions from "./views/admin/AdminActions"
+import { CreateElection } from "./views/admin/CreateElection";
 
 const App: React.FC = () => {
   const { loggedIn, adminRead } = useAuthorization();
@@ -22,7 +23,6 @@ const App: React.FC = () => {
       <Link key="1" to="/">Hem</Link>,
       <Link key="2" to="/admin">Administrera val</Link>,
       <Link key="3" to="/admin/voters">Administrera väljare </Link>,
-      <Link key="4" to="/admin/actions">Admin-meny</Link>
     ] : [] ),
     login_href: loggedIn ? "#/logout" : "#/login",
     login_text: loggedIn ? "Logga ut" : "Logga in",
@@ -40,9 +40,9 @@ const App: React.FC = () => {
           <Route path="/token/:token" element={<Token />} />
 
           <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/create" element={<CreateElection />} />
           <Route path="/admin/election/:id" element={<EditElection />} />
           <Route path="/admin/voters" element={<EditVoters />} />
-          <Route path="/admin/actions" element={<AdminActions />} />
         </Routes>
       </div>
     </HashRouter>
