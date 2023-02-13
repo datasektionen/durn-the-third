@@ -17,20 +17,22 @@ const combineTimeAndDate = (time: NullTime, date: NullTime) => {
 }
 
 export interface DateTimeInputProps {
-  label: string,
+  label?: React.ReactNode,
   onChange: (value: NullTime) => void
   defaultDate: NullTime
 }
 
-export const DateTimeInput: React.FC<DateTimeInputProps> = ({ label, onChange, defaultDate }) => {
+export const DateTimeInput: React.FC<DateTimeInputProps> = (
+  { label, onChange, defaultDate }
+) => {
   const [time, setTime] = useState<NullTime>(defaultDate)
   const [date, setDate] = useState<NullTime>(defaultDate)
 
   useEffect(() => { 
     setTime(defaultDate)
     setDate(defaultDate)
-   }, [defaultDate])
-  useEffect(() => { onChange(combineTimeAndDate(time, date)) }, [time, date])
+  }, [defaultDate]);
+  useEffect(() => { onChange(combineTimeAndDate(time, date)) }, [time, date]);
 
   return <>
     <Grid align="flex-end" gutter={0}>
@@ -45,7 +47,7 @@ export const DateTimeInput: React.FC<DateTimeInputProps> = ({ label, onChange, d
           renderDay={(date) => {
             const today = dayjs(Date.now())
             return (
-              <Indicator size={6} color="blue" offset = {8} disabled = {
+              <Indicator size={6} color="orange" offset = {8} disabled = {
                 today.format("YYYYMMDD") != dayjs(date).format("YYYYMMDD")
               }>
                 <div>{date.getDate()}</div>
