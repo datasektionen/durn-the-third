@@ -29,6 +29,7 @@ export const CreateElection: React.FC = () => {
   const [failed, setFailed] = useState(false);
   const { classes } = useStyles();
   const navigate = useNavigate();
+  const [ error, setError ] = useState<String|null>(null);
 
   const form = useForm({
     initialValues: {
@@ -39,6 +40,10 @@ export const CreateElection: React.FC = () => {
       closeTime: null as NullTime,
     }
   });
+
+  const [candidates, candidatesHandler] = useListState<Candidate>();
+  const [removedCandidates, removedCandidatesHandler] = useListState<string>();
+
   const changeOpenTime = (value: NullTime) => {
     form.setFieldValue("openTime", value)
   }
@@ -46,8 +51,6 @@ export const CreateElection: React.FC = () => {
     form.setFieldValue("closeTime", value)
   }
 
-  const [candidates, candidatesHandler] = useListState<Candidate>();
-  const [removedCandidates, removedCandidatesHandler] = useListState<string>();
   const addCandidate = (candidate: Candidate) => {
     candidatesHandler.append({
       ...candidate,
@@ -71,12 +74,7 @@ export const CreateElection: React.FC = () => {
     )
   };
 
-  const onSubmit = useCallback(form.onSubmit((values) => {
-    if (values.title == "") {
-      setFailed(true);
-      return;
-    }
-
+  const submitElection = useCallback((values: typeof form.values) => {
     axios.post("/api/election/create", {
       name: values.title,
       mandates: values.mandates,
@@ -96,15 +94,44 @@ export const CreateElection: React.FC = () => {
       ).then(() => {
         navigate(`/admin/election/${data}`);
       })
-    })
-  }), [form, candidates, candidateChanged, removedCandidates]);
+    }).catch(() => { });
+  }, [candidates, candidateChanged, removedCandidates])
 
+  const onSubmit = useCallback(form.onSubmit((values) => {
+    const now = new Date(Date.now());
+    if (values.title == "") {
+      setError("Title can't be empty");
+    } else if (values.closeTime && !values.openTime) {
+      setError("The end of the election can't be set without setting the start");
+    } else if (values.openTime && values.openTime <= now) {
+      setError("The start of the election can't be before the current time")
+    } else if (
+      values.openTime && values.closeTime && 
+      values.closeTime <= values.openTime
+    ) {
+      setError("The end of the election can't be before the start")
+    } else {
+      submitElection(values);
+    }
+  }), [setError, form]);
   
 
   return <>
     <Header title = "Create New Election"/>
 
     <Container my="md">
+      {error && 
+        <Box className={classes.failed} style={{
+          borderRadius: "5pt",
+          padding: "1rem",
+          marginBottom: "1rem"
+        }}>
+          <Text align="center" fw={700}>
+            {error}
+          </Text>
+        </Box>
+      }
+
       <Box sx={(theme) => ({
         backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[2],
         padding: "1rem",
@@ -151,7 +178,7 @@ export const CreateElection: React.FC = () => {
                 </Text>
                 <NumberInput 
                   {...form.getInputProps("mandates")} 
-                  min={0}
+                  min={1}
                 />
               </div>
 
