@@ -120,8 +120,6 @@ const CandidateRow: React.FC<CandidateRowProps> = (
   ] = useDebouncedState(candidate.presentation, 500);
   const { classes } = useStyles();
 
-  console.log(candidate);
-
   useEffect(() => {
     onCandidateChanged({
       ...candidate,

@@ -11,6 +11,7 @@ import { Candidate, NullTime } from "../../util/ElectionTypes"
 import { DateTimeInput } from "../../components/DateTime";
 import { CandidateList } from "../../components/CandidateList"
 import useAuthorization from "../../hooks/useAuthorization"
+import { useNavigate } from "react-router-dom"
 
 // import DateTimePicker from "react-datetime-picker"
 // import DateTimeInput from "react-admin";
@@ -27,6 +28,7 @@ export const CreateElection: React.FC = () => {
   const { authHeader } = useAuthorization();
   const [failed, setFailed] = useState(false);
   const { classes } = useStyles();
+  const navigate = useNavigate();
 
   const form = useForm({
     initialValues: {
@@ -83,12 +85,16 @@ export const CreateElection: React.FC = () => {
       closeTime: values.closeTime,
     }, {
       headers: authHeader
-    }).then(({data}) => {
-      candidates.forEach((candidate) => {
-        axios.post(`/api/election/${data}/candidate/add`, {
-          name: candidate.name,
-          presentation: candidate.presentation,
-        }, { headers: authHeader });
+    }).then(({ data }) => {
+      Promise.all(
+        candidates.map((candidate) =>
+          axios.post(`/api/election/${data}/candidate/add`, {
+            name: candidate.name,
+            presentation: candidate.presentation,
+          }, { headers: authHeader })
+        )
+      ).then(() => {
+        navigate(`/admin/election/${data}`);
       })
     })
   }), [form, candidates, candidateChanged, removedCandidates]);
