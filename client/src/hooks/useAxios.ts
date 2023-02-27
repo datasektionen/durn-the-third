@@ -1,5 +1,6 @@
 import { useLocalStorage } from "@mantine/hooks";
 import axios from "axios";
+import { useEffect, useState } from "react";
 import constants from "../util/constants";
 
 import useAuthorization from "./useAuthorization";
@@ -37,4 +38,34 @@ export const useApiRequester = () => {
       })
     })
   }
+}
+
+export const useAPIData = (url: string, headers: any = {}) => {
+  const [data, setData] = useState<any>();
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string|null>(null);
+  const { authHeader } = useAuthorization();
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    axios(url, {
+      signal: controller.signal,
+      headers: {
+        ...authHeader,
+        ...headers,
+      }
+    }).then(({data}) => {
+      setData(data);
+      setError(null);
+      setLoading(false);
+    }).catch((error) => {
+      setError(error);
+      setLoading(false);
+    });
+
+    return () => controller.abort();
+  }, [url, authHeader]);
+
+  return [data, loading, error];
 }
