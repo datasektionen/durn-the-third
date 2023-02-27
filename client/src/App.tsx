@@ -13,6 +13,8 @@ import EditVoters from "./views/admin/EditVoters";
 import AdminActions from "./views/admin/AdminActions"
 import { CreateElection } from "./views/admin/CreateElection";
 
+import "@total-typescript/ts-reset";
+
 const App: React.FC = () => {
   const { loggedIn, adminRead } = useAuthorization();
 

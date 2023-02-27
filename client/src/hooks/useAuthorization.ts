@@ -1,7 +1,7 @@
 import { useLocalStorage } from "@mantine/hooks";
 
 const useAuthorization = () => {
-  const [loggedIn] = useLocalStorage({
+  const [loggedIn] = useLocalStorage<boolean>({
     key: "loggedIn", defaultValue: false
   });
   const [user] = useLocalStorage<string>({
@@ -16,6 +16,8 @@ const useAuthorization = () => {
   // const [token] = useLocalStorage<string | null>({
   //   key: "token", defaultValue: null
   // })
+
+
 
   return {
     loggedIn,

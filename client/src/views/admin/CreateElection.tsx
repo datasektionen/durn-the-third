@@ -16,17 +16,14 @@ import { useNavigate } from "react-router-dom"
 // import DateTimePicker from "react-datetime-picker"
 // import DateTimeInput from "react-admin";
 
-const useStyles = createStyles((theme) => {
-  return {
-    failed: {
-      backgroundColor: "#e29493"
-    }
+const useStyles = createStyles((theme) => ({
+  failed: {
+    backgroundColor: "#e29493"
   }
-})
+}));
 
 export const CreateElection: React.FC = () => {
   const { authHeader } = useAuthorization();
-  const [failed, setFailed] = useState(false);
   const { classes } = useStyles();
   const navigate = useNavigate();
   const [ error, setError ] = useState<String|null>(null);
@@ -89,8 +86,7 @@ export const CreateElection: React.FC = () => {
           axios.post(`/api/election/${data}/candidate/add`, {
             name: candidate.name,
             presentation: candidate.presentation,
-          }, { headers: authHeader })
-        )
+          }, { headers: authHeader }))
       ).then(() => {
         navigate(`/admin/election/${data}`);
       })
