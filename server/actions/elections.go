@@ -119,10 +119,12 @@ func CreateElection(c *gin.Context) {
 // Allowed fields are: Name, Description, OpenTime, CloseTime
 func EditElection(c *gin.Context) {
 	body := struct {
-		Name        *string        `json:"name"`
-		Description *string        `json:"description"`
-		OpenTime    *util.NullTime `json:"openTime"`
-		CloseTime   *util.NullTime `json:"closeTime"`
+		Name          *string        `json:"name"`
+		Description   *string        `json:"description"`
+		OpenTime      *util.NullTime `json:"openTime"`
+		CloseTime     *util.NullTime `json:"closeTime"`
+		Mandates      *int           `json:"mandates"`
+		ExtraMandates *int           `json:"extraMandates"`
 	}{}
 	electionId, err := uuid.FromString(c.Param("id"))
 
