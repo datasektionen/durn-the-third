@@ -1,74 +1,66 @@
 import React, { useCallback, useEffect, useState } from "react";
-import {
-  useNavigate,
-  useParams,
-} from "react-router-dom";
-import { Header } from "methone"
+import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
+import { Header } from "methone";
 
-import { Grid, Container, TextInput, Button, Text, Textarea, ScrollArea, Table, createStyles, Modal, Center, Stack, Tooltip, List } from "@mantine/core";
+import { Container, Grid, TextInput, Text, Button, NumberInput, Box, createStyles, Center } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { Plus, X } from "tabler-icons-react";
+import { useListState } from "@mantine/hooks";
 
-import { Election, createEmptyElection, NullTime, parseElectionResponse, Candidate } from "../../util/ElectionTypes";
-import useAuthorization from "../../hooks/useAuthorization";
+import { Candidate, Election, NullTime } from "../../util/ElectionTypes";
 import { DateTimeInput } from "../../components/DateTime";
-import { ErrorModal, InformationModal } from "../../components/PopupModals";
-import useMap from "../../hooks/useMap";
-import { DisplayResult } from "../../components/DisplayResult";
-import constants from "../../util/constants";
+import { CandidateList } from "../../components/CandidateList";
+import useAuthorization from "../../hooks/useAuthorization";
+import { useNavigate, useParams } from "react-router-dom";
+import { useAPIData } from "../../hooks/useAxios";
+// import EditElection from "./OldEditElection"
 
+// import DateTimePicker from "react-datetime-picker"
+// import DateTimeInput from "react-admin";
 
-const useStyles = createStyles((theme) => { return {
-  changed: {
-    backgroundColor: "#d3f8d3"
-  },
-  adding: {
-    backgroundColor: theme.colors.gray[1]
-  },
-
-  info: {
-    padding: "3rem",
-    marginBottom: "1rem",
-    borderRadius: "0.5rem",
-    backgroundColor: "rgb(197, 202, 233)",
+const useStyles = createStyles((theme) => {
+  return {
+    failed: {
+      backgroundColor: "#e29493"
+    }
   }
-}})
-
-
-const Info: React.FC = () => {
-  const { classes, cx } = useStyles()
-  return <div className={cx(constants.themeColor, "lighten-4", classes.info)}>
-    Regler för redigering för att försäkra sig om val som inte går sönder: 
-    <ul>
-      <li>Efter att valet har öppnat, publicerats eller har röster så går det inte att lägga till kandidater.</li>
-      <li>När ett val har finaliserats går det inte att rösta i det.</li>
-      <li>Röster kan bara räknas efter att valet har finaliserats.</li>
-      <li>Det går inte att avfinalisera ett val.</li>
-      <li>Ordningen som kandidater är inlagda i spelar ingen roll, det slumpas för varje röstsedel.</li>
-    </ul>
-  </div>
-}
-
+});
 
 const EditElection: React.FC = () => {
-  const electionId = useParams()["id"] ?? ""
-  const { adminRead, loggedIn, authHeader } = useAuthorization()
-  const [election, setElection] = useState<Election>(createEmptyElection())
-  const [error, setError] = useState<string | null>(null)
-  const [updateSuccess, setSuccess] = useState(false)
-  const { classes, cx } = useStyles()
-  const [changedCandidates, changedCandidatesActions] = useMap<string, Candidate>()
-  const navigate = useNavigate()
-
+  const { authHeader } = useAuthorization();
+  const { classes } = useStyles();
+  const navigate = useNavigate();
+  const [error, setError] = useState<String | null>(null);
+  const [loading, setLoading] = useState(true);
+  const electionId = useParams()["id"] ?? "";
+  const [electionData, loadingData, fetchError] = useAPIData(`/api/election/${electionId}`);
+  const [candidates, candidatesHandler] = useListState<Candidate>();
+  const [removedCandidates, removedCandidatesHandler] = useListState<string>();
+  const [editedCandidates, editedCandidatesHandler] = useListState<Candidate>();
   const form = useForm({
     initialValues: {
-      name: "",
-      description: "",
+      title: "",
+      mandates: 1,
+      extraMandates: 0,
       openTime: null as NullTime,
-      closeTime: null as NullTime
+      closeTime: null as NullTime,
     }
-  })
+  });
+
+  useEffect(()=> {
+    console.log(electionData);
+    if (!loadingData && !fetchError) {
+      form.setValues({
+        title: electionData.name,
+        mandates: electionData.mandates,
+        extraMandates: electionData.extraMandates,
+        openTime: electionData.OpenTime,
+        closeTime: electionData.CloseTime,
+      });
+      candidatesHandler.setState(electionData.candidates);
+      setLoading(false);
+    }
+  }, [electionData, loadingData, fetchError]);
 
   const changeOpenTime = (value: NullTime) => {
     form.setFieldValue("openTime", value)
@@ -77,438 +69,178 @@ const EditElection: React.FC = () => {
     form.setFieldValue("closeTime", value)
   }
 
-  const makeEditingRequest = useCallback((method: string, url: string, data: any) => {
-    axios({
-      method: method,
-      url: url,
-      data: data,
-      headers: authHeader
-    }).then(({ data }) => {
-      setElection(parseElectionResponse(data))
-      setSuccess(true)
-    }).catch(({reason}) => {
-      setError(`Failed to submit election changes to server. Reason given: "${reason.data}"`)
-    })
-  }, [authHeader])
+  const addCandidate = (candidate: Candidate) => {
+    candidatesHandler.append({
+      ...candidate,
+      id: `tmp_${uuidv4()}`,
+      changed: true,
+    });
+  };
 
-  const submitChanges = useCallback(form.onSubmit((values) => {
-    makeEditingRequest("patch", `/api/election/${electionId}/edit`, values)
-    let candidateError: string | null = null 
-    election.candidates
-      .filter((candidate) => changedCandidates.has(candidate.id))
-      .forEach((candidate) => {
-        const newCandidate = changedCandidates.get(candidate.id) ?? candidate
-        axios.put(`/api/election/candidate/${candidate.id}/edit`, {
-          name: newCandidate.name,
-          presentation: newCandidate.presentation
-        }, { headers: authHeader } ).catch(() => {
-          changedCandidatesActions.remove(candidate.id)
-        }).catch(({reason}) => {
-          candidateError = `Failed to submit election changes to server.Reason given: "${reason.data}"`
-        })
-      })
+  const removeCandidate = (candidate: Candidate) => {
+    console.log(candidate)
+    removedCandidatesHandler.append(candidate.id);
+  };
 
-    if (error == null) setError(candidateError)
+  const candidateChanged = (candidate: Candidate) => {
+    candidatesHandler.applyWhere(
+      (item) => item.id == candidate.id,
+      () => ({
+        ...candidate,
+        changed: false,
+      }),
+    )
+  };
 
-    setElection({
-      ...election,
-      candidates: election.candidates.map((candidate): Candidate => {
-        return {
-          ...candidate,
-          ...(changedCandidates.get(candidate.id) ?? {})
-        }
-      })
-    })
-    changedCandidatesActions.reset()
-  }), [form, changedCandidates])
-
-  const onCandidateChanged = (candidate: Candidate) => {
-    changedCandidatesActions.set(candidate.id, candidate)
-  }
-
-  const onCandidateRemoved = (candidate: Candidate, error: string | null) => {
-    if (error) {
-      setError(`Failed to remove candidate "${candidate.name}", sever gave reason: "${error}".`)
-    } else {
-      setElection({
-        ...election,
-        candidates: election.candidates.filter((c) => c.id != candidate.id)
-      })
-    }
-  }
-
-  const onCandidateAdded = (candidate: Candidate, error: string | null) => {
-    if (error) {
-      setError(`Failed to add candidate "${candidate.name}", sever gave reason: "${error}".`)
-    } else {
-      setElection((election): Election => {
-        return {
-          ...election,
-          candidates: election.candidates.concat([candidate])
-        }
-      })
-    }
-  }
-
-  const finalizeElection = () => {
-    makeEditingRequest("put", `/api/election/${electionId}/finalize`, {})
-  }
-
-  const publishElection = () => {
-    makeEditingRequest("put", `/api/election/${electionId}/publish`, {})
-  }
-
-  const unpublishElection = () => {
-    makeEditingRequest("put", `/api/election/${electionId}/unpublish`, {})
-  }
-
-  const deleteElection = () => {
-    axios.post(`/api/election/${electionId}/delete`, {}, {
-      headers: authHeader
-    }).then(() => {
-      navigate("/admin")
-    }).catch(({ reason }) => {
-      setError(`Misslyckades med att radera valet. Servern svarade: "${reason.data}"`)
-    })
-  }
-
-  useEffect(() => {
-    if (!loggedIn) return;
-    axios(`/api/election/${electionId}`, {
-      headers: authHeader
-    }).then(({ data }) => {
-      setElection(parseElectionResponse(data))
-    }).catch(()=>{})
-  }, [loggedIn, authHeader])
-  
-  useEffect(() => {
-    form.setValues({
-      name: election.name,
-      description: election.description,
-      openTime: election.openTime,
-      closeTime: election.closeTime
-    })
-  }, [election])
-
-  useEffect(() => {
-    if (loggedIn && !adminRead) navigate("/", { replace: true })
-  }, [loggedIn, adminRead])
-  
-  return <> {adminRead && <>
-    <Header title="Redigerar val" />
-
-    <ErrorModal error={error ?? ""}
-      opened={error != null} onClose={() => {setError(null)}}
-    />
-
-    <InformationModal info="Election updated"
-      opened={updateSuccess} onClose={() => {setSuccess(false)}}
-    />
-
-    <form onSubmit={submitChanges}>
-      <Container my="md">
-
-        <Info />
-        <Grid align="center">
-          <Grid.Col md={1}>
-            <Text align="right" fz="lg" fw={700}>Titel: </Text>
-          </Grid.Col>
-          <Grid.Col md={9}>
-            <TextInput size="lg" {...form.getInputProps("name")} placeholder="titel"/>
-          </Grid.Col>
-          <Grid.Col md={2}>
-            <Button fullWidth type="submit">
-              Uppdatera
-            </Button>
-          </Grid.Col>
-        </Grid>
-
-        <Grid>
-          <Grid.Col md={3}>
-
-            <div style={{ marginBottom: "1rem" }} >
-              <DateTimeInput
-                label="Valet öppnar"
-                onChange={changeOpenTime}
-                defaultDate={election.openTime}
-              />
-            </div>
-            <div>
-              <DateTimeInput
-                label="Valet stänger"
-                onChange={changeCloseTime}
-                defaultDate={election.closeTime}
-              />
-            </div>
-
-            <ButtonsColumn election={election}
-              onPublish={publishElection}
-              onUnpublish={unpublishElection}
-              onFinalize={finalizeElection}
-              onDelete={deleteElection}
-            />
-          </Grid.Col>
-
-          <Grid.Col md={9}>
-            <Textarea {...form.getInputProps("description")} placeholder="beskrivning"/>
-            <div style={{marginTop: "1rem"}}>
-              <CandidateList
-                candidates={election.candidates}
-                electionId={electionId}
-                onCandidateChanged={onCandidateChanged}
-                onCandidateRemoved={onCandidateRemoved}
-                onCandidateAdded={onCandidateAdded}
-              />
-            </div>
-          </Grid.Col>
-        </Grid>
-      </Container>
-    </form>
-  </>} </>
-}
-
-
-
-interface CandidateListProps {
-  candidates: Candidate[]
-  electionId: string
-  onCandidateAdded: (candidate: Candidate, error: string | null) => void
-  onCandidateChanged: (candidate: Candidate) => void
-  onCandidateRemoved: (candidate: Candidate, error: string | null) => void
-}
-
-const CandidateList: React.FC<CandidateListProps> = (
-  { candidates, electionId, onCandidateAdded, onCandidateChanged, onCandidateRemoved }
-) => {
-  const { authHeader } = useAuthorization()
-  const {classes} = useStyles()
-  const [name, setName] = useState("")
-  const [presentation, setPresentation] = useState("")
-
-  const addCandidate = useCallback(() => {
-    axios.post(`/api/election/${electionId}/candidate/add`, {
-      name: name,
-      presentation: presentation
+  const submitElection = useCallback((values: typeof form.values) => {
+    axios.post("/api/election/create", {
+      name: values.title,
+      mandates: values.mandates,
+      extraMandates: values.extraMandates,
+      openTime: values.openTime,
+      closeTime: values.closeTime,
     }, {
       headers: authHeader
-    }).then(({data}) => {
-      onCandidateAdded({
-        id: data.id,
-        name: data.name,
-        presentation: data.presentation,
-        symbolic: data.symbolic
-      }, null)
-      setName("")
-      setPresentation("")
-    }).catch(({response}) => {
-      onCandidateAdded({
-        id: "",
-        name: name,
-        presentation: presentation,
-        symbolic: false
-      }, response.data)
-    }) 
-  }, [name, presentation])
+    }).then(({ data }) => {
+      Promise.all(
+        candidates.map((candidate) =>
+          axios.post(`/api/election/${data}/candidate/add`, {
+            name: candidate.name,
+            presentation: candidate.presentation,
+          }, { headers: authHeader }))
+      ).then(() => {
+        navigate(`/admin/election/${data}`);
+      })
+    }).catch(() => { });
+  }, [candidates, candidateChanged, removedCandidates])
 
-  const candidateElements = candidates.filter(
-    (candidate) => !candidate.symbolic
-  ).map((candidate) => (
-    <CandidateRow candidate={candidate} onCandidateChanged={onCandidateChanged} onCandidateRemoved={onCandidateRemoved}/>
-  ))
+  const onSubmit = useCallback(form.onSubmit((values) => {
+    const now = new Date(Date.now());
+    if (values.title == "") {
+      setError("Title can't be empty");
+    } else if (values.closeTime && !values.openTime) {
+      setError("The end of the election can't be set without setting the start");
+    } else if (values.openTime && values.openTime <= now) {
+      setError("The start of the election can't be before the current time")
+    } else if (
+      values.openTime && values.closeTime &&
+      values.closeTime <= values.openTime
+    ) {
+      setError("The end of the election can't be before the start");
+    } else {
+      submitElection(values);
+    }
+  }), [setError, form]);
 
-  return <>
-    <ScrollArea>
-      <Table withBorder withColumnBorders striped>
-        <thead>
-          <tr>
-            <th style={{ width: 30 }}></th>
-            <th>
-              <Text style={{ margin: "1rem" }} align="center">
-                Kandidatens namn
+
+  const content = <Container my="md">
+    {error &&
+      <Box className={classes.failed} style={{
+        borderRadius: "5pt",
+        padding: "1rem",
+        marginBottom: "1rem"
+      }}>
+        <Text align="center" fw={700}>
+          {error}
+        </Text>
+      </Box>
+    }
+
+    <Box sx={(theme) => ({
+      backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[2],
+      padding: "1rem",
+      borderRadius: "5pt"
+    })}>
+
+      <form onSubmit={onSubmit}>
+
+        <Grid align="cent">
+          <Grid.Col md={12}>
+            <Button type="submit" fullWidth>
+              <div style={{ marginTop: "1rem", marginBottom: "1rem" }}>
+                <Text fw={700} size="xl" >
+                  Save Changes
+                </Text>
+              </div>
+            </Button>
+          </Grid.Col>
+
+          <Grid.Col md={3}>
+            <div style={{ marginBottom: "3rem" }} >
+              <Text align="center" size="lg" color="dimmed" fw={700}>
+                Election starts
               </Text>
-            </th>
-            <th>
-              <Text style={{ margin: "1rem" }} align="center">
-                Kandidatpresentation
+              <DateTimeInput
+                onChange={changeOpenTime}
+                defaultDate={null}
+              />
+            </div>
+
+            <div style={{ marginBottom: "2rem" }} >
+              <Text align="center" size="lg" color="dimmed" fw={700}>
+                Election ends
               </Text>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {candidateElements}
-          <tr className={classes.adding}>
-            <td><Button compact fullWidth onClick={addCandidate}>
-              <Plus />
-            </Button></td>
-            <td>
-              <TextInput value={name}
-                onChange={(element) => setName(element.target.value)}
+              <DateTimeInput
+                onChange={changeCloseTime}
+                defaultDate={null}
               />
-            </td>
-            <td>
-              <TextInput value={presentation} placeholder="länk till kandidatpresentation"
-                onChange={(element) => setPresentation(element.target.value)}
+            </div>
+
+            <div style={{ marginBottom: "2rem" }} >
+              <Text align="center" size="lg" color="dimmed" fw={700}>
+                Mandates
+              </Text>
+              <NumberInput
+                {...form.getInputProps("mandates")}
+                min={1}
               />
-            </td>
-          </tr>
-        </tbody>
-      </Table>
-    </ScrollArea>
-  </>
-}
+            </div>
+
+            <div style={{ marginBottom: "2rem" }} >
+              <Text align="center" size="lg" color="dimmed" fw={700}>
+                Secondary mandates
+              </Text>
+              <NumberInput
+                {...form.getInputProps("extraMandates")}
+                min={0}
+              />
+
+            </div>
+          </Grid.Col>
 
 
+          <Grid.Col md={9}>
 
-interface CandidateRowProps {
-  candidate: Candidate,
-  onCandidateChanged: (candidate: Candidate) => void
-  onCandidateRemoved: (candidate: Candidate, error: string | null) => void
-}
+            <TextInput
+              // class={failed ? classes.failed : "2"}
+              placeholder="Election title"
+              size="xl"
+              {...form.getInputProps("title")}
+            />
+            <br />
+            <CandidateList
+              candidates={
+                candidates.filter(v => !removedCandidates.includes(v.id))
+              }
+              onCandidateAdded={addCandidate}
+              onCandidateChanged={candidateChanged}
+              onCandidateRemoved={removeCandidate}
+            />
+          </Grid.Col>
+          <Grid.Col>
 
-const CandidateRow: React.FC<CandidateRowProps> = (
-  { candidate, onCandidateChanged, onCandidateRemoved }
-) => {
-  const [name, setName] = useState(candidate.name)
-  const [presentation, setPresentation] = useState(candidate.presentation)
-  const { authHeader } = useAuthorization()
-
-  const removeCandidate = () => {
-    axios.post(`/api/election/candidate/${candidate.id}/delete`, {}, {
-      headers: authHeader
-    }).then(() => {
-      onCandidateRemoved(candidate, null)
-    }).catch(({response}) => {
-      onCandidateRemoved(candidate, `${response.data}`)
-    })
-  }
-
-  useEffect(() => {
-    onCandidateChanged({
-      ...candidate,
-      name: name,
-      presentation: presentation,
-    })
-  }, [name, presentation])
+          </Grid.Col>
+        </Grid>
+      </form>
+    </Box>
+  </Container>
 
   return <>
-    <tr key={candidate.id}>
-      <td>
-        <Button color={"red"} compact fullWidth onClick={removeCandidate}>
-          <X/>
-        </Button>
-      </td>
-      <td>
-        <TextInput
-          value={name}
-          onChange={(element) => setName(element.target.value)}
-        />
-      </td>
-      <td>
-        <TextInput
-          value={presentation}
-          onChange={(element) => setPresentation(element.target.value)}
-        />
-      </td>
-    </tr>
+    <Header title="Editing Election" />
+    {!loading && content}
+    {loading && <Center> loading </Center>}
+    {!loading && error && <Center> Error </Center>}
   </>
 }
 
-
-interface ButtonsColumnProps {
-  election:  Election
-  onPublish: () => void
-  onUnpublish: () => void
-  onFinalize: () => void
-  onDelete: () => void
-}
-
-const ButtonsColumn: React.FC<ButtonsColumnProps> = ({
-  onUnpublish, onPublish, election, onFinalize, onDelete
-}) => {
-
-  const [openFinalize, setOpenFinalize] = useState(false)
-  const [openDelete, setOpenDelete] = useState(false)
-  const [openCounting, setOpenCounting] = useState(false)
-
-
-  return <>
-    <Modal centered opened={openFinalize} title="Finalisera val"
-      onClose={() => setOpenFinalize(false)}
-    >
-      <Center>
-        <Stack>
-          <Text align="center">
-            Vill du finalisera valet? Det går inte att ångra att finalisera ett val.
-          </Text>
-          <Button onClick={() => {
-            setOpenFinalize(false)
-            onFinalize()
-          }}>
-            Finalisera
-          </Button>
-        </Stack>
-      </Center>
-    </Modal>
-
-    <Modal centered opened={openDelete} title="Radera val"
-      onClose={() => setOpenDelete(false)}
-    >
-      <Center>
-        <Stack>
-          <Text align="center">
-            Vill du radera valet? Det går inte att ångra.
-          </Text>
-          <Button color={"red"} onClick={() => {
-            setOpenDelete(false)
-            onDelete()
-          }}>
-            Radera val
-          </Button>
-        </Stack>
-      </Center>
-    </Modal>
-
-    <Modal centered opened={openCounting} title={election.name} 
-           size="600px" onClose={() => setOpenCounting(false)}>
-      <DisplayResult electionId={election.id} />
-    </Modal>
-
-
-    <div style={{ marginTop: "3rem" }}>
-      {election.published ?
-        <Button onClick={onUnpublish} fullWidth>
-          Avpublicera
-        </Button>
-        :
-        <Button onClick={onPublish} fullWidth>
-          Publicera
-        </Button>
-      }
-    </div>
-
-    <div style={{ marginTop: "2rem" }}>
-      <Button fullWidth disabled={election.finalized} onClick={() => setOpenFinalize(true)}>
-        {election.finalized ? "Finaliserat" : "Finalisera"}
-      </Button>
-    </div>
-
-    <div style={{ marginTop: "2rem" }}>
-      <Tooltip label={"Valet måste finaliseras innan rösterna kan räknas"} disabled={election.finalized}>
-        <div>
-          <Button fullWidth disabled={!election.finalized} onClick={() => setOpenCounting(true)}>
-            Räkna röster
-          </Button>
-        </div>
-      </Tooltip>
-    </div>
-
-    <div style={{ marginTop: "5rem" }}>
-      <Button fullWidth onClick={() => setOpenDelete(true)} color={"red"}>
-        Radera val
-      </Button>
-    </div>
-  </>
-}
-
-
-export default EditElection
+export default EditElection;
