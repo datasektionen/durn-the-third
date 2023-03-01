@@ -14,26 +14,30 @@ import (
 )
 
 type electionExportType struct {
-	ID          uuid.UUID            `gorm:"primaryKey" json:"id"`
-	Name        string               `gorm:"not null" json:"name"`
-	Description string               `gorm:"not null" json:"description"`
-	Published   bool                 `gorm:"not null" json:"published"`
-	Finalized   bool                 `gorm:"not null" json:"finalized"`
-	OpenTime    util.NullTime        `json:"openTime"`
-	CloseTime   util.NullTime        `json:"closeTime"`
-	Candidates  []database.Candidate `gorm:"foreignKey:ElectionID;references:ID" json:"candidates"`
+	ID            uuid.UUID            `json:"id"`
+	Name          string               `json:"name"`
+	Description   string               `json:"description"`
+	Published     bool                 `json:"published"`
+	Finalized     bool                 `json:"finalized"`
+	Mandates      int                  `json:"mandates"`
+	ExtraMandates int                  `json:"extraMandates"`
+	OpenTime      util.NullTime        `json:"openTime"`
+	CloseTime     util.NullTime        `json:"closeTime"`
+	Candidates    []database.Candidate `json:"candidates"`
 }
 
 func convertElectionToExportType(election database.Election) electionExportType {
 	return electionExportType{
-		ID:          election.ID,
-		Name:        election.Name,
-		Description: election.Description,
-		Published:   election.Published,
-		Finalized:   election.Finalized,
-		OpenTime:    util.ConvertSqlNullTime(election.OpenTime),
-		CloseTime:   util.ConvertSqlNullTime(election.CloseTime),
-		Candidates:  election.Candidates,
+		ID:            election.ID,
+		Name:          election.Name,
+		Description:   election.Description,
+		Published:     election.Published,
+		Finalized:     election.Finalized,
+		Mandates:      election.Mandates,
+		ExtraMandates: election.ExtraMandates,
+		OpenTime:      util.ConvertSqlNullTime(election.OpenTime),
+		CloseTime:     util.ConvertSqlNullTime(election.CloseTime),
+		Candidates:    election.Candidates,
 	}
 }
 
