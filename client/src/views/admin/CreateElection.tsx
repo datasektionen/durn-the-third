@@ -3,18 +3,14 @@ import { v4 as uuidv4 } from "uuid"
 import axios from "axios"
 import { Header } from "methone"
 
-import { Container, Grid, TextInput, Text, Button, NumberInput, Box, createStyles } from "@mantine/core"
+import { Container, createStyles } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { useListState } from "@mantine/hooks"
 
 import { Candidate, NullTime } from "../../util/ElectionTypes"
-import { DateTimeInput } from "../../components/DateTime";
-import { CandidateList } from "../../components/CandidateList"
 import useAuthorization from "../../hooks/useAuthorization"
 import { useNavigate } from "react-router-dom"
-
-// import DateTimePicker from "react-datetime-picker"
-// import DateTimeInput from "react-admin";
+import { AdminElectionView, ElectionFormValues } from "../../components/AdminElectionView"
 
 const useStyles = createStyles((theme) => ({
   failed: {
@@ -26,9 +22,9 @@ export const CreateElection: React.FC = () => {
   const { authHeader } = useAuthorization();
   const { classes } = useStyles();
   const navigate = useNavigate();
-  const [ error, setError ] = useState<String|null>(null);
+  const [ error, setError ] = useState<string|false>(false);
 
-  const form = useForm({
+  const form = useForm<ElectionFormValues>({
     initialValues: {
       title: "",
       mandates: 1,
@@ -52,7 +48,7 @@ export const CreateElection: React.FC = () => {
     candidatesHandler.append({
       ...candidate,
       id: `tmp_${uuidv4()}`, 
-      // changed: true,
+      changed: false,
     });
   };
 
@@ -113,108 +109,23 @@ export const CreateElection: React.FC = () => {
   
 
   return <>
-    <Header title = "Create New Election"/>
+    <Header title="Create New Election" />
 
     <Container my="md">
-      {error && 
-        <Box className={classes.failed} style={{
-          borderRadius: "5pt",
-          padding: "1rem",
-          marginBottom: "1rem"
-        }}>
-          <Text align="center" fw={700}>
-            {error}
-          </Text>
-        </Box>
-      }
-
-      <Box sx={(theme) => ({
-        backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[2],
-        padding: "1rem",
-        borderRadius: "5pt"
-      })}>
-
-        <form onSubmit={onSubmit}>
-
-          <Grid align="cent">
-            <Grid.Col md={12}>
-              <Button type="submit" fullWidth>
-                <div style={{marginTop: "1rem", marginBottom: "1rem"}}>
-                  <Text fw={700} size="xl" >
-                    Create
-                  </Text>
-                </div> 
-              </Button>
-            </Grid.Col>
-
-            <Grid.Col md={3}>
-              <div style={{ marginBottom: "3rem" }} >
-                <Text align="center" size="lg" color="dimmed" fw={700}>
-                  Election starts
-                </Text>
-                <DateTimeInput
-                  onChange={changeOpenTime}
-                  defaultDate={null}
-                />
-              </div>
-
-              <div style={{ marginBottom: "2rem" }} >
-                <Text align="center" size="lg" color="dimmed" fw={700}>
-                  Election ends
-                </Text>
-                <DateTimeInput
-                  onChange={changeCloseTime}
-                  defaultDate={null}
-                />
-              </div>
-
-              <div style={{ marginBottom: "2rem" }} >
-                <Text align="center" size="lg" color="dimmed" fw={700}>
-                  Mandates
-                </Text>
-                <NumberInput 
-                  {...form.getInputProps("mandates")} 
-                  min={1}
-                />
-              </div>
-
-              <div style={{ marginBottom: "2rem" }} >
-                <Text align="center" size="lg" color="dimmed" fw={700}>
-                  Secondary mandates
-                </Text>
-                <NumberInput 
-                  {...form.getInputProps("extraMandates")} 
-                  min={0}
-                />
-
-              </div>
-            </Grid.Col>
-
-
-            <Grid.Col md={9}>
-
-              <TextInput 
-                // class={failed ? classes.failed : "2"}
-                placeholder="Election title"
-                size="xl"
-                {...form.getInputProps("title")}
-              />
-              <br/>
-              <CandidateList 
-                candidates={
-                  candidates.filter(v => !removedCandidates.includes(v.id))
-                }
-                onCandidateAdded={addCandidate}
-                onCandidateChanged={candidateChanged}
-                onCandidateRemoved={removeCandidate}
-              />
-            </Grid.Col>
-            <Grid.Col>
-
-            </Grid.Col>
-          </Grid>
-        </form>
-      </Box>
+      <AdminElectionView
+        candidates={candidates}
+        submitText="Create Election"
+        electionForm={form}
+        onSubmit={onSubmit}
+        onOpenTimeChanged={changeOpenTime}
+        onCloseTimeChanged={changeCloseTime}
+        onCandidateAdded={addCandidate}
+        onCandidateRemoved={removeCandidate}
+        onCandidateChanged={candidateChanged}
+        userInputError={error}
+        openTimeDefault={null}
+        closeTimeDefault={null}
+      />
     </Container>
   </>
 }

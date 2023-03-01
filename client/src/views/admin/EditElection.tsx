@@ -3,20 +3,15 @@ import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import { Header } from "methone";
 
-import { Container, Grid, TextInput, Text, Button, NumberInput, Box, createStyles, Center } from "@mantine/core";
+import { Container, createStyles, Center } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useListState } from "@mantine/hooks";
 
 import { Candidate, Election, NullTime } from "../../util/ElectionTypes";
-import { DateTimeInput } from "../../components/DateTime";
-import { CandidateList } from "../../components/CandidateList";
 import useAuthorization from "../../hooks/useAuthorization";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAPIData } from "../../hooks/useAxios";
-// import EditElection from "./OldEditElection"
-
-// import DateTimePicker from "react-datetime-picker"
-// import DateTimeInput from "react-admin";
+import { AdminElectionView, ElectionFormValues } from "../../components/AdminElectionView";
 
 const useStyles = createStyles((theme) => {
   return {
@@ -28,16 +23,15 @@ const useStyles = createStyles((theme) => {
 
 const EditElection: React.FC = () => {
   const { authHeader } = useAuthorization();
-  const { classes } = useStyles();
   const navigate = useNavigate();
-  const [error, setError] = useState<String | null>(null);
+  const [userInputError, setError] = useState<string | false>(false);
   const [loading, setLoading] = useState(true);
   const electionId = useParams()["id"] ?? "";
   const [electionData, loadingData, fetchError] = useAPIData(`/api/election/${electionId}`);
   const [candidates, candidatesHandler] = useListState<Candidate>();
   const [removedCandidates, removedCandidatesHandler] = useListState<string>();
-  const [editedCandidates, editedCandidatesHandler] = useListState<Candidate>();
-  const form = useForm({
+
+  const electionForm = useForm<ElectionFormValues>({
     initialValues: {
       title: "",
       mandates: 1,
@@ -50,23 +44,29 @@ const EditElection: React.FC = () => {
   useEffect(()=> {
     console.log(electionData);
     if (!loadingData && !fetchError) {
-      form.setValues({
+      electionForm.setValues({
         title: electionData.name,
         mandates: electionData.mandates,
         extraMandates: electionData.extraMandates,
         openTime: electionData.OpenTime,
         closeTime: electionData.CloseTime,
       });
-      candidatesHandler.setState(electionData.candidates);
-      setLoading(false);
+      candidatesHandler.setState(
+        electionData.candidates.filter((c: Candidate) => !c.symbolic)
+          .map((c: Candidate) => ({
+            ...c,
+            changed: false,
+          }))
+      );
+      setLoading(loadingData);
     }
   }, [electionData, loadingData, fetchError]);
 
   const changeOpenTime = (value: NullTime) => {
-    form.setFieldValue("openTime", value)
+    electionForm.setFieldValue("openTime", value)
   }
   const changeCloseTime = (value: NullTime) => {
-    form.setFieldValue("closeTime", value)
+    electionForm.setFieldValue("closeTime", value)
   }
 
   const addCandidate = (candidate: Candidate) => {
@@ -82,18 +82,21 @@ const EditElection: React.FC = () => {
     removedCandidatesHandler.append(candidate.id);
   };
 
-  const candidateChanged = (candidate: Candidate) => {
+  const changeCandidate = (candidate: Candidate) => {
     candidatesHandler.applyWhere(
-      (item) => item.id == candidate.id,
+      (item) => item.id == candidate.id && (
+        item.name != candidate.name ||
+        item.presentation != candidate.presentation
+      ),
       () => ({
         ...candidate,
-        changed: false,
+        changed: true,
       }),
     )
   };
 
-  const submitElection = useCallback((values: typeof form.values) => {
-    axios.post("/api/election/create", {
+  const saveElection = useCallback((values: typeof electionForm.values) => {
+    axios.post(`/api/election/${electionId}/edit`, {
       name: values.title,
       mandates: values.mandates,
       extraMandates: values.extraMandates,
@@ -112,134 +115,46 @@ const EditElection: React.FC = () => {
         navigate(`/admin/election/${data}`);
       })
     }).catch(() => { });
-  }, [candidates, candidateChanged, removedCandidates])
+  }, [candidates, changeCandidate, removedCandidates])
 
-  const onSubmit = useCallback(form.onSubmit((values) => {
-    const now = new Date(Date.now());
+  const submitElectionForm = useCallback(electionForm.onSubmit((values) => {
     if (values.title == "") {
       setError("Title can't be empty");
     } else if (values.closeTime && !values.openTime) {
       setError("The end of the election can't be set without setting the start");
-    } else if (values.openTime && values.openTime <= now) {
-      setError("The start of the election can't be before the current time")
     } else if (
       values.openTime && values.closeTime &&
       values.closeTime <= values.openTime
     ) {
       setError("The end of the election can't be before the start");
     } else {
-      submitElection(values);
+      saveElection(values);
     }
-  }), [setError, form]);
+  }), [setError, electionForm]);
 
-
-  const content = <Container my="md">
-    {error &&
-      <Box className={classes.failed} style={{
-        borderRadius: "5pt",
-        padding: "1rem",
-        marginBottom: "1rem"
-      }}>
-        <Text align="center" fw={700}>
-          {error}
-        </Text>
-      </Box>
-    }
-
-    <Box sx={(theme) => ({
-      backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[2],
-      padding: "1rem",
-      borderRadius: "5pt"
-    })}>
-
-      <form onSubmit={onSubmit}>
-
-        <Grid align="cent">
-          <Grid.Col md={12}>
-            <Button type="submit" fullWidth>
-              <div style={{ marginTop: "1rem", marginBottom: "1rem" }}>
-                <Text fw={700} size="xl" >
-                  Save Changes
-                </Text>
-              </div>
-            </Button>
-          </Grid.Col>
-
-          <Grid.Col md={3}>
-            <div style={{ marginBottom: "3rem" }} >
-              <Text align="center" size="lg" color="dimmed" fw={700}>
-                Election starts
-              </Text>
-              <DateTimeInput
-                onChange={changeOpenTime}
-                defaultDate={null}
-              />
-            </div>
-
-            <div style={{ marginBottom: "2rem" }} >
-              <Text align="center" size="lg" color="dimmed" fw={700}>
-                Election ends
-              </Text>
-              <DateTimeInput
-                onChange={changeCloseTime}
-                defaultDate={null}
-              />
-            </div>
-
-            <div style={{ marginBottom: "2rem" }} >
-              <Text align="center" size="lg" color="dimmed" fw={700}>
-                Mandates
-              </Text>
-              <NumberInput
-                {...form.getInputProps("mandates")}
-                min={1}
-              />
-            </div>
-
-            <div style={{ marginBottom: "2rem" }} >
-              <Text align="center" size="lg" color="dimmed" fw={700}>
-                Secondary mandates
-              </Text>
-              <NumberInput
-                {...form.getInputProps("extraMandates")}
-                min={0}
-              />
-
-            </div>
-          </Grid.Col>
-
-
-          <Grid.Col md={9}>
-
-            <TextInput
-              // class={failed ? classes.failed : "2"}
-              placeholder="Election title"
-              size="xl"
-              {...form.getInputProps("title")}
-            />
-            <br />
-            <CandidateList
-              candidates={
-                candidates.filter(v => !removedCandidates.includes(v.id))
-              }
-              onCandidateAdded={addCandidate}
-              onCandidateChanged={candidateChanged}
-              onCandidateRemoved={removeCandidate}
-            />
-          </Grid.Col>
-          <Grid.Col>
-
-          </Grid.Col>
-        </Grid>
-      </form>
-    </Box>
-  </Container>
 
   return <>
     <Header title="Editing Election" />
-    {!loading && content}
-    {loading && <Center> loading </Center>}
-    {!loading && error && <Center> Error </Center>}
+    <Container my="md">
+      {loading && <Center> loading </Center>}
+      {!loading && fetchError && <Center> Error </Center>}
+      {!loading && !fetchError &&
+        <AdminElectionView 
+          candidates={candidates.filter(c => !removedCandidates.includes(c.id))}
+          onCandidateAdded={addCandidate}
+          onCandidateChanged={changeCandidate}
+          onCandidateRemoved={removeCandidate}
+          electionForm={electionForm}
+          onOpenTimeChanged={changeOpenTime}
+          onCloseTimeChanged={changeCloseTime}
+          onSubmit={submitElectionForm}
+          submitText="Save Changes"
+          userInputError={userInputError}
+          openTimeDefault={electionData.openTime ?? null} // null if undefined
+          closeTimeDefault={electionData.closeTime ?? null}
+        />
+      }
+    </Container>
   </>
 }
 
