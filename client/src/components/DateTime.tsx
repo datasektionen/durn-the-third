@@ -27,7 +27,7 @@ export const DateTimeInput: React.FC<DateTimeInputProps> = (
 ) => {
   const [time, setTime] = useState<NullTime>(defaultDate);
   const [date, setDate] = useState<NullTime>(defaultDate);
-
+  
   useEffect(() => { 
     setDate(defaultDate);
     setTime(defaultDate);
@@ -36,6 +36,7 @@ export const DateTimeInput: React.FC<DateTimeInputProps> = (
   useEffect(() => { 
     onChange(combineTimeAndDate(time, date)); 
   }, [time, date]);
+
 
   return <>
     <Grid align="flex-end" gutter={0}>

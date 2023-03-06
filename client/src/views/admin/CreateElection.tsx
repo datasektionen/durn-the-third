@@ -38,10 +38,10 @@ export const CreateElection: React.FC = () => {
   const [removedCandidates, removedCandidatesHandler] = useListState<string>();
 
   const changeOpenTime = (value: NullTime) => {
-    form.setFieldValue("openTime", value)
+    form.setFieldValue("openTime", value);
   }
   const changeCloseTime = (value: NullTime) => {
-    form.setFieldValue("closeTime", value)
+    form.setFieldValue("closeTime", value);
   }
 
   const addCandidate = (candidate: Candidate) => {

@@ -51,10 +51,6 @@ export const AdminElectionView: React.FC<AdminElectionViewProps> = ({
   candidates, onCandidateAdded, onCandidateRemoved, onCandidateChanged,
   openTimeDefault = null, closeTimeDefault = null,
 }) => {
-
-  console.log(openTimeDefault);
-  console.log(closeTimeDefault);
-
   const { classes } = useStyles();
 
   return <>
@@ -115,7 +111,7 @@ export const AdminElectionView: React.FC<AdminElectionViewProps> = ({
               <Text align="center" size="lg" color="dimmed" fw={700}>
                 Mandates
               </Text>
-              <NumberInput
+              <NumberInput width="3rem"
                 {...electionForm.getInputProps("mandates")}
                 min={1}
               />
