@@ -45,14 +45,13 @@ const EditElection: React.FC = () => {
   });
 
   useEffect(()=> {
-    console.log(electionData);
-    if (!loadingData && !fetchError) {
+    if (!loadingData && !fetchError && electionData) {
       electionForm.setValues({
         title: electionData.name,
         mandates: electionData.mandates,
         extraMandates: electionData.extraMandates,
-        openTime: electionData.OpenTime,
-        closeTime: electionData.CloseTime,
+        openTime: electionData.openTime,
+        closeTime: electionData.closeTime,
       });
       candidatesHandler.setState(
         electionData.candidates.filter((c: Candidate) => !c.symbolic)
@@ -153,8 +152,8 @@ const EditElection: React.FC = () => {
           onSubmit={submitElectionForm}
           submitText="Save Changes"
           userInputError={userInputError}
-          openTimeDefault={electionData.openTime ?? null} // null if undefined
-          closeTimeDefault={electionData.closeTime ?? null}
+          openTimeDefault={electionData?.openTime} // null if undefined
+          closeTimeDefault={electionData?.closeTime}
         />
       }
     </Container>
