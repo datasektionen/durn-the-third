@@ -1,10 +1,5 @@
-import { useLocalStorage } from "@mantine/hooks";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { z } from "zod";
-import constants from "../util/constants";
-import { parseElectionResponse } from "../util/ElectionTypes";
-
 import useAuthorization from "./useAuthorization";
 
 export interface ErrorData {
@@ -44,7 +39,7 @@ export const useApiRequester = () => {
 
 export const useAPIData = <R>(
   url: string, 
-  schema: z.Schema,
+  parseData: (data: any) => Promise<R>,
   headers: any = {},
 ): [R | null, boolean, string | null] => {
   const [data, setData] = useState<R | null>(null);
@@ -62,10 +57,7 @@ export const useAPIData = <R>(
         ...headers,
       }
     }).then(({data}) => {
-      schema.parseAsync(
-        parseElectionResponse(data)
-      )
-      .then((data: R) => {
+      parseData(data).then((data) => {
         setData(data);
         setError(null);
         console.log("yes!");

@@ -29,7 +29,7 @@ const EditElection: React.FC = () => {
   const electionId = useParams()["id"] ?? "";
   const [electionData, loadingData, fetchError] = useAPIData<Election>(
     `/api/election/${electionId}`,
-    ElectionSchema,
+    (data) => ElectionSchema.parseAsync(parseElectionResponse(data)),
   );
   const [candidates, candidatesHandler] = useListState<Candidate>();
   const [removedCandidates, removedCandidatesHandler] = useListState<string>();
