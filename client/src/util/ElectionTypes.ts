@@ -1,46 +1,50 @@
-
+import { z } from "zod"
 
 export type NullTime = Date | null
 
-export interface Candidate {
-  id: string,
-  name: string,
-  presentation: string,
-  symbolic: boolean,
-  changed?: boolean,
-}
+export const CandidateSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  presentation: z.string(),
+  symbolic: z.boolean(),
+  changed: z.boolean().optional()
+});
 
-export interface Election {
-  id: string,
-  name: string,
-  description: string,
-  published: boolean,
-  finalized: boolean,
-  openTime: NullTime,
-  closeTime: NullTime,
-  candidates: Candidate[],
-}
+export type Candidate = z.infer<typeof CandidateSchema>;
 
-export const createEmptyElection = () => {
+export const ElectionSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  mandates: z.number(),
+  extraMandates: z.number(),
+  openTime: z.date().nullable(),
+  closeTime: z.date().nullable(),
+  candidates: z.array(CandidateSchema),
+});
+
+export type Election = z.infer<typeof ElectionSchema>;
+
+export const createEmptyElection = (): Election => {
   return {
     id: "",
     name: "",
     description: "",
-    published: false,
-    finalized: false,
+    mandates: 1,
+    extraMandates: 0,
     openTime: null,
     closeTime: null,
     candidates: [],
   }
-}
+};
 
 export const electionMock = (): Election => {
   return {
     id: "fd9d7c4a-ee20-4b63-ae44-cc5760f3d493",
     name: "test",
     description: "thing",
-    published: true,
-    finalized: false,
+    mandates: 1,
+    extraMandates: 1,
     openTime: new Date("2022-10-30T00:14:31Z"),
     closeTime: new Date("2023-10-30T00:14:31Z"),
     candidates: [
@@ -72,13 +76,17 @@ export const electionMock = (): Election => {
   }
 }
 
+
+
 export const parseElectionResponse = (data: any):Election => {
   return {
     id: data.id,
     name: data.name,
     description: data.description,
-    published: data.published,
-    finalized: data.finalized,
+    // published: data.published,
+    // finalized: data.finalized,
+    mandates: data.mandates,
+    extraMandates: data.extraMandates,
     openTime: data.openTime == null ? null : new Date(data.openTime),
     closeTime: data.closeTime == null ? null : new Date(data.closeTime),
     candidates: data.candidates
