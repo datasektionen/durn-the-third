@@ -7,7 +7,7 @@ import { Container, createStyles, Center } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useListState } from "@mantine/hooks";
 
-import { Candidate, Election, NullTime } from "../../util/ElectionTypes";
+import { Candidate, Election, ElectionSchema, NullTime, parseElectionResponse } from "../../util/ElectionTypes";
 import useAuthorization from "../../hooks/useAuthorization";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAPIData } from "../../hooks/useAxios";
@@ -27,7 +27,10 @@ const EditElection: React.FC = () => {
   const [userInputError, setError] = useState<string | false>(false);
   const [loading, setLoading] = useState(true);
   const electionId = useParams()["id"] ?? "";
-  const [electionData, loadingData, fetchError] = useAPIData(`/api/election/${electionId}`);
+  const [electionData, loadingData, fetchError] = useAPIData<Election>(
+    `/api/election/${electionId}`,
+    ElectionSchema,
+  );
   const [candidates, candidatesHandler] = useListState<Candidate>();
   const [removedCandidates, removedCandidatesHandler] = useListState<string>();
 
