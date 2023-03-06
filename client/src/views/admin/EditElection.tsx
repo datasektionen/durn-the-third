@@ -76,6 +76,7 @@ const EditElection: React.FC = () => {
       ...candidate,
       id: `tmp_${uuidv4()}`,
       changed: true,
+      added: true,
     });
   };
 

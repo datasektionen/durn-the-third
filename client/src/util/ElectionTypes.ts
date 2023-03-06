@@ -7,7 +7,8 @@ export const CandidateSchema = z.object({
   name: z.string(),
   presentation: z.string(),
   symbolic: z.boolean(),
-  changed: z.boolean().optional()
+  changed: z.boolean().optional(),
+  added: z.boolean().optional(),
 });
 
 export type Candidate = z.infer<typeof CandidateSchema>;
@@ -83,8 +84,6 @@ export const parseElectionResponse = (data: any):Election => {
     id: data.id,
     name: data.name,
     description: data.description,
-    // published: data.published,
-    // finalized: data.finalized,
     mandates: data.mandates,
     extraMandates: data.extraMandates,
     openTime: data.openTime == null ? null : new Date(data.openTime),
