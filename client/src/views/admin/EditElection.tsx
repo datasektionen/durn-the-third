@@ -33,7 +33,6 @@ const EditElection: React.FC = () => {
   );
   const [candidates, candidatesHandler] = useListState<Candidate>();
   const [removedCandidates, removedCandidatesHandler] = useListState<string>();
-
   const electionForm = useForm<ElectionFormValues>({
     initialValues: {
       title: "",
@@ -99,7 +98,7 @@ const EditElection: React.FC = () => {
   };
 
   const saveElection = useCallback((values: typeof electionForm.values) => {
-    axios.post(`/api/election/${electionId}/edit`, {
+    axios.patch(`/api/election/${electionId}/edit`, {
       name: values.title,
       mandates: values.mandates,
       extraMandates: values.extraMandates,
@@ -109,16 +108,42 @@ const EditElection: React.FC = () => {
       headers: authHeader
     }).then(({ data }) => {
       Promise.all(
-        candidates.map((candidate) =>
-          axios.post(`/api/election/${data}/candidate/add`, {
+        candidates.filter(
+          (c) => !c.added && c.changed && !removedCandidates.includes(c.id)
+        ).map((candidate) =>
+          axios.put(`/api/election/candidate/${candidate.id}/edit`, {
+            name: candidate.name,
+            presentation: candidate.presentation,
+          }, { headers: authHeader })
+        )
+      ).then(() => Promise.all(
+        removedCandidates.map((candidate) =>
+          axios.post(
+            `/api/election/candidate/${candidate}/delete`,
+            {},
+            { headers: authHeader }
+          ).then(() => {
+            candidatesHandler.filter(
+              (c) => c.id != candidate
+            );
+          })
+        )
+      )).then(() => Promise.all(
+        candidates.filter((c) => c.added)
+        .map((candidate) =>
+          axios.post(`/api/election/${electionId}/candidate/add`, {
             name: candidate.name,
             presentation: candidate.presentation,
           }, { headers: authHeader }))
-      ).then(() => {
-        navigate(`/admin/election/${data}`);
-      })
+      )).then(() => {
+        candidatesHandler.apply((c) => ({
+          ...c,
+          changed: false
+        }))
+        removedCandidatesHandler.setState([]);
+      });
     }).catch(() => { });
-  }, [candidates, changeCandidate, removedCandidates])
+  }, [candidates, changeCandidate, removedCandidates, electionId])
 
   const submitElectionForm = useCallback(electionForm.onSubmit((values) => {
     if (values.title == "") {
@@ -143,7 +168,9 @@ const EditElection: React.FC = () => {
       {!loading && fetchError && <Center> Error </Center>}
       {!loading && !fetchError &&
         <AdminElectionView 
-          candidates={candidates.filter(c => !removedCandidates.includes(c.id))}
+          candidates={
+            candidates.filter(c => !removedCandidates.includes(c.id))
+          }
           onCandidateAdded={addCandidate}
           onCandidateChanged={changeCandidate}
           onCandidateRemoved={removeCandidate}
