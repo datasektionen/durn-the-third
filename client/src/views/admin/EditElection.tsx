@@ -12,6 +12,7 @@ import useAuthorization from "../../hooks/useAuthorization";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAPIData } from "../../hooks/useAxios";
 import { AdminElectionView, ElectionFormValues } from "../../components/AdminElectionView";
+import Loading from "../../components/Loading";
 
 const useStyles = createStyles((theme) => {
   return {
@@ -170,9 +171,9 @@ const EditElection: React.FC = () => {
   return <>
     <Header title="Editing Election" />
     <Container my="md">
-      {loading && <Center> loading </Center>}
+      {loading && <Center> <Loading/> </Center>}
       {!loading && fetchError && <Center> Error </Center>}
-      {!loading && !fetchError &&
+      {!loading && !fetchError && electionData &&
         <AdminElectionView 
           candidates={
             candidates.filter(c => !c.removed)
@@ -186,8 +187,8 @@ const EditElection: React.FC = () => {
           onSubmit={submitElectionForm}
           submitText="Save Changes"
           userInputError={userInputError}
-          openTimeDefault={electionData?.openTime} // null if undefined
-          closeTimeDefault={electionData?.closeTime}
+          openTimeDefault={electionData.openTime} // null if undefined
+          closeTimeDefault={electionData.closeTime}
         />
       }
     </Container>
