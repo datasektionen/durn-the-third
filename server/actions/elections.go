@@ -325,15 +325,18 @@ func GetPublicElections(c *gin.Context) {
 	defer database.ReleaseDB()
 
 	var elections []database.Election
-	if err := db.Where("Published").Preload("Candidates").Find(&elections).Error; err != nil {
+	if err := db.Preload("Candidates").Find(&elections).Error; err != nil {
 		fmt.Println(err)
 		c.String(http.StatusInternalServerError, util.RequestFailed)
 		return
 	}
 
 	result := []electionExportType{}
+	now := time.Now()
 	for _, election := range elections {
-		result = append(result, convertElectionToExportType(election))
+		if util.TimeIsInValidInterval(now, election.OpenTime, election.CloseTime) {
+			result = append(result, convertElectionToExportType(election))
+		}
 	}
 	c.JSON(http.StatusOK, result)
 }

@@ -5,10 +5,13 @@ import axios from "axios";
 import { Grid, Container, createStyles, Center} from "@mantine/core";
 
 import { DisplayElectionInfo } from "../components/Election";
-import { Election, parseElectionResponse } from "../util/ElectionTypes"
+import { Election, ElectionSchema, parseElectionResponse } from "../util/ElectionTypes"
 import { Voting } from "../components/Voting";
 import useAuthorization from "../hooks/useAuthorization";
 import constants from "../util/constants";
+import { useAPIData } from "../hooks/useAxios";
+import { z } from "zod";
+import Loading from "../components/Loading";
 
 const useStyles = createStyles((theme) => ({
   infoBox: {
@@ -17,7 +20,7 @@ const useStyles = createStyles((theme) => ({
     marginTop: "10rem"
   },
 
-  loginBox: {
+  alertBox: {
     borderRadius: "0.3rem",
     padding: "3rem",
     marginTop: "3rem",
@@ -68,47 +71,46 @@ const Info: React.FC = () => {
 }
 
 export const Home: React.FC = () => {
-  const [elections, setElections] = useState<Election[]>([]);
-  const {loggedIn, authHeader} = useAuthorization()
-  const { cx, classes } = useStyles()
-
-  useEffect(() => {
-    axios(`/api/elections/public`, {
-      headers: authHeader
-    }).then(({data}) => {
-      setElections(data.map(parseElectionResponse))
-    }).catch(()=>{})
-  }, [authHeader]);
+  const { loggedIn } = useAuthorization();
+  const { cx, classes } = useStyles();
+  const [elections, electionsLoading, electionsError] = useAPIData<Election[]>(
+    `/api/elections/public`, 
+    (data) => z.array(ElectionSchema).parseAsync(data.map(parseElectionResponse))
+  );
 
   return (<>
     <Header title="dUrn - digitala urnval" />
     
     <div style={{marginTop: "2rem"}}>
       <Container my="md">
-
         {!loggedIn &&
-          <div >
-            <Center>
-              <p className={cx(constants.themeColor, "lighten-4", classes.loginBox)}>
-                Logga in för att se de aktuella urnvalen.
-              </p>
-            </Center>
-          </div>  
+          <Center>
+            <p className={cx(constants.themeColor, "lighten-4", classes.alertBox)}>
+              Logga in för att se de aktuella urnvalen.
+            </p>
+          </Center>
         }
-        {loggedIn && elections.length == 0 && 
-          <div >
-            <Center>
-              <p className={cx(constants.themeColor, "lighten-4", classes.loginBox)}>
-                Det finns inga publicerade urnval just nu.
-              </p>
-            </Center>
-          </div>
-        }
-        <Grid>
-          {loggedIn && elections.map((e) => 
-            <Grid.Col xs={4}>{<DisplayElectionInfo election={e} ModalContent={Voting}/>}</Grid.Col>
-          )}
-        </Grid>
+        {loggedIn && <>
+          {electionsLoading &&
+            <Center> <Loading/> </Center>}
+          {!electionsLoading && electionsError &&
+            <Center> Error </Center>}
+          {!electionsLoading && !electionsError && elections && <>
+            {elections.length == 0 && 
+              <Center>
+                <p className={cx(constants.themeColor, "lighten-4", classes.alertBox)}>
+                  Det finns inga publicerade urnval just nu.
+                </p>
+              </Center>}
+            <Grid> 
+              {elections.map((e) =>
+                <Grid.Col xs={4}>
+                  <DisplayElectionInfo election={e} ModalContent={Voting} />
+                </Grid.Col>
+              )} 
+            </Grid>
+          </>}
+        </>}
         <Info />
       </Container>
     </div>  
