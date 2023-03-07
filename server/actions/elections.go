@@ -89,22 +89,12 @@ func CreateElection(c *gin.Context) {
 		ElectionID:   election.ID,
 		Symbolic:     true,
 	}
-	blank := database.Candidate{
-		ID:           uuid.NewV4(),
-		Name:         util.BlankCandidate,
-		Presentation: "",
-		ElectionID:   election.ID,
-		Symbolic:     true,
-	}
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
 		if err := db.Create(&election).Error; err != nil {
 			return err
 		}
 		if err := db.Create(&vacant).Error; err != nil {
-			return err
-		}
-		if err := db.Create(&blank).Error; err != nil {
 			return err
 		}
 		return nil
