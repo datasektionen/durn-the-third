@@ -1,7 +1,10 @@
+import React, { useEffect, useState } from "react";
+import { v4 as uuidv4 } from "uuid"
+
 import { Button, createStyles, ScrollArea, Table, Text, TextInput } from "@mantine/core";
 import { useDebouncedState } from "@mantine/hooks";
-import React, { useCallback, useEffect, useState } from "react";
 import { Plus, X } from "tabler-icons-react";
+
 import { Candidate } from "../util/ElectionTypes"
 
 const useStyles = createStyles((theme) => {
@@ -40,11 +43,10 @@ export const CandidateList: React.FC<CandidateListProps> = (
 
   const addCandidate = () => {
     onCandidateAdded({
-      id: "",
+      id: `tmp_${uuidv4()}`,
       name: name,
       presentation: presentation,
       symbolic: false,
-      changed: true,
     });
     setName("");
     setPresentation("");
@@ -95,7 +97,11 @@ export const CandidateList: React.FC<CandidateListProps> = (
         </thead>
         <tbody>
           {candidates.map((candidate) => (
-            <CandidateRow candidate={candidate} onCandidateChanged={onCandidateChanged} onCandidateRemoved={onCandidateRemoved} />
+            <CandidateRow
+              candidate={candidate}
+              onCandidateChanged={onCandidateChanged}
+              onCandidateRemoved={onCandidateRemoved}
+            />
           ))}
           {addCandidateRow}
         </tbody>
@@ -125,7 +131,6 @@ const CandidateRow: React.FC<CandidateRowProps> = (
       ...candidate,
       name: name,
       presentation: presentation,
-      changed: true,
     })
   }, [name, presentation])
 

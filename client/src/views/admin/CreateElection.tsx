@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from "react"
-import { v4 as uuidv4 } from "uuid"
 import axios from "axios"
 import { Header } from "methone"
 
@@ -20,7 +19,6 @@ const useStyles = createStyles((theme) => ({
 
 export const CreateElection: React.FC = () => {
   const { authHeader } = useAuthorization();
-  const { classes } = useStyles();
   const navigate = useNavigate();
   const [ error, setError ] = useState<string|false>(false);
 
@@ -44,11 +42,7 @@ export const CreateElection: React.FC = () => {
   }
 
   const addCandidate = (candidate: Candidate) => {
-    candidatesHandler.append({
-      ...candidate,
-      id: `tmp_${uuidv4()}`, 
-      changed: false,
-    });
+    candidatesHandler.append(candidate);
   };
 
   const removeCandidate = (candidate: Candidate) => {
@@ -75,6 +69,7 @@ export const CreateElection: React.FC = () => {
     }, {
       headers: authHeader
     }).then(({ data }) => {
+      // submit all added candidates
       Promise.all(
         candidates.map((candidate) =>
           axios.post(`/api/election/${data}/candidate/add`, {
