@@ -23,7 +23,6 @@ const useStyles = createStyles((theme) => {
 
 const EditElection: React.FC = () => {
   const { authHeader } = useAuthorization();
-  const navigate = useNavigate();
   const [userInputError, setError] = useState<string | false>(false);
   const [loading, setLoading] = useState(true);
   const electionId = useParams()["id"] ?? "";
@@ -106,8 +105,9 @@ const EditElection: React.FC = () => {
       closeTime: values.closeTime,
     }, {
       headers: authHeader
-    }).then(({ data }) => {
+    }).then(() => {
       Promise.all(
+        // submit all changes made to candidates
         candidates.filter(
           (c) => !c.added && c.changed && !removedCandidates.includes(c.id)
         ).map((candidate) =>
@@ -117,6 +117,7 @@ const EditElection: React.FC = () => {
           }, { headers: authHeader })
         )
       ).then(() => Promise.all(
+        // submit all removals of candidates
         removedCandidates.map((candidate) =>
           axios.post(
             `/api/election/candidate/${candidate}/delete`,
@@ -129,6 +130,7 @@ const EditElection: React.FC = () => {
           })
         )
       )).then(() => Promise.all(
+        // submit all added candidates
         candidates.filter((c) => c.added)
         .map((candidate) =>
           axios.post(`/api/election/${electionId}/candidate/add`, {
@@ -136,9 +138,11 @@ const EditElection: React.FC = () => {
             presentation: candidate.presentation,
           }, { headers: authHeader }))
       )).then(() => {
+        // reset state
         candidatesHandler.apply((c) => ({
           ...c,
-          changed: false
+          changed: false,
+          added: false,
         }))
         removedCandidatesHandler.setState([]);
       });
