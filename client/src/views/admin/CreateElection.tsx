@@ -35,7 +35,6 @@ export const CreateElection: React.FC = () => {
   });
 
   const [candidates, candidatesHandler] = useListState<Candidate>();
-  const [removedCandidates, removedCandidatesHandler] = useListState<string>();
 
   const changeOpenTime = (value: NullTime) => {
     form.setFieldValue("openTime", value);
@@ -53,8 +52,7 @@ export const CreateElection: React.FC = () => {
   };
 
   const removeCandidate = (candidate: Candidate) => {
-    console.log(candidate)
-    removedCandidatesHandler.append(candidate.id);
+    candidatesHandler.filter((c) => c.id != candidate.id);
   };
 
   const candidateChanged = (candidate: Candidate) => {
@@ -87,7 +85,7 @@ export const CreateElection: React.FC = () => {
         navigate(`/admin/election/${data}`);
       })
     }).catch(() => { });
-  }, [candidates, candidateChanged, removedCandidates])
+  }, [candidates, candidateChanged])
 
   const onSubmit = useCallback(form.onSubmit((values) => {
     const now = new Date(Date.now());

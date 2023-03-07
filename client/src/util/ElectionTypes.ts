@@ -9,6 +9,7 @@ export const CandidateSchema = z.object({
   symbolic: z.boolean(),
   changed: z.boolean().optional(),
   added: z.boolean().optional(),
+  removed: z.boolean().optional(),
 });
 
 export type Candidate = z.infer<typeof CandidateSchema>;
