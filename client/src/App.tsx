@@ -14,6 +14,7 @@ import AdminActions from "./views/admin/AdminActions"
 import { CreateElection } from "./views/admin/CreateElection";
 
 import "@total-typescript/ts-reset";
+import Vote from "./views/Vote";
 
 const App: React.FC = () => {
   const { loggedIn, adminRead } = useAuthorization();
@@ -40,6 +41,8 @@ const App: React.FC = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/logout" element={<Logout />} /> 
           <Route path="/token/:token" element={<Token />} />
+
+          <Route path="/vote/:id" element={<Vote />} />
 
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/create" element={<CreateElection />} />

@@ -105,7 +105,7 @@ export const Home: React.FC = () => {
             <Grid> 
               {elections.map((e) =>
                 <Grid.Col xs={4}>
-                  <DisplayElectionInfo election={e} ModalContent={Voting} />
+                  <DisplayElectionInfo election={e} redirectURL={`/vote/${e.id}`} />
                 </Grid.Col>
               )} 
             </Grid>
