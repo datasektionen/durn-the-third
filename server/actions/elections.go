@@ -358,7 +358,7 @@ func GetPublicElection(c *gin.Context) {
 	// election := database.FetchElectionIfPublic(db, electionId)
 
 	election := database.Election{ID: electionId}
-	if err := db.Where("Published").Preload("Candidates").First(&election).Error; err != nil {
+	if err := db.Preload("Candidates").First(&election).Error; err != nil {
 		fmt.Println(err)
 		c.String(http.StatusBadRequest, util.InvalidElection)
 		return
