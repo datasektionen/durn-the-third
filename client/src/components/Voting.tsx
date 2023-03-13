@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
-import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd'
+import { DragDropContext, Droppable, Draggable, DropResult, DragUpdate } from 'react-beautiful-dnd'
 import { Selector } from 'tabler-icons-react'
 import { useForm } from "@mantine/form"
 import { useListState } from "@mantine/hooks";
@@ -14,6 +14,8 @@ import { compareList } from "../util/funcs";
 import { ErrorModal, InformationModal } from "./PopupModals";
 import { time } from "console";
 import dayjs from "dayjs";
+import { useAPIData } from "../hooks/useAxios";
+import { z } from "zod";
 
 interface candidateInfo {
   id: string,
@@ -157,7 +159,11 @@ export const Voting: React.FC<VotingProps> = ({
 
   const { classes } = useStyles()
   const [displayIndex, setDisplayIndex] = useState<Map<string, string>>(new Map<string, string>())
-  const [hasVoted, setHasVoted] = useState(false)
+  // const [hasVoted, setHasVoted] = useState(false)
+  const [hasVoted, loadingHasVoted, errorHasVoted] = useAPIData(
+    `/api/election/${election.id}/has-voted`,
+    (data) => z.boolean().parseAsync(data)
+  )
   const [mayVote, setMayVote] = useState(true)
   const [hash, setHash] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -181,21 +187,21 @@ export const Voting: React.FC<VotingProps> = ({
   ), [election.closeTime])
 
   const disabled = useMemo(() => (
-    hasVoted || election.finalized || !hasOpened || hasClosed || !mayVote
-  ), [hasVoted, election.finalized, hasOpened, hasClosed, mayVote])
+    hasVoted || /*election.finalized ||*/  !hasOpened || hasClosed || !mayVote
+  ), [hasVoted, hasOpened, hasClosed, mayVote])
 
   const updateDisplayIndex = useCallback((indexes: Map<string, number>) => {
     let firstSymbolic = voteOrder.length
-    voteOrder.forEach((candidate) => {
-      if (candidate.symbolic) firstSymbolic = Math.min(firstSymbolic, indexes.get(candidate.id) ?? firstSymbolic)
-    })
+    // voteOrder.forEach((candidate) => {
+    //   if (candidate.symbolic) firstSymbolic = Math.min(firstSymbolic, indexes.get(candidate.id) ?? firstSymbolic)
+    // })
     setDisplayIndex(new Map(voteOrder.map((candidate) => {
       let index = indexes.get(candidate.id) ?? 0
       return [candidate.id, `${firstSymbolic < index ? "-" : index + 1}`]
     })))
   }, [setDisplayIndex, voteOrder])
 
-  const handleItemUpdate = useCallback(({ destination, source }: DropResult) => {
+  const handleItemUpdate = useCallback(({ destination, source }: DragUpdate) => {
     if (destination == undefined) return;
     const adjustedIndexes = new Map(voteOrder.map((candidate, index) => {
       if (source.index == destination.index) return [candidate.id, index]
@@ -220,22 +226,22 @@ export const Voting: React.FC<VotingProps> = ({
       headers: authHeader
     }).then(({data}) => {
       setHash(data)
-      setHasVoted(true)
+      // setHasVoted(true)
     }).catch(({response}) => {
       setError(response.data)
     })
   }), [form])
 
 
-  useEffect(() => {
-    axios(`/api/election/${election.id}/has-voted`, {
-      headers: authHeader
-    }).then(({data}) => {
-      setHasVoted(data)
-    }).catch(({response}) => {
-      setHasVoted(false)
-    })
-  }, [authHeader])
+  // useEffect(() => {
+  //   axios(`/api/election/${election.id}/has-voted`, {
+  //     headers: authHeader
+  //   }).then(({data}) => {
+  //     setHasVoted(data)
+  //   }).catch(({response}) => {
+  //     setHasVoted(false)
+  //   })
+  // }, [authHeader])
 
   useEffect(() => {
     axios(`/api/voter/allowed`, {
@@ -288,24 +294,24 @@ export const Voting: React.FC<VotingProps> = ({
     {disabled &&
       <div className={classes.votingDisabledInfo}>
         
-        {(election.finalized || (hasClosed && hasOpened)) &&
+        {(/*election.finalized ||*/ (hasClosed && hasOpened)) &&
           <p> Det går inte lägre att rösta i det här valet. </p>
         }
 
         {!mayVote && !hasVoted &&
           <p>
-            Du har inte fått rösträtt i det här valet.<br/>
+            Du har inte rösträtt i det här valet.<br/>
             Kontakta valberedningen om du är medlem och ska ha det.<br/>
             (<a href="mailto:valberedningen@datasektionen.se">valberedningen@datasektionen.se</a>) 
             
           </p>
         }
 
-        {!election.finalized && !hasOpened && mayVote &&
+        {/*!election.finalized &&*/  !hasOpened && mayVote &&
           <p>Det här valet har inte öppnat ännu</p>
         }
 
-        {!(election.finalized || hasClosed || !hasOpened) && hasVoted &&
+        {!(/*election.finalized ||*/  hasClosed || !hasOpened) && hasVoted &&
           <p>Du har redan röstat i det här valet. </p>
         }
       </div>
@@ -314,11 +320,11 @@ export const Voting: React.FC<VotingProps> = ({
     <form onSubmit={submitForm}>
 
       <div className={classes.flexRow} style={{marginBottom:"1rem"}}>
-        <div className={classes.flexSubRow}>
+        {/* <div className={classes.flexSubRow}>
           <p style={{marginTop: "0.6rem"}}>Secret: </p>
           <TextInput disabled={disabled} placeholder="Secret" {...form.getInputProps('secret')} />
-        </div>
-        <Button disabled={disabled} type="submit">
+        </div> */}
+        <Button disabled={disabled} type="submit" fullWidth>
           Rösta
         </Button>
       </div>
