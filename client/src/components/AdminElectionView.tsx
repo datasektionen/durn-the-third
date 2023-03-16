@@ -76,16 +76,7 @@ export const AdminElectionView: React.FC<AdminElectionViewProps> = ({
 
       <form onSubmit={onSubmit}>
 
-        <Grid align="cent">
-          <Grid.Col md={12}>
-            <Button type="submit" fullWidth disabled={submitDisabled}>
-              <div style={{ marginTop: "1rem", marginBottom: "1rem" }}>
-                <Text fw={700} size="xl" >
-                  {submitText}
-                </Text>
-              </div>
-            </Button>
-          </Grid.Col>
+        <Grid>
 
           <Grid.Col md={3}>
             <div style={{ marginBottom: "3rem" }} >
@@ -146,6 +137,16 @@ export const AdminElectionView: React.FC<AdminElectionViewProps> = ({
               onCandidateChanged={onCandidateChanged}
               onCandidateRemoved={onCandidateRemoved}
             />
+          </Grid.Col>
+          
+          <Grid.Col md={12}>
+            <Button type="submit" fullWidth disabled={submitDisabled}>
+              <div style={{ marginTop: "1rem", marginBottom: "1rem" }}>
+                <Text fw={700} size="xl" >
+                  {submitText}
+                </Text>
+              </div>
+            </Button>
           </Grid.Col>
           
         </Grid>

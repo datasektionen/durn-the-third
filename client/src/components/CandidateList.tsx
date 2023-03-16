@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid"
 
-import { Button, createStyles, ScrollArea, Table, Text, TextInput } from "@mantine/core";
+import { Button, Center, createStyles, ScrollArea, Table, Text, TextInput } from "@mantine/core";
 import { useDebouncedState } from "@mantine/hooks";
 import { Plus, X } from "tabler-icons-react";
 
@@ -16,7 +16,7 @@ const useStyles = createStyles((theme) => {
       backgroundColor: theme.colors.gray[1]
     },
     add: {
-      borderTop: "2px solid " + theme.colors.gray[4]
+      // borderTop: "2px solid " + theme.colors.gray[4]
     },
     info: {
       padding: "3rem",
@@ -70,7 +70,7 @@ export const CandidateList: React.FC<CandidateListProps> = (
       <td>
         <TextInput 
           value={presentation} 
-          placeholder="länk till kandidatpresentation"
+          placeholder="link to candidate presentation"
           onChange={(element) => setPresentation(element.target.value)}
         />
       </td>
@@ -85,12 +85,12 @@ export const CandidateList: React.FC<CandidateListProps> = (
             <th style={{ width: 30 }}></th>
             <th>
               <Text style={{ margin: "1rem" }} align="center">
-                Kandidatens namn
+                Name of the candidate
               </Text>
             </th>
             <th>
               <Text style={{ margin: "1rem" }} align="center">
-                Kandidatpresentation
+                candidate presentation
               </Text>
             </th>
           </tr>
@@ -103,9 +103,31 @@ export const CandidateList: React.FC<CandidateListProps> = (
               onCandidateRemoved={onCandidateRemoved}
             />
           ))}
-          {addCandidateRow}
         </tbody>
       </Table>
+
+
+      <Center>
+        <Text fw={700} c="gray.7" style={{ margin: "0.5rem", marginTop: "1rem" }}>
+          Add new candidate
+        </Text>
+      </Center>
+
+      <Table withBorder withColumnBorders>
+        <thead>
+          <tr>
+            <td style={{ width: 30 }}></td>
+            <td />
+            <td />
+          </tr>
+        </thead>
+
+        <tbody>
+          {addCandidateRow}
+        </tbody>
+
+      </Table>
+
     </ScrollArea>
   </>
 };
