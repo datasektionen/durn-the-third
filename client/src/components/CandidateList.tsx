@@ -64,6 +64,7 @@ export const CandidateList: React.FC<CandidateListProps> = (
       <td>
         <TextInput 
           value={name}
+          placeholder="candidate name"
           onChange={(element) => setName(element.target.value)}
         />
       </td>
@@ -79,6 +80,28 @@ export const CandidateList: React.FC<CandidateListProps> = (
 
   return <>
     <ScrollArea>
+
+
+      <Text fw={700} c="gray.7" style={{ margin: "0.5rem", marginTop: "1rem" }} align="center">
+        Add new candidate
+      </Text>
+
+      <Table withBorder withColumnBorders>
+        <thead>
+          <tr>
+            <td style={{ width: 30 }}></td>
+            <td />
+            <td />
+          </tr>
+        </thead>
+
+        <tbody>
+          {addCandidateRow}
+        </tbody>
+
+      </Table>
+      <br />
+
       <Table withBorder withColumnBorders>
         <thead>
           <tr key="head" className={ classes.row }>
@@ -106,25 +129,6 @@ export const CandidateList: React.FC<CandidateListProps> = (
         </tbody>
       </Table>
 
-
-      <Text fw={700} c="gray.7" style={{ margin: "0.5rem", marginTop: "1rem" }} align="center">
-          Add new candidate
-        </Text>
-
-      <Table withBorder withColumnBorders>
-        <thead>
-          <tr>
-            <td style={{ width: 30 }}></td>
-            <td />
-            <td />
-          </tr>
-        </thead>
-
-        <tbody>
-          {addCandidateRow}
-        </tbody>
-
-      </Table>
 
     </ScrollArea>
   </>
