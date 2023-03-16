@@ -116,7 +116,7 @@ const useStyles = createStyles((theme) => ({
     textAlign: "center",
     borderRadius: "0.6rem",
     backgroundColor: "#ffcccb"
-  }
+  },
 
 }));
 
@@ -300,16 +300,23 @@ export const Voting: React.FC<VotingProps> = ({
 
     {election.openTime && election.closeTime &&
       <Grid my="md">
-        <Grid.Col md={6}>
-          <p style={{ textAlign: "left" }}>
-            <b>Election Opened</b> <br/>
+        <Grid.Col md={4}>
+          <p>
+            <b>Election opened</b> <br/>
             {election.openTime.toLocaleString()}
           </p>
         </Grid.Col>
-        <Grid.Col md={6}>
-          <p style={{textAlign: "right"}}>
+        <Grid.Col md={4}>
+          <p >
             <b>Election ends</b> <br/>
             {election.closeTime.toLocaleString()}
+          </p>
+        </Grid.Col>
+        <Grid.Col md={4}>
+          <p >
+            <b>{election.mandates}</b> mandates to be elected<br />
+            {election.extraMandates > 0 && <>
+              <b>{election.extraMandates}</b> secondary mandates to be elected </>}
           </p>
         </Grid.Col>
       </Grid>
