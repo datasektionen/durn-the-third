@@ -189,10 +189,11 @@ const EditElection: React.FC = () => {
     axios.put(`/api/election/${electionId}/finalize`, {}, {
       headers: authHeader
     }).then(() => {
-      countVotes()
+      countVotes();
     }).catch(() => {
       setError("failed to finalize election");
-    })
+    });
+    closeFinalizeModal();
     // write.PUT("/election/:id/finalize", actions.FinalizeElection)
   }, [authHeader, electionId]);
 
@@ -206,8 +207,7 @@ const EditElection: React.FC = () => {
         openCountingModal();
       }).catch(() => {
         setError("Counting endpoint returned invalid data");
-
-      })
+      });
 
     }).catch(() => {
       setError("Failed to count votes");

@@ -37,7 +37,7 @@ export const DisplayResult: React.FC<DisplayResultProps> = (
   
   useEffect(() => {
     if ("Authorization" in authHeader) {
-      axios(`/api/election/${electionId}/count`,{
+      axios.get(`/api/election/${electionId}/count`, {
         headers: authHeader
       }).then(({data}) => {
         setLoading(false)
@@ -151,7 +151,10 @@ export const DisplaySchultzeResult: React.FC<DisplaySchultzeProps> = ( {
     
     <br></br>
     {election.extraMandates > 0 && <>
-      Suppleang
+
+      <Text align="center">
+        Suppleang
+      </Text>
       <Table striped>
         <thead>
           <th style={{ width: "20%" }}> Rank </th>
@@ -176,26 +179,30 @@ export const DisplaySchultzeResult: React.FC<DisplaySchultzeProps> = ( {
       <br></br>
     </>}
     
-    <Table striped>
-      <thead>
-        <th style={{ width: "20%" }}> Rank </th>
-        <th> Candidate </th>
-      </thead>
-      <tbody>
-        {ranking.slice(
-          election.mandates + election.extraMandates
-        ).map((c, i) => <>
-          <tr>
-            <td>
-              {i + 1 + election.mandates + election.extraMandates}
-            </td>
-            <td>
-              {c.name}
-            </td>
-          </tr>
-        </>)}
-      </tbody>
-    </Table>
+    {ranking.length > election.mandates + election.extraMandates && <>
+
+      <hr/>
+      <Table striped>
+        <thead>
+          <th style={{ width: "20%" }}> Rank </th>
+          <th> Candidate </th>
+        </thead>
+        <tbody>
+          {ranking.slice(
+            election.mandates + election.extraMandates
+            ).map((c, i) => <>
+            <tr>
+              <td>
+                {i + 1 + election.mandates + election.extraMandates}
+              </td>
+              <td>
+                {c.name}
+              </td>
+            </tr>
+          </>)}
+        </tbody>
+      </Table>
+    </>}
 
   </>
 }

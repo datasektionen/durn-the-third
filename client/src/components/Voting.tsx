@@ -225,8 +225,9 @@ export const Voting: React.FC<VotingProps> = ({
     axios.post(`/api/election/${election.id}/vote`, values, {
       headers: authHeader
     }).then(({data}) => {
-      setHash(data)
+      // setHash(data);
       // setHasVoted(true)
+      window.location.reload();
     }).catch(({response}) => {
       setError(response.data)
     })

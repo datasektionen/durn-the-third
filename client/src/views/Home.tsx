@@ -96,14 +96,14 @@ export const Home: React.FC = () => {
           {!electionsLoading && electionsError &&
             <Center> Error </Center>}
           {!electionsLoading && !electionsError && elections && <>
-            {elections.length == 0 && 
+            {elections.filter((e) => !e.finalized).length == 0 && 
               <Center>
                 <p className={cx(constants.themeColor, "lighten-4", classes.alertBox)}>
                   Det finns inga publicerade urnval just nu.
                 </p>
               </Center>}
             <Grid> 
-              {elections.map((e) =>
+              {elections.filter((e) => !e.finalized).map((e) =>
                 <Grid.Col xs={4}>
                   <DisplayElectionInfo election={e} redirectURL={`/vote/${e.id}`} />
                 </Grid.Col>
