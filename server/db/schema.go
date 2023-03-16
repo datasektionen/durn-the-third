@@ -5,20 +5,22 @@ import (
 	"time"
 
 	uuid "github.com/satori/go.uuid"
+	"gorm.io/gorm"
 )
 
 type Election struct {
-	ID            uuid.UUID    `gorm:"primaryKey" json:"id"`
-	Name          string       `gorm:"not null" json:"name"`
-	Description   string       `gorm:"not null;default:''" json:"description"`
-	Published     bool         `gorm:"not null" json:"published"`
-	Finalized     bool         `gorm:"not null" json:"finalized"`
-	Mandates      int          `gorm:"not null;default:1" json:"mandates"`
-	ExtraMandates int          `gorm:"not null;default:0" json:"extraMandates"`
-	OpenTime      sql.NullTime `json:"openTime"`
-	CloseTime     sql.NullTime `json:"closeTime"`
-	Candidates    []Candidate  `gorm:"foreignKey:ElectionID;references:ID" json:"candidates"`
-	Votes         []Vote       `json:"-"`
+	ID            uuid.UUID      `gorm:"primaryKey" json:"id"`
+	Name          string         `gorm:"not null" json:"name"`
+	Description   string         `gorm:"not null;default:''" json:"description"`
+	Published     bool           `gorm:"not null" json:"published"`
+	Finalized     bool           `gorm:"not null" json:"finalized"`
+	Mandates      int            `gorm:"not null;default:1" json:"mandates"`
+	ExtraMandates int            `gorm:"not null;default:0" json:"extraMandates"`
+	OpenTime      sql.NullTime   `json:"openTime"`
+	CloseTime     sql.NullTime   `json:"closeTime"`
+	Candidates    []Candidate    `gorm:"foreignKey:ElectionID;references:ID" json:"candidates"`
+	Votes         []Vote         `json:"-"`
+	Deleted       gorm.DeletedAt `json:"-"`
 }
 
 type ValidVoter struct {
@@ -34,12 +36,13 @@ type CastedVote struct {
 
 // All elections should contain two forces candidates "Vakant" and "Blank"
 type Candidate struct {
-	ID           uuid.UUID `gorm:"primaryKey" json:"id"`
-	Name         string    `gorm:"not null" json:"name"`
-	Presentation string    `gorm:"not null" json:"presentation"`
-	ElectionID   uuid.UUID `gorm:"not null" json:"-"`
-	Symbolic     bool      `gorm:"not null;default:false" json:"symbolic"`
-	Election     Election  `json:"-"`
+	ID           uuid.UUID      `gorm:"primaryKey" json:"id"`
+	Name         string         `gorm:"not null" json:"name"`
+	Presentation string         `gorm:"not null" json:"presentation"`
+	ElectionID   uuid.UUID      `gorm:"not null" json:"-"`
+	Symbolic     bool           `gorm:"not null;default:false" json:"symbolic"`
+	Election     Election       `json:"-"`
+	Deleted      gorm.DeletedAt `json:"-"`
 }
 
 // VoteHash is purposefully not primaryKey/unique since it is theoretically
