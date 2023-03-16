@@ -2,6 +2,8 @@ import { createStyles, Stack, Table, Text } from "@mantine/core"
 import axios from "axios"
 import React, { useEffect, useMemo, useState } from "react"
 import useAuthorization from "../hooks/useAuthorization"
+import { useAPIData } from "../hooks/useAxios"
+import { Loading, Error } from "./Loading"
 import { Candidate, Election } from "../util/ElectionTypes"
 
 const useStyles = createStyles((theme) => ({
@@ -30,37 +32,23 @@ export interface DisplayResultProps {
 export const DisplayResult: React.FC<DisplayResultProps> = (
   {electionId}
 ) => {
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [voteStages, setVoteStages] = useState<VoteStage[]>([])
-  const { authHeader } = useAuthorization()
-  
-  useEffect(() => {
-    if ("Authorization" in authHeader) {
-      axios.get(`/api/election/${electionId}/count`, {
-        headers: authHeader
-      }).then(({data}) => {
-        setLoading(false)
-        setError(null)
-        setVoteStages(data)
-      }).catch(({response}) => {
-        setError(response.data)
-      })
-    }
-  }, [authHeader])
+  const [voteStages, loadingStages, stagesError] = useAPIData<VoteStage[]>(
+    `/api/election/${electionId}/count`,
+    (data) => Promise.resolve(data)
+  )
 
   return <>
-    {loading && <>
+    {loadingStages && <>
       <p>
         Counting votes
       </p>
     </>}
 
-    {error && <>
-      
+    {!loadingStages && stagesError && <>
+      <Error error={stagesError}/>
     </>}
 
-    {!loading && !error && <>
+    {!loadingStages && !stagesError && voteStages && <>
       {voteStages.map((stage) => <DisplayVoteStage stage={stage} />)}
     </>}
   </>
