@@ -2,6 +2,7 @@ import { createStyles, Stack, Table, Text } from "@mantine/core"
 import axios from "axios"
 import React, { useEffect, useMemo, useState } from "react"
 import useAuthorization from "../hooks/useAuthorization"
+import { Candidate, Election } from "../util/ElectionTypes"
 
 const useStyles = createStyles((theme) => ({
   voteStageBox: {
@@ -115,3 +116,86 @@ const DisplayVoteStage: React.FC<DisplayVoteStageProps> = ({stage}) => {
     </div>
   </>
 } 
+
+
+export interface DisplaySchultzeProps {
+  election: Election,
+  ranking: Candidate[]
+}
+
+export const DisplaySchultzeResult: React.FC<DisplaySchultzeProps> = ( {
+  election, ranking
+} ) => {
+  return <>
+    <Text align="center">
+      Ordinarie
+    </Text>
+    <Table striped>
+      <thead>
+        <th style={{ width: "20%" }}> Rank </th>
+        <th> Candidate </th>
+      </thead>
+      <tbody>
+        {ranking.slice(0, election.mandates).map((c, i) => <>
+          <tr>
+            <td>
+              {i + 1}
+            </td>
+            <td>
+              {c.name}
+            </td>
+          </tr>
+        </>)}
+      </tbody>
+    </Table>
+    
+    <br></br>
+    {election.extraMandates > 0 && <>
+      Suppleang
+      <Table striped>
+        <thead>
+          <th style={{ width: "20%" }}> Rank </th>
+          <th> Candidate </th>
+        </thead>
+        <tbody>
+          {ranking.slice(
+              election.mandates, 
+              election.mandates + election.extraMandates
+            ).map((c, i) => <>
+              <tr>
+                <td>
+                  {i + 1 + election.mandates}
+                </td>
+                <td>
+                  {c.name}
+                </td>
+              </tr>
+            </>)}
+        </tbody>
+      </Table>
+      <br></br>
+    </>}
+    
+    <Table striped>
+      <thead>
+        <th style={{ width: "20%" }}> Rank </th>
+        <th> Candidate </th>
+      </thead>
+      <tbody>
+        {ranking.slice(
+          election.mandates + election.extraMandates
+        ).map((c, i) => <>
+          <tr>
+            <td>
+              {i + 1 + election.mandates + election.extraMandates}
+            </td>
+            <td>
+              {c.name}
+            </td>
+          </tr>
+        </>)}
+      </tbody>
+    </Table>
+
+  </>
+}

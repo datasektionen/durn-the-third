@@ -3,24 +3,28 @@ import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import { Header } from "methone";
 
-import { Container, createStyles, Center } from "@mantine/core";
+import { Container, createStyles, Center, Button, Modal, Text } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { useListState } from "@mantine/hooks";
+import { useDisclosure, useListState } from "@mantine/hooks";
 
-import { Candidate, Election, ElectionSchema, NullTime, parseElectionResponse } from "../../util/ElectionTypes";
+import { Candidate, CandidateSchema, Election, ElectionSchema, NullTime, parseElectionResponse } from "../../util/ElectionTypes";
 import useAuthorization from "../../hooks/useAuthorization";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAPIData } from "../../hooks/useAxios";
 import { AdminElectionView, ElectionFormValues } from "../../components/AdminElectionView";
 import Loading from "../../components/Loading";
+import { ClassNames } from "@emotion/react";
+import { DisplaySchultzeResult } from "../../components/DisplayResult";
+import { z } from "zod";
 
-const useStyles = createStyles((theme) => {
-  return {
-    failed: {
-      backgroundColor: "#e29493"
-    }
+const useStyles = createStyles((theme) => ({
+  failed: {
+    backgroundColor: "#e29493"
+  },
+  button: {
+    marginTop: "2rem"
   }
-});
+}));
 
 const EditElection: React.FC = () => {
   const { authHeader } = useAuthorization();
@@ -41,6 +45,17 @@ const EditElection: React.FC = () => {
       closeTime: null as NullTime,
     }
   });
+  const [finalizeModalOpen, {
+    open: openFinalizeModal, 
+    close: closeFinalizeModal
+  }] = useDisclosure(false);
+  const [countingModalOpen, {
+    open: openCountingModal,
+    close: closeCountingModal
+  }] = useDisclosure(false);
+  const [electionResult, electionResultHandler] = useListState<Candidate>([]);
+
+  const { classes } = useStyles();
 
   useEffect(()=> {
     if (!loadingData && !fetchError && electionData) {
@@ -167,13 +182,43 @@ const EditElection: React.FC = () => {
     }
   }), [setError, electionForm]);
 
+  const finaliseElectionAndCountVotes = useCallback(() => {
+    axios.put(`/api/election/${electionId}/finalize`, {}, {
+      headers: authHeader
+    }).then(() => {
+      countVotes()
+    }).catch(() => {
+      setError("failed to finalize election");
+    })
+    // write.PUT("/election/:id/finalize", actions.FinalizeElection)
+  }, [authHeader, electionId]);
+
+  const countVotes = useCallback(() => {
+    axios.get(`/api/election/${electionId}/count`, {
+      headers: authHeader,
+    }).then(({ data }) => {
+      console.log(data);
+      z.array(CandidateSchema).parseAsync(data).then(ranking => {
+        electionResultHandler.setState(ranking);
+        openCountingModal();
+      }).catch(() => {
+        setError("Counting endpoint returned invalid data");
+
+      })
+
+    }).catch(() => {
+      setError("Failed to count votes");
+    });
+  }, [authHeader, electionId])
+
 
   return <>
     <Header title="Editing Election" />
     <Container my="md">
       {loading && <Center> <Loading/> </Center>}
-      {!loading && fetchError && <Center> Error </Center>}
-      {!loading && !fetchError && electionData &&
+      {!loading && (fetchError || userInputError) && 
+        <Center> {userInputError || fetchError} </Center>}
+      {!loading && !fetchError && electionData && <>
         <AdminElectionView 
           candidates={
             candidates.filter(c => !c.removed)
@@ -187,10 +232,55 @@ const EditElection: React.FC = () => {
           onSubmit={submitElectionForm}
           submitText="Save Changes"
           userInputError={userInputError}
-          openTimeDefault={electionData.openTime} // null if undefined
+          openTimeDefault={electionData.openTime}
           closeTimeDefault={electionData.closeTime}
         />
-      }
+
+        <Modal opened={finalizeModalOpen} onClose={closeFinalizeModal} centered my={"md"}>
+          <Text> 
+            Säker på att du vill finalisera? Du kommer inte kunna avfinalisera valet.
+          </Text>
+          <br/>
+
+          <Button
+            fullWidth className={classes.button}
+            onClick={finaliseElectionAndCountVotes}
+          >
+            <Text fw={700} size="xl" >
+              Finalisera och räkna röster
+            </Text>
+          </Button>
+        </Modal>
+
+        {!electionData.finalized &&
+          <Button 
+            fullWidth  className={classes.button} 
+            onClick={openFinalizeModal}
+          >
+            <Text fw={700} size="xl" >
+              Finalisera och räkna röster
+            </Text>
+          </Button>
+        }
+        {electionData.finalized &&
+          <Button
+            fullWidth className={classes.button}
+            onClick={countVotes}
+          >
+            <Text fw={700} size="xl" >
+              Räkna röster
+            </Text>
+          </Button>
+        }
+
+        <Modal opened={countingModalOpen} onClose={closeCountingModal} centered my={"xl"}>
+          <DisplaySchultzeResult 
+            election={electionData}
+            ranking={electionResult}
+          />
+        </Modal>
+
+      </>}
     </Container>
   </>
 }
