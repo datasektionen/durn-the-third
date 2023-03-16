@@ -255,10 +255,10 @@ func DeleteElection(c *gin.Context) {
 		return
 	}
 
-	if len(election.Votes) > 0 {
-		c.String(http.StatusBadRequest, "Can't delete election with votes")
-		return
-	}
+	// if len(election.Votes) > 0 {
+	// 	c.String(http.StatusBadRequest, "Can't delete election with votes")
+	// 	return
+	// }
 	if err := db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Where("election_id = ?", electionId).Delete(&database.Candidate{}).Error; err != nil {
 			return err

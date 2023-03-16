@@ -34,8 +34,8 @@ func InitRoutes(r *gin.RouterGroup) {
 
 	write.POST("/election/create", actions.CreateElection)
 	write.PATCH("/election/:id/edit", actions.EditElection)
-	write.PUT("/election/:id/publish", actions.PublishElection)
-	write.PUT("/election/:id/unpublish", actions.UnpublishElection)
+	// write.PUT("/election/:id/publish", actions.PublishElection)
+	// write.PUT("/election/:id/unpublish", actions.UnpublishElection)
 	write.PUT("/election/:id/finalize", actions.FinalizeElection)
 	write.POST("/election/:id/delete", actions.DeleteElection)
 

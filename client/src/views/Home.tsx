@@ -11,7 +11,7 @@ import useAuthorization from "../hooks/useAuthorization";
 import constants from "../util/constants";
 import { useAPIData } from "../hooks/useAxios";
 import { z } from "zod";
-import Loading from "../components/Loading";
+import Loading, { Error } from "../components/Loading";
 
 const useStyles = createStyles((theme) => ({
   infoBox: {
@@ -43,7 +43,7 @@ const Info: React.FC = () => {
         Genom att klicka på en av rutorna ovan (om några val är öppna), och sedan rangordna kadidaterna i den ordningen man vill. 
       </p>
 
-      <h4><b>Hur räknas rösterna i urnvalet?</b></h4>
+      {/* <h4><b>Hur räknas rösterna i urnvalet?</b></h4>
       <p>
         Exakt hur rösterna räknas bestäms av <></>
         <a href="https://styrdokument.datasektionen.se/reglemente">sektionens reglemente</a>, 
@@ -59,7 +59,7 @@ const Info: React.FC = () => {
           <li>Om en röstsedel har rankat <em>Blank</em> högst så kommer den räknas som en blankröst framöver.</li>
           <li>När en kandidat har en majoritet av rösterna så har den vunnit valet.</li>
         </ul>
-      </p>
+      </p> */}
       {/* <br /> <br />  */}
       <h4><b>Frågor eller tekniska problem?</b></h4>
 
@@ -94,7 +94,7 @@ export const Home: React.FC = () => {
           {electionsLoading &&
             <Center> <Loading/> </Center>}
           {!electionsLoading && electionsError &&
-            <Center> Error </Center>}
+            <Center> <Error error={electionsError}/> </Center>}
           {!electionsLoading && !electionsError && elections && <>
             {elections.filter((e) => !e.finalized).length == 0 && 
               <Center>
