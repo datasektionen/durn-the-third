@@ -21,9 +21,11 @@ import (
 // possible to vote in the election at the time of the request.
 func CastVote(c *gin.Context) {
 	body := struct {
-		Secret  string      `json:"secret" binding:"required"`
+		Secret  string      `json:"secret"`
 		Ranking []uuid.UUID `json:"ranking" binding:"required"` // Assumes candidates are ordered from highest to lowest in priority for user
-	}{}
+	}{
+		Secret: "",
+	}
 
 	electionId, err := uuid.FromString(c.Param("id"))
 
@@ -55,9 +57,10 @@ func CastVote(c *gin.Context) {
 	// that all candidates are accounted for the vote, and that no extra candidates
 	// (or invalid ones) are included
 	election := database.Election{ID: electionId}
-	if err := db.Preload("Candidates").First(&election).Error; err != nil || !election.Published { // Information should not be leaked if elections is not public
+	if err := db.Preload("Candidates").First(&election).Error; err != nil { // Information should not be leaked if elections is not public
 		fmt.Println(err)
 		c.String(http.StatusBadRequest, util.InvalidElection)
+		return
 	}
 	if election.Finalized || !util.TimeIsInValidInterval(
 		vote.VoteTime, election.OpenTime, election.CloseTime,
@@ -96,7 +99,7 @@ func CastVote(c *gin.Context) {
 			vote.Rankings = append(vote.Rankings, ranking)
 		}
 
-		hash = calculateVoteHash(&vote, user, body.Secret)
+		// hash = calculateVoteHash(&vote, user, body.Secret)
 
 		if err := tx.Create(&database.CastedVote{
 			Email:      user,
@@ -104,12 +107,12 @@ func CastVote(c *gin.Context) {
 		}).Error; err != nil {
 			return err
 		}
-		if err := tx.Create(&database.VoteHash{
-			Hash:       hash,
-			ElectionID: electionId,
-		}).Error; err != nil {
-			return err
-		}
+		// if err := tx.Create(&database.VoteHash{
+		// 	Hash:       hash,
+		// 	ElectionID: electionId,
+		// }).Error; err != nil {
+		// 	return err
+		// }
 
 		return nil
 	}); err != nil {
