@@ -34,13 +34,7 @@ const Vote: React.FC = () => {
           </div>
         }
       </LoadingContainer>
-      {/* {electionLoading && <Loading />}
-      {!electionLoading && electionError && "Error"}
-      {!electionLoading && !electionError && electionData &&
-        <div className={classes.box}>
-          <Voting election={electionData} />
-        </div>
-      } */}
+      
     </Container>
   </>
 }
