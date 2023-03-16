@@ -28,6 +28,7 @@ const useStyles = createStyles((theme) => ({
 
 const EditElection: React.FC = () => {
   const { authHeader } = useAuthorization();
+  const navigate = useNavigate();
   const [userInputError, setError] = useState<string | false>(false);
   const [loading, setLoading] = useState(true);
   const electionId = useParams()["id"] ?? "";
@@ -164,6 +165,8 @@ const EditElection: React.FC = () => {
         changed: false,
         added: false,
       }));
+
+      navigate(`/admin/election/${electionId}`);
     }).catch(() => { })
   }, [candidates, changeCandidate, electionId])
 
