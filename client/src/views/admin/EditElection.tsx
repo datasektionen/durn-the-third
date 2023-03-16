@@ -277,10 +277,11 @@ const EditElection: React.FC = () => {
         }
 
         <Modal opened={countingModalOpen} onClose={closeCountingModal} centered my={"xl"}>
-          <DisplaySchultzeResult 
+          Rösträkning kommer i DLC, tillgängligt snarttm för $49.99
+          {/* <DisplaySchultzeResult 
             election={electionData}
-            ranking={electionResult}
-          />
+            ranking={electionResult}3
+          /> */}
         </Modal>
 
       </>}
