@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import { Header } from "methone";
 
-import { Container, createStyles, Center, Button, Modal, Text } from "@mantine/core";
+import { Container, createStyles, Center, Button, Modal, Text, Grid } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDisclosure, useListState } from "@mantine/hooks";
 
@@ -12,10 +12,10 @@ import useAuthorization from "../../hooks/useAuthorization";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAPIData } from "../../hooks/useAxios";
 import { AdminElectionView, ElectionFormValues } from "../../components/AdminElectionView";
-import Loading from "../../components/Loading";
+import Loading, { Error } from "../../components/Loading";
 import { ClassNames } from "@emotion/react";
 import { DisplaySchultzeResult } from "../../components/DisplayResult";
-import { z } from "zod";
+import { string, z } from "zod";
 
 const useStyles = createStyles((theme) => ({
   failed: {
@@ -46,13 +46,20 @@ const EditElection: React.FC = () => {
       closeTime: null as NullTime,
     }
   });
+
   const [finalizeModalOpen, {
     open: openFinalizeModal, 
     close: closeFinalizeModal
   }] = useDisclosure(false);
+
   const [countingModalOpen, {
     open: openCountingModal,
     close: closeCountingModal
+  }] = useDisclosure(false);
+  
+  const [deleteModalOpen, {
+    open: openDeleteModal,
+    close: closeDeleteModal
   }] = useDisclosure(false);
   const [electionResult, electionResultHandler] = useListState<Candidate>([]);
 
@@ -209,18 +216,30 @@ const EditElection: React.FC = () => {
         setError("Counting endpoint returned invalid data");
       });
 
-    }).catch(() => {
-      setError("Failed to count votes");
+    }).catch((error) => {
+      setError("Failed to count votes: " + error);
     });
   }, [authHeader, electionId])
 
+  const deleteElection = useCallback(() => {
+    axios.post(`/api/election/${electionId}/delete`, {}, {
+      headers: authHeader,
+    }).then(() => {
+      navigate("/admin");
+    }).catch((error) => {
+      setError("Failed to delete election: " + error);
+      closeDeleteModal();
+    });
+  }, [authHeader, electionId])
 
   return <>
     <Header title="Editing Election" />
     <Container my="md">
       {loading && <Center> <Loading/> </Center>}
-      {!loading && (fetchError || userInputError) && 
-        <Center> {userInputError || fetchError} </Center>}
+      {!loading && fetchError && 
+        <Center> <Error error={fetchError} /> </Center>}
+      {!loading && userInputError && 
+        <Center> <Error error={userInputError} /> </Center>}
       {!loading && !fetchError && electionData && <>
         <AdminElectionView 
           candidates={
@@ -241,7 +260,7 @@ const EditElection: React.FC = () => {
 
         <Modal opened={finalizeModalOpen} onClose={closeFinalizeModal} centered my={"md"}>
           <Text> 
-            Säker på att du vill finalisera? Du kommer inte kunna avfinalisera valet.
+            Are you sure that you want to finalize? It's not possible to undo the finalization. 
           </Text>
           <br/>
 
@@ -255,33 +274,63 @@ const EditElection: React.FC = () => {
           </Button>
         </Modal>
 
-        {!electionData.finalized &&
-          <Button 
-            fullWidth  className={classes.button} 
-            onClick={openFinalizeModal}
-          >
-            <Text fw={700} size="xl" >
-              Finalisera och räkna röster
-            </Text>
-          </Button>
-        }
-        {electionData.finalized &&
-          <Button
-            fullWidth className={classes.button}
-            onClick={countVotes}
-          >
-            <Text fw={700} size="xl" >
-              Räkna röster
-            </Text>
-          </Button>
-        }
-
         <Modal opened={countingModalOpen} onClose={closeCountingModal} centered my={"xl"}>
           Rösträkning kommer i DLC, tillgängligt snarttm för $49.99
           {/* <DisplaySchultzeResult 
             election={electionData}
-            ranking={electionResult}3
+            ranking={electionResult}
           /> */}
+        </Modal>
+
+
+        <Grid gutter={26}>
+          <Grid.Col span={12}>
+            {!electionData.finalized &&
+              <Button 
+                fullWidth  className={classes.button} 
+                onClick={openFinalizeModal}
+              >
+                <Text fw={700} size="xl">
+                  Finalize and count votes
+                </Text>
+              </Button>
+            }
+            {electionData.finalized &&
+              <Button
+                fullWidth className={classes.button}
+                onClick={countVotes}
+              >
+                <Text fw={700} size="xl" >
+                  Count votes
+                </Text>
+              </Button>
+            }
+          </Grid.Col>
+          <Grid.Col span={12}>
+            <Button color="red" fullWidth onClick={openDeleteModal}>
+              <Text fw={700} size="xl">
+                Delete Election
+              </Text>
+            </Button>
+          </Grid.Col>
+
+        </Grid>
+        
+        <Modal opened={deleteModalOpen} onClose={closeDeleteModal} centered>
+          <Text>
+            Are you Sure you want to delete the election? It can't be undone.
+          </Text>
+          <br />
+
+          <Button
+            fullWidth className={classes.button}
+            onClick={deleteElection}
+            color="red"
+          >
+            <Text fw={700} size="xl" >
+              Delete election
+            </Text>
+          </Button>
         </Modal>
 
       </>}
