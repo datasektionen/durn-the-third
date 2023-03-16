@@ -44,3 +44,27 @@ func SameSet[T comparable](a, b []T) bool {
 	}
 	return true
 }
+
+func Copy2DSlice[T any](A [][]T) [][]T {
+	res := make([][]T, len(A))
+	for i, r := range A {
+		res[i] = make([]T, len(r))
+		copy(res[i], r)
+	}
+
+	return res
+}
+
+func Max(a int, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func Min(a int, b int) int {
+	if a < b {
+		return b
+	}
+	return a
+}

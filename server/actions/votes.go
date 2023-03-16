@@ -290,6 +290,99 @@ func CountVotes(c *gin.Context) {
 	c.JSON(http.StatusOK, electionResult)
 }
 
+// Counts votes of an election according to the schultze method
+//
+// https://en.wikipedia.org/wiki/Schulze_method
+func CountVotesSchultze(c *gin.Context) {
+	electionId, err := uuid.FromString(c.Param("id"))
+	if err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadUUID)
+		return
+	}
+
+	db := database.GetDB()
+	election := database.Election{ID: electionId}
+	if err := db.Preload("Votes.Rankings").Preload("Candidates").First(&election).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.InvalidElection)
+		return
+	}
+	database.ReleaseDB()
+	if !election.Finalized {
+		c.String(http.StatusBadRequest, "Can't count votes of unfinalized election")
+		return
+	}
+	if len(election.Votes) == 0 {
+		c.String(http.StatusBadRequest, "Election has no votes")
+		return
+	}
+
+	candidateIndexes := make(map[uuid.UUID]int)
+	N := len(election.Candidates)
+
+	// prefer[i][j] is the amount of voters that prefer candidate i to candidate j
+	prefer := make([][]int, N)
+
+	for idx, candidate := range election.Candidates {
+		candidateIndexes[candidate.ID] = idx
+		prefer[idx] = make([]int, N)
+		for j := 0; j < N; j++ {
+			prefer[idx][j] = 0
+		}
+	}
+
+	for _, vote := range election.Votes {
+		for i, a := range vote.Rankings {
+			for _, b := range vote.Rankings[i+1 : N] {
+				aIdx := candidateIndexes[a.CandidateID]
+				bIdx := candidateIndexes[b.CandidateID]
+				prefer[aIdx][bIdx] += 1
+			}
+		}
+	}
+
+	p := StrongestPaths(prefer)
+
+	wins := make([]int, N)
+	result := make([]int, N)
+	for i := range prefer {
+		result[i] = i
+		for j := range prefer {
+			if p[i][j] > p[j][i] {
+				wins[i] += 1
+			}
+		}
+	}
+	sort.Slice(result, func(i, j int) bool {
+		return wins[i] > wins[j]
+	})
+
+	var ret []database.Candidate
+	for _, idx := range result {
+		ret = append(ret, election.Candidates[idx])
+	}
+
+	c.JSON(http.StatusOK, ret)
+
+}
+
+func StrongestPaths(E [][]int) [][]int {
+	res := util.Copy2DSlice(E)
+	for k := range E {
+		for i := range E {
+			for j := range E {
+				res[i][j] = util.Max(
+					res[i][j],
+					util.Min(res[i][k], res[k][j]),
+				)
+			}
+		}
+	}
+
+	return res
+}
+
 // GetHashes returns all hashes in the database. Requires user to be able to vote.
 func GetHashes(c *gin.Context) {
 	// TODO: possibly add electionID to database for hashes, since it would be nice
