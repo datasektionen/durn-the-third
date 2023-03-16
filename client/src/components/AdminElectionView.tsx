@@ -75,12 +75,10 @@ export const AdminElectionView: React.FC<AdminElectionViewProps> = ({
     })}>
 
       <form onSubmit={onSubmit}>
-
         <Grid>
-
           <Grid.Col md={3}>
             <div style={{ marginBottom: "3rem" }} >
-              <Text align="center" size="lg" color="dimmed" fw={700}>
+              <Text align="center" size="lg" color="gray.7" fw={700}>
                 Election starts
               </Text>
               <DateTimeInput
@@ -90,7 +88,7 @@ export const AdminElectionView: React.FC<AdminElectionViewProps> = ({
             </div>
 
             <div style={{ marginBottom: "2rem" }} >
-              <Text align="center" size="lg" color="dimmed" fw={700}>
+              <Text align="center" size="lg" color="gray.7" fw={700}>
                 Election ends
               </Text>
               <DateTimeInput
@@ -100,7 +98,7 @@ export const AdminElectionView: React.FC<AdminElectionViewProps> = ({
             </div>
 
             <div style={{ marginBottom: "2rem" }} >
-              <Text align="center" size="lg" color="dimmed" fw={700}>
+              <Text align="center" size="lg" color="gray.7" fw={700}>
                 Mandates
               </Text>
               <NumberInput width="3rem"
@@ -110,7 +108,7 @@ export const AdminElectionView: React.FC<AdminElectionViewProps> = ({
             </div>
 
             <div style={{ marginBottom: "2rem" }} >
-              <Text align="center" size="lg" color="dimmed" fw={700}>
+              <Text align="center" size="lg" color="gray.7" fw={700}>
                 Secondary mandates
               </Text>
               <NumberInput

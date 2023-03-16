@@ -84,13 +84,13 @@ export const CandidateList: React.FC<CandidateListProps> = (
           <tr key="head" className={ classes.row }>
             <th style={{ width: 30 }}></th>
             <th>
-              <Text style={{ margin: "1rem" }} align="center">
+              <Text style={{ margin: "1rem" }} align="center" fw={700}>
                 Name of the candidate
               </Text>
             </th>
             <th>
-              <Text style={{ margin: "1rem" }} align="center">
-                candidate presentation
+              <Text style={{ margin: "1rem" }} align="center" fw={700}>
+                Candidate presentation
               </Text>
             </th>
           </tr>
@@ -107,11 +107,9 @@ export const CandidateList: React.FC<CandidateListProps> = (
       </Table>
 
 
-      <Center>
-        <Text fw={700} c="gray.7" style={{ margin: "0.5rem", marginTop: "1rem" }}>
+      <Text fw={700} c="gray.7" style={{ margin: "0.5rem", marginTop: "1rem" }} align="center">
           Add new candidate
         </Text>
-      </Center>
 
       <Table withBorder withColumnBorders>
         <thead>

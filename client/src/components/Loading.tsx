@@ -1,3 +1,4 @@
+import { Center } from "@mantine/core"
 import React from "react"
 
 
@@ -30,9 +31,13 @@ export const LoadingContainer: React.FC<LoadingContainerProps> = ( {
 } ) => {
   return <>
     {loading && 
-      <Loading />}
+      <Center>
+        <Loading />
+      </Center> }
     {!loading && error &&
-      <Error error={error} />}
+      <Center>
+        <Error error={error} />
+      </Center> }
     {!loading && !error && 
       children}
   </>
