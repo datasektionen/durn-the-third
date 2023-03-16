@@ -35,6 +35,7 @@ export interface AdminElectionViewProps {
   userInputError: string | false,
   openTimeDefault?: NullTime,
   closeTimeDefault?: NullTime,
+  submitDisabled?: boolean
 }
 
 const useStyles = createStyles((theme) => {
@@ -49,7 +50,7 @@ export const AdminElectionView: React.FC<AdminElectionViewProps> = ({
   submitText, onSubmit, electionForm,
   onCloseTimeChanged, onOpenTimeChanged, userInputError,
   candidates, onCandidateAdded, onCandidateRemoved, onCandidateChanged,
-  openTimeDefault = null, closeTimeDefault = null,
+  openTimeDefault = null, closeTimeDefault = null, submitDisabled = false,
 }) => {
   const { classes } = useStyles();
 
@@ -77,7 +78,7 @@ export const AdminElectionView: React.FC<AdminElectionViewProps> = ({
 
         <Grid align="cent">
           <Grid.Col md={12}>
-            <Button type="submit" fullWidth>
+            <Button type="submit" fullWidth disabled={submitDisabled}>
               <div style={{ marginTop: "1rem", marginBottom: "1rem" }}>
                 <Text fw={700} size="xl" >
                   {submitText}
@@ -146,9 +147,7 @@ export const AdminElectionView: React.FC<AdminElectionViewProps> = ({
               onCandidateRemoved={onCandidateRemoved}
             />
           </Grid.Col>
-          <Grid.Col>
-
-          </Grid.Col>
+          
         </Grid>
       </form>
     </Box>

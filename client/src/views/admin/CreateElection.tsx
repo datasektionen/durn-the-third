@@ -21,6 +21,7 @@ export const CreateElection: React.FC = () => {
   const { authHeader } = useAuthorization();
   const navigate = useNavigate();
   const [ error, setError ] = useState<string|false>(false);
+  const [ submitDisabled, setSubmitDisabled ] = useState(false);
 
   const form = useForm<ElectionFormValues>({
     initialValues: {
@@ -60,6 +61,8 @@ export const CreateElection: React.FC = () => {
   };
 
   const submitElection = useCallback((values: typeof form.values) => {
+    if (submitDisabled) return;
+    setSubmitDisabled(true);
     axios.post("/api/election/create", {
       name: values.title,
       mandates: values.mandates,
@@ -80,6 +83,8 @@ export const CreateElection: React.FC = () => {
         navigate(`/admin/election/${data}`);
       })
     }).catch(() => { });
+    setSubmitDisabled(false);
+
   }, [candidates, candidateChanged])
 
   const onSubmit = useCallback(form.onSubmit((values) => {
@@ -118,6 +123,7 @@ export const CreateElection: React.FC = () => {
         userInputError={error}
         openTimeDefault={null}
         closeTimeDefault={null}
+        submitDisabled={submitDisabled}
       />
     </Container>
   </>
