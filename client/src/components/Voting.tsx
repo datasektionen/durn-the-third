@@ -4,15 +4,14 @@ import axios from "axios";
 import { DragDropContext, Droppable, Draggable, DropResult, DragUpdate } from 'react-beautiful-dnd'
 import { Selector } from 'tabler-icons-react'
 import { useForm } from "@mantine/form"
-import { useListState } from "@mantine/hooks";
-import { Button, Center, createStyles, Grid, TextInput, Text } from "@mantine/core";
+import { useDisclosure, useListState } from "@mantine/hooks";
+import { Button, Center, createStyles, Grid, TextInput, Text, Modal } from "@mantine/core";
 
 import { Candidate, Election } from "../util/ElectionTypes";
 import useAuthorization from "../hooks/useAuthorization";
 import constants from "../util/constants";
 import { compareList } from "../util/funcs";
-import { ErrorModal, InformationModal } from "./PopupModals";
-import { time } from "console";
+import { Error } from "./Loading";
 import dayjs from "dayjs";
 import { useAPIData } from "../hooks/useAxios";
 import { z } from "zod";
@@ -155,7 +154,7 @@ export const Voting: React.FC<VotingProps> = ({
     const aKey = keys.get(a.id) ?? [1, 1]
     const bKey = keys.get(b.id) ?? [1, 1]
     return compareList(aKey, bKey)
-  }))
+  }));
 
   const { classes } = useStyles()
   const [displayIndex, setDisplayIndex] = useState<Map<string, string>>(new Map<string, string>())
@@ -164,19 +163,27 @@ export const Voting: React.FC<VotingProps> = ({
     `/api/election/${election.id}/has-voted`,
     (data) => z.boolean().parseAsync(data)
   )
-  const [mayVote, setMayVote] = useState(true)
-  const [hash, setHash] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const { authHeader } = useAuthorization()
-  const form = useForm({
-    initialValues: {
-      secret: "",
-      ranking: voteOrder.map((c) => c.id)
-    },
-    validate: {
-      // secret: (s: string) => (s.length < 10 ? "Secret should be at least 10 characters long" : null)
-    }
-  })
+  const [mayVote, setMayVote] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { authHeader } = useAuthorization();
+  const [unathorized, setUnathorized] = useState(false);
+
+  const [voteModalOpen, {
+    open: openVoteModal,
+    close: closeVoteModal
+  }] = useDisclosure(false);
+
+
+
+  // const form = useForm({
+  //   initialValues: {
+  //     secret: "",
+  //     ranking: voteOrder.map((c) => c.id)
+  //   },
+  //   validate: {
+  //     // secret: (s: string) => (s.length < 10 ? "Secret should be at least 10 characters long" : null)
+  //   }
+  // });
 
   const hasOpened = useMemo(() => (
     (election.openTime ? dayjs(Date.now()).isAfter(election.openTime) : false)
@@ -187,7 +194,7 @@ export const Voting: React.FC<VotingProps> = ({
   ), [election.closeTime])
 
   const disabled = useMemo(() => (
-    hasVoted || /*election.finalized ||*/  !hasOpened || hasClosed || !mayVote
+    hasVoted || election.finalized || !hasOpened || hasClosed || !mayVote
   ), [hasVoted, hasOpened, hasClosed, mayVote])
 
   const updateDisplayIndex = useCallback((indexes: Map<string, number>) => {
@@ -221,17 +228,35 @@ export const Voting: React.FC<VotingProps> = ({
     })
   }, [voteOrderHandlers])
 
-  const submitForm = useCallback(form.onSubmit((values) => {
-    axios.post(`/api/election/${election.id}/vote`, values, {
+  // const submitForm = useCallback(form.onSubmit((values) => {
+  //   axios.post(`/api/election/${election.id}/vote`, values, {
+  //     headers: authHeader
+  //   }).then(({data}) => {
+  //     // setHash(data);
+  //     // setHasVoted(true)
+  //     window.location.reload();
+  //   }).catch(({response}) => {
+  //     setError(response.data);
+  //   });
+  //   closeVoteModal();
+  // }), [form]);
+  const submitVote = useCallback(() => {
+    axios.post(`/api/election/${election.id}/vote`, {
+      secret: "",
+      ranking: voteOrder.map((c) => c.id)
+    }, {
       headers: authHeader
-    }).then(({data}) => {
-      // setHash(data);
-      // setHasVoted(true)
+    }).then(({ data }) => {
       window.location.reload();
-    }).catch(({response}) => {
-      setError(response.data)
-    })
-  }), [form])
+    }).catch(( {response} ) => {
+      console.log(response);
+      if (response.status == 401) {
+        setUnathorized(true);
+      }
+      setError(response.data);
+    });
+    closeVoteModal();
+  }, [voteOrder, authHeader])
 
 
   // useEffect(() => {
@@ -248,16 +273,16 @@ export const Voting: React.FC<VotingProps> = ({
     axios(`/api/voter/allowed`, {
       headers: authHeader
     }).then(() => {
-      setMayVote(true)
+      setMayVote(true);
     }).catch(({response}) => {
       if (response.status == 403) 
-        setMayVote(false)
+        setMayVote(false);
     })
   }, [authHeader])
 
-  useEffect(() => {
-    form.setFieldValue('ranking', voteOrder.map((c) => c.id))
-  }, [voteOrder])
+  // useEffect(() => {
+  //   form.setFieldValue('ranking', voteOrder.map((c) => c.id))
+  // }, [voteOrder])
 
   useEffect(
     () => updateDisplayIndex(new Map(voteOrder.map((candidate, index) => [candidate.id, index]))),
@@ -268,7 +293,7 @@ export const Voting: React.FC<VotingProps> = ({
     <DraggableCandidate candidate={candidate} index={index} disabled={disabled} displayIndex={displayIndex}/>
   ))
 
-  return <div>
+  return <>
     <div>
       <p>{election.description}</p>
     </div>
@@ -277,13 +302,13 @@ export const Voting: React.FC<VotingProps> = ({
       <Grid my="md">
         <Grid.Col md={6}>
           <p style={{ textAlign: "left" }}>
-            <b>Valet öppnar</b> <br/>
+            <b>Election Opened</b> <br/>
             {election.openTime.toLocaleString()}
           </p>
         </Grid.Col>
         <Grid.Col md={6}>
           <p style={{textAlign: "right"}}>
-            <b>Valet stänger</b> <br/>
+            <b>Election ends</b> <br/>
             {election.closeTime.toLocaleString()}
           </p>
         </Grid.Col>
@@ -295,63 +320,76 @@ export const Voting: React.FC<VotingProps> = ({
     {disabled &&
       <div className={classes.votingDisabledInfo}>
         
-        {(/*election.finalized ||*/ (hasClosed && hasOpened)) &&
-          <p> Det går inte lägre att rösta i det här valet. </p>
+        {(election.finalized || (hasClosed && hasOpened)) &&
+          <p> It is no longer possible to vote in this election. </p>
         }
 
         {!mayVote && !hasVoted &&
           <p>
-            Du har inte rösträtt i det här valet.<br/>
-            Kontakta valberedningen om du är medlem och ska ha det.<br/>
+            You don't have the right to vote in this election<br/>
+            Contact the Election Committee if you are a member that should have this right.<br/>
             (<a href="mailto:valberedningen@datasektionen.se">valberedningen@datasektionen.se</a>) 
             
           </p>
         }
 
-        {/*!election.finalized &&*/  !hasOpened && mayVote &&
-          <p>Det här valet har inte öppnat ännu</p>
+        {!election.finalized &&  !hasOpened && mayVote &&
+          <p>This election hasn't been opened yet.</p>
         }
 
-        {!(/*election.finalized ||*/  hasClosed || !hasOpened) && hasVoted &&
-          <p>Du har redan röstat i det här valet. </p>
+        {!(election.finalized ||  hasClosed || !hasOpened) && hasVoted &&
+          <p>You've already voted in this election.</p>
         }
       </div>
     }
 
-    <form onSubmit={submitForm}>
 
-      <div className={classes.flexRow} style={{marginBottom:"1rem"}}>
-        {/* <div className={classes.flexSubRow}>
-          <p style={{marginTop: "0.6rem"}}>Secret: </p>
-          <TextInput disabled={disabled} placeholder="Secret" {...form.getInputProps('secret')} />
-        </div> */}
-        <Button disabled={disabled} type="submit" fullWidth>
-          Rösta
-        </Button>
-      </div>
+    {unathorized && <>
+      <Error error={"Your user session has expired, try relogging before voting"} />
+      <br/>  
+    </>}
+    {error && !unathorized && <>
+      <Error error={"Vote failed to be submitted, please contact IOR"} />
+      <br/>
+    </>}
 
-      <DragDropContext onDragEnd={handleItemDrop} onDragUpdate={handleItemUpdate}>
-        <Droppable droppableId="vote-ordering" direction="vertical">
-          {(provided) => (
-            <div {...provided.droppableProps} ref={provided.innerRef} className={classes.droppable}>
-              {items}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
-    </form>
 
-    {hash && <InformationModal opened={!!hash} onClose={() => setHash(null)} info={
+    <Modal opened={voteModalOpen} onClose={closeVoteModal} centered title="Submit vote">
+      <Text>
+        Are you sure you want to submit your vote? It can't be changed once submitted.
+      </Text>
+      <Button disabled={disabled} onClick={submitVote} fullWidth>
+        Vote
+      </Button>
+    </Modal>
+
+    <div className={classes.flexRow} style={{marginBottom:"1rem"}}>
+      {/* <div className={classes.flexSubRow}>
+        <p style={{marginTop: "0.6rem"}}>Secret: </p>
+        <TextInput disabled={disabled} placeholder="Secret" {...form.getInputProps('secret')} />
+      </div> */}
+      <Button disabled={disabled} onClick={openVoteModal} fullWidth>
+        Vote
+      </Button>
+    </div>
+
+    <DragDropContext onDragEnd={handleItemDrop} onDragUpdate={handleItemUpdate}>
+      <Droppable droppableId="vote-ordering" direction="vertical">
+        {(provided) => (
+          <div {...provided.droppableProps} ref={provided.innerRef} className={classes.droppable}>
+            {items}
+            {provided.placeholder}
+          </div>
+        )}
+      </Droppable>
+    </DragDropContext>
+
+    {/* {hash && <InformationModal opened={!!hash} onClose={() => setHash(null)} info={
       <p>Din röst är registrerad och fick hashen:<br /> 
       <code>{hash}</code><br />
       Den kan användas för att verifiera att din röst efter valet.</p>
-    } />}
-    {error && <ErrorModal opened={!!error} onClose={() => setError(null)} error={
-      "Misslyckades skicka rösten till databasen, kontakta IOR"
-    } />}
-
-  </div>
+    } />} */}
+  </>
 }
 
 interface DraggableCandidateProps {
