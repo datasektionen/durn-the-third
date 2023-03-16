@@ -173,8 +173,6 @@ export const Voting: React.FC<VotingProps> = ({
     close: closeVoteModal
   }] = useDisclosure(false);
 
-
-
   // const form = useForm({
   //   initialValues: {
   //     secret: "",
