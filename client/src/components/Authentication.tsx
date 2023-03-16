@@ -64,19 +64,23 @@ export const Token: React.FC = () => {
     key: "token", defaultValue: null
   })
 
-  if (token) {
-    const header = { "Authorization": `Bearer ${token}` }
-    axios.get('/api/validate-token', {
-      headers: header
-    }).then(({ data }) => {
-      setLoggedIn(true)
-      setUser(data.user)
-      setPerms(data.perms)
-      setHeader(header)
-      setToken(token)
-    }).catch(()=>{}) // login token likely invalid
-  }
+  useEffect(() => {
+    if (token) {
+      const header = { "Authorization": `Bearer ${token}` }
+      axios.get('/api/validate-token', {
+        headers: header
+      }).then(({ data }) => {
+        setLoggedIn(true);
+        setUser(data.user);
+        setPerms(data.perms);
+        setHeader(header);
+        setToken(token);
+      }).catch(() => { }) // login token likely invalid
+    }
+    setTimeout(() => {
+      navigate("/", { replace: true });
+    }, 1000);
+  }, [token])
 
-  navigate("/", { replace: true });
-  return <div />;
-}
+  return <></>;
+} 
