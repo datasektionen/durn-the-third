@@ -20,13 +20,13 @@ const useStyle = createStyles((theme) => {
       boxShadow: "1px 1px 2px 2px rgba(0,0,0,0.15)",
       position: "relative",
       padding: "1rem",
+      cursor: "pointer",
       borderRadius: "0.2rem",
       ":hover": {
         boxShadow: "0 0 6px 6px rgba(0,0,150,0.15)",
         position: "relative",
         padding: "1rem",
         borderRadius: "0.2rem",
-        cursor: "pointer"
       }
     },
     candidateText: {
@@ -50,17 +50,17 @@ interface DisplayElectionInfoProps {
 export const DisplayElectionInfo: React.FC<DisplayElectionInfoProps> = (
   {election, ModalContent, redirectURL}
 ) => {
-  const { classes, cx } = useStyle()
-  const [opened, setOpened] = useState(false)
-  const navigate = useNavigate()
+  const { classes, cx } = useStyle();
+  const [opened, setOpened] = useState(false);
+  const navigate = useNavigate();
 
   const onDivClick = useCallback(() => {
     if (ModalContent) {
-      setOpened(true)
+      setOpened(true);
     } else if (redirectURL) {
-      navigate(redirectURL)
+      navigate(redirectURL);
     }
-  }, [ModalContent, election, redirectURL])
+  }, [ModalContent, election, redirectURL]);
 
 
   return <>
@@ -91,8 +91,15 @@ export const DisplayElectionInfo: React.FC<DisplayElectionInfoProps> = (
         {election.description}
       </p>
       <p className={classes.candidateText}>
-        {`${election.candidates.filter((c) => !c.symbolic).length } kandidater`}
+        <b>{election.candidates.filter((c) => !c.symbolic).length}</b> Candidates
       </p>
+      <p className={classes.candidateText}>
+        <b>{election.mandates}</b> Mandates
+      </p>
+      {election.extraMandates > 0 &&
+        <p className={classes.candidateText}>
+          <b>{election.extraMandates}</b> Secondary mandates
+        </p> }
     </div>
   </>
 }

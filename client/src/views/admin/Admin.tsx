@@ -7,7 +7,7 @@ import { Center, Container, createStyles, Grid } from "@mantine/core";
 import useAuthorization from "../../hooks/useAuthorization";
 import { Election, ElectionSchema, parseElectionResponse } from "../../util/ElectionTypes";
 import { useAPIData, useApiRequester } from "../../hooks/useAxios";
-import { DisplayElectionInfo } from "../../components/Election";
+import { DisplayElectionInfo } from "../../components/ElectionInfo";
 import { z } from "zod";
 import Loading from "../../components/Loading";
 

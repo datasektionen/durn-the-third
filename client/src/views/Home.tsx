@@ -4,7 +4,7 @@ import axios from "axios";
 
 import { Grid, Container, createStyles, Center} from "@mantine/core";
 
-import { DisplayElectionInfo } from "../components/Election";
+import { DisplayElectionInfo } from "../components/ElectionInfo";
 import { Election, ElectionSchema, parseElectionResponse } from "../util/ElectionTypes"
 import { Voting } from "../components/Voting";
 import useAuthorization from "../hooks/useAuthorization";
@@ -86,7 +86,7 @@ export const Home: React.FC = () => {
         {!loggedIn &&
           <Center>
             <p className={cx(constants.themeColor, "lighten-4", classes.alertBox)}>
-              Logga in för att se de aktuella urnvalen.
+              Log in to see all open elections.
             </p>
           </Center>
         }
@@ -99,7 +99,7 @@ export const Home: React.FC = () => {
             {elections.filter((e) => !e.finalized).length == 0 && 
               <Center>
                 <p className={cx(constants.themeColor, "lighten-4", classes.alertBox)}>
-                  Det finns inga publicerade urnval just nu.
+                  There are currently no open urnval.
                 </p>
               </Center>}
             <Grid> 
