@@ -23,6 +23,7 @@ export const ElectionSchema = z.object({
   openTime: z.date().nullable(),
   closeTime: z.date().nullable(),
   candidates: z.array(CandidateSchema),
+  finalized: z.boolean(),
 });
 
 export type Election = z.infer<typeof ElectionSchema>;
@@ -37,6 +38,7 @@ export const createEmptyElection = (): Election => {
     openTime: null,
     closeTime: null,
     candidates: [],
+    finalized: false,
   }
 };
 
@@ -49,6 +51,7 @@ export const electionMock = (): Election => {
     extraMandates: 1,
     openTime: new Date("2022-10-30T00:14:31Z"),
     closeTime: new Date("2023-10-30T00:14:31Z"),
+    finalized: false,
     candidates: [
       {
         id: "724619af-aa6b-4299-ae25-5307904d8636",
@@ -89,6 +92,7 @@ export const parseElectionResponse = (data: any):Election => {
     extraMandates: data.extraMandates,
     openTime: data.openTime == null ? null : new Date(data.openTime),
     closeTime: data.closeTime == null ? null : new Date(data.closeTime),
-    candidates: data.candidates
+    candidates: data.candidates,
+    finalized: data.finalized,
   }
 } 
