@@ -62,13 +62,12 @@ export const useAPIData = <R>(
         setError(null);
         setLoading(false);
       }).catch((error) => {
-        console.log(error);
         setError("invalid data from API");
         setLoading(false);
       });
     }).catch((error) => {
       if (error.code != "ERR_CANCELED") {
-        setError(error);
+        setError(error.response.data);
         setLoading(false);
       }
     });

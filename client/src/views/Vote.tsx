@@ -24,6 +24,7 @@ const Vote: React.FC = () => {
   )
   const { classes } = useStyles();
 
+  // console.log(electionData);
   return <>
     <Header title={electionData?.name ?? "Loading election"}/>
     <Container my={"xl"}>
