@@ -208,7 +208,6 @@ const EditElection: React.FC = () => {
     axios.get(`/api/election/${electionId}/count`, {
       headers: authHeader,
     }).then(({ data }) => {
-      console.log(data);
       z.array(CandidateSchema).parseAsync(data).then(ranking => {
         electionResultHandler.setState(ranking);
         openCountingModal();

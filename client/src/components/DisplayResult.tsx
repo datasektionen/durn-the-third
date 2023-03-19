@@ -103,7 +103,7 @@ const DisplayVoteStage: React.FC<DisplayVoteStageProps> = ({stage}) => {
       </Table>
     </div>
   </>
-} 
+}
 
 
 export interface DisplaySchultzeProps {
@@ -114,51 +114,77 @@ export interface DisplaySchultzeProps {
 export const DisplaySchultzeResult: React.FC<DisplaySchultzeProps> = ( {
   election, ranking
 } ) => {
+
+  const firstSymbolic = useMemo(() => {
+    for(let i = 0; i < ranking.length; i++) {
+      if (ranking[i].symbolic)
+        return i;
+    }
+    return ranking.length
+  }, [ranking])
+
+  const formattedCandidateName = (c: Candidate) => {
+    if (c.symbolic) {
+      return <Text fw={700}> {c.name} </Text>
+    } else {
+      return <Text> {c.name} </Text>
+    }
+  } 
+
   return <>
-    <Text align="center">
-      Ordinarie
-    </Text>
-    <Table striped>
-      <thead>
-        <th style={{ width: "20%" }}> Rank </th>
-        <th> Candidate </th>
-      </thead>
-      <tbody>
-        {ranking.slice(0, election.mandates).map((c, i) => <>
+    {firstSymbolic > 0 && <>
+      <Text align="center">
+        Ordinarie
+      </Text>
+      <Table striped withColumnBorders>
+        <thead>
           <tr>
-            <td>
-              {i + 1}
-            </td>
-            <td>
-              {c.name}
-            </td>
+            <th style={{ width: "15%" }}> Rank </th>
+            <th> Candidate </th>
           </tr>
-        </>)}
-      </tbody>
-    </Table>
-    
+        </thead>
+        <tbody>
+          {ranking.slice(0, Math.min(election.mandates, firstSymbolic)).map((c, i) => <>
+            <tr>
+              <td>
+                {i + 1}
+              </td>
+              <td>
+                {formattedCandidateName(c)}
+              </td>
+            </tr>
+          </>)}
+        </tbody>
+      </Table>
+    </>}
+
     <br></br>
-    {election.extraMandates > 0 && <>
+    {election.extraMandates > 0 && firstSymbolic > election.mandates && <>
 
       <Text align="center">
         Suppleang
       </Text>
-      <Table striped>
+      <Table striped withColumnBorders>
         <thead>
-          <th style={{ width: "20%" }}> Rank </th>
-          <th> Candidate </th>
+          <tr>
+            <th style={{ width: "15%" }}> Rank </th>
+            <th> Candidate </th>
+          </tr>
         </thead>
         <tbody>
           {ranking.slice(
-              election.mandates, 
-              election.mandates + election.extraMandates
+              election.mandates,
+              Math.min(
+                election.mandates + election.extraMandates,
+                firstSymbolic
+              )
             ).map((c, i) => <>
               <tr>
                 <td>
                   {i + 1 + election.mandates}
                 </td>
                 <td>
-                  {c.name}
+                  {formattedCandidateName(c)}
                 </td>
               </tr>
             </>)}
@@ -167,24 +193,33 @@ export const DisplaySchultzeResult: React.FC<DisplaySchultzeProps> = ( {
       <br></br>
     </>}
     
-    {ranking.length > election.mandates + election.extraMandates && <>
-
-      <hr/>
-      <Table striped>
+    {(ranking.length > election.mandates + election.extraMandates ||
+      firstSymbolic < ranking.length) && <>
+      <Text align="center">
+        Non-Elected
+      </Text>
+      <Table striped withColumnBorders>
         <thead>
-          <th style={{ width: "20%" }}> Rank </th>
-          <th> Candidate </th>
+          <tr>
+            <th style={{ width: "15%" }}> Rank </th>
+            <th> Candidate </th>
+          </tr>
         </thead>
         <tbody>
-          {ranking.slice(
-            election.mandates + election.extraMandates
-            ).map((c, i) => <>
+          {ranking.slice( Math.min(
+              election.mandates + election.extraMandates,
+              firstSymbolic
+            )).map((c, i) => <>
             <tr>
               <td>
-                {i + 1 + election.mandates + election.extraMandates}
+                {i + 1 + 
+                  Math.min(
+                    election.mandates + election.extraMandates,
+                    firstSymbolic
+                  )}
               </td>
               <td>
-                {c.name}
+                {formattedCandidateName(c)}
               </td>
             </tr>
           </>)}
