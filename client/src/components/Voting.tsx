@@ -101,7 +101,6 @@ const useStyles = createStyles((theme) => ({
     marginRight: "-50%"
   },
 
-
   info : {
     padding: "1rem",
     marginBottom: "1rem",
@@ -117,7 +116,6 @@ const useStyles = createStyles((theme) => ({
     borderRadius: "0.6rem",
     backgroundColor: "#ffcccb"
   },
-
 }));
 
 const InfoBox: React.FC = () => {
@@ -125,10 +123,8 @@ const InfoBox: React.FC = () => {
 
   return <div className={cx(constants.themeColor, "lighten-4", classes.info)}>
     <p>
-      Rangordna kandidater i den ordningen som du föredrar dem. {/*Om du lägger <strong>Blank</strong> eller <strong>Vakant</strong> ovanför en kandidat betyder det att du hellre vill rösta blankt
-      eller vakanssätta posten än att den kandidaten blir vald. Allt som ligger under Blank eller Vakant spelar ordningen ingen roll på, och allt under är därför makerat med "<strong>-</strong>" istället för en siffra.
-      <br /><br />
-      <strong>Secret</strong> ska innehålla en minst 10 karaktärer lång sträng, den behövs för att räkna ut en unik hash (eller id) för din röst och kommer kunna användas för att verifiera din röst efter att valet har avslutats. */}
+      Rank the the candidates in your preferred order. <br/> <br/>
+      Note that the ordering of the candidates that are ranked below <i>Vakant</i> is taken into account.
     </p>
   </div>
 }
@@ -142,7 +138,7 @@ export const Voting: React.FC<VotingProps> = ({
 }) => {
   const keys = new Map (election.candidates.map((candidate)=>
     [candidate.id, [(candidate.symbolic ? 1 : 0), Math.random()]]
-  ))
+  ));
   const [voteOrder, voteOrderHandlers] = useListState<candidateInfo>(election.candidates.map(
     (candidate) => {return {
       id: candidate.id,
@@ -156,13 +152,13 @@ export const Voting: React.FC<VotingProps> = ({
     return compareList(aKey, bKey)
   }));
 
-  const { classes } = useStyles()
-  const [displayIndex, setDisplayIndex] = useState<Map<string, string>>(new Map<string, string>())
+  const { classes } = useStyles();
+  const [displayIndex, setDisplayIndex] = useState<Map<string, string>>(new Map<string, string>());
   // const [hasVoted, setHasVoted] = useState(false)
   const [hasVoted, loadingHasVoted, errorHasVoted] = useAPIData(
     `/api/election/${election.id}/has-voted`,
     (data) => z.boolean().parseAsync(data)
-  )
+  );
   const [mayVote, setMayVote] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { authHeader } = useAuthorization();
@@ -185,26 +181,26 @@ export const Voting: React.FC<VotingProps> = ({
 
   const hasOpened = useMemo(() => (
     (election.openTime ? dayjs(Date.now()).isAfter(election.openTime) : false)
-  ), [election.openTime])
+  ), [election.openTime]);
 
   const hasClosed = useMemo(() => (
     (election.closeTime ? dayjs(Date.now()).isAfter(election.closeTime) : true)
-  ), [election.closeTime])
+  ), [election.closeTime]);
 
   const disabled = useMemo(() => (
     hasVoted || election.finalized || !hasOpened || hasClosed || !mayVote
-  ), [hasVoted, hasOpened, hasClosed, mayVote])
+  ), [hasVoted, hasOpened, hasClosed, mayVote]);
 
   const updateDisplayIndex = useCallback((indexes: Map<string, number>) => {
-    let firstSymbolic = voteOrder.length
+    let firstSymbolic = voteOrder.length;
     // voteOrder.forEach((candidate) => {
     //   if (candidate.symbolic) firstSymbolic = Math.min(firstSymbolic, indexes.get(candidate.id) ?? firstSymbolic)
     // })
     setDisplayIndex(new Map(voteOrder.map((candidate) => {
       let index = indexes.get(candidate.id) ?? 0
       return [candidate.id, `${firstSymbolic < index ? "-" : index + 1}`]
-    })))
-  }, [setDisplayIndex, voteOrder])
+    })));
+  }, [setDisplayIndex, voteOrder]);
 
   const handleItemUpdate = useCallback(({ destination, source }: DragUpdate) => {
     if (destination == undefined) return;
@@ -217,14 +213,14 @@ export const Voting: React.FC<VotingProps> = ({
       )]
     }))
     updateDisplayIndex(adjustedIndexes)
-  }, [voteOrder])
+  }, [voteOrder]);
   
   const handleItemDrop = useCallback(({ destination, source }: DropResult) => {
     voteOrderHandlers.reorder({
       from: source.index,
       to: destination ? destination.index : source.index
     })
-  }, [voteOrderHandlers])
+  }, [voteOrderHandlers]);
 
   // const submitForm = useCallback(form.onSubmit((values) => {
   //   axios.post(`/api/election/${election.id}/vote`, values, {
@@ -388,12 +384,6 @@ export const Voting: React.FC<VotingProps> = ({
         )}
       </Droppable>
     </DragDropContext>
-
-    {/* {hash && <InformationModal opened={!!hash} onClose={() => setHash(null)} info={
-      <p>Din röst är registrerad och fick hashen:<br /> 
-      <code>{hash}</code><br />
-      Den kan användas för att verifiera att din röst efter valet.</p>
-    } />} */}
   </>
 }
 

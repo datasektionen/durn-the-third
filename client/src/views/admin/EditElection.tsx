@@ -257,11 +257,16 @@ const EditElection: React.FC = () => {
           closeTimeDefault={electionData.closeTime}
         />
 
-        <Modal opened={finalizeModalOpen} onClose={closeFinalizeModal} centered my={"md"}>
+        <Modal opened={finalizeModalOpen} onClose={closeFinalizeModal} centered my={"md"}
+          title={ <Text fw={700}>Finalize election</Text> }
+        >
           <Text> 
-            Are you sure that you want to finalize? It's not possible to undo the finalization. 
+            Are you sure that you want to finalize the election? It's not possible to undo the finalization. 
+            <br /><br />
+            The election has to be finalized in order to count the Votes. 
+            <br /><br />
+            It is not possible to vote or edit the election once it is finalized.
           </Text>
-          <br/>
 
           <Button
             fullWidth className={classes.button}
@@ -314,11 +319,12 @@ const EditElection: React.FC = () => {
 
         </Grid>
         
-        <Modal opened={deleteModalOpen} onClose={closeDeleteModal} centered>
+        <Modal opened={deleteModalOpen} onClose={closeDeleteModal} centered
+          title={ <Text fw={700}>Delete election</Text> }
+        >
           <Text>
-            Are you Sure you want to delete the election? It can't be undone.
+            Are you sure that you want to delete the election? It can't be undone.
           </Text>
-          <br />
 
           <Button
             fullWidth className={classes.button}
