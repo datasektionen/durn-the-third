@@ -4,6 +4,7 @@ import (
 	database "durn/server/db"
 	"durn/server/util"
 	"encoding/hex"
+	"math/rand"
 	"sort"
 	"time"
 
@@ -347,18 +348,19 @@ func CountVotesSchultze(c *gin.Context) {
 
 	p := StrongestPaths(prefer)
 
-	wins := make([]int, N)
 	result := make([]int, N)
 	for i := range prefer {
 		result[i] = i
-		for j := range prefer {
-			if p[i][j] > p[j][i] {
-				wins[i] += 1
-			}
-		}
 	}
-	sort.Slice(result, func(i, j int) bool {
-		return wins[i] > wins[j]
+	// Since we use stable sort, shuffling before sorting is equivalent to randomizing the order
+	// between candidates which were tied
+	rand.Shuffle(len(result), func(i, j int) {
+		result[i], result[j] = result[j], result[i]
+	})
+	sort.SliceStable(result, func(i, j int) bool {
+		a := result[i]
+		b := result[j]
+		return p[a][b] >= p[b][a]
 	})
 
 	var ret []database.Candidate
@@ -375,10 +377,12 @@ func StrongestPaths(E [][]int) [][]int {
 	for k := range E {
 		for i := range E {
 			for j := range E {
-				res[i][j] = util.Max(
-					res[i][j],
-					util.Min(res[i][k], res[k][j]),
-				)
+				if i != j && j != k && k != i {
+					res[i][j] = util.Max(
+						res[i][j],
+						util.Min(res[i][k], res[k][j]),
+					)
+				}
 			}
 		}
 	}
