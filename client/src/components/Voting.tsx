@@ -32,12 +32,9 @@ const useStyles = createStyles((theme) => ({
     padding: `${theme.spacing.sm}px ${theme.spacing.xl}px`,
     backgroundColor: theme.white,
     marginBottom: theme.spacing.sm,
-    top: "auto!important",
-    left: "auto!important",
   },
 
   droppable: {
-    overflowY: "scroll",
   },
 
   dragHandle: {
@@ -169,16 +166,6 @@ export const Voting: React.FC<VotingProps> = ({
     close: closeVoteModal
   }] = useDisclosure(false);
 
-  // const form = useForm({
-  //   initialValues: {
-  //     secret: "",
-  //     ranking: voteOrder.map((c) => c.id)
-  //   },
-  //   validate: {
-  //     // secret: (s: string) => (s.length < 10 ? "Secret should be at least 10 characters long" : null)
-  //   }
-  // });
-
   const hasOpened = useMemo(() => (
     (election.openTime ? dayjs(Date.now()).isAfter(election.openTime) : false)
   ), [election.openTime]);
@@ -205,35 +192,26 @@ export const Voting: React.FC<VotingProps> = ({
   const handleItemUpdate = useCallback(({ destination, source }: DragUpdate) => {
     if (destination == undefined) return;
     const adjustedIndexes = new Map(voteOrder.map((candidate, index) => {
-      if (source.index == destination.index) return [candidate.id, index]
-      if (index == source.index) return [candidate.id, destination.index]
+      if (source.index == destination.index) 
+        return [candidate.id, index]
+      if (index == source.index) 
+        return [candidate.id, destination.index]
       return [candidate.id, (source.index < destination.index ?
         index - (index > source.index ? 1 : 0) + (index > destination.index ? 1 : 0) :
         index + (index >= destination.index ? 1 : 0) - (index >= source.index ? 1 : 0)
       )]
-    }))
-    updateDisplayIndex(adjustedIndexes)
+    }));
+    updateDisplayIndex(adjustedIndexes);
   }, [voteOrder]);
   
   const handleItemDrop = useCallback(({ destination, source }: DropResult) => {
+    if (!destination) return;
     voteOrderHandlers.reorder({
       from: source.index,
-      to: destination ? destination.index : source.index
-    })
+      to: destination.index,
+    });
   }, [voteOrderHandlers]);
 
-  // const submitForm = useCallback(form.onSubmit((values) => {
-  //   axios.post(`/api/election/${election.id}/vote`, values, {
-  //     headers: authHeader
-  //   }).then(({data}) => {
-  //     // setHash(data);
-  //     // setHasVoted(true)
-  //     window.location.reload();
-  //   }).catch(({response}) => {
-  //     setError(response.data);
-  //   });
-  //   closeVoteModal();
-  // }), [form]);
   const submitVote = useCallback(() => {
     axios.post(`/api/election/${election.id}/vote`, {
       secret: "",
@@ -252,17 +230,6 @@ export const Voting: React.FC<VotingProps> = ({
     closeVoteModal();
   }, [voteOrder, authHeader])
 
-
-  // useEffect(() => {
-  //   axios(`/api/election/${election.id}/has-voted`, {
-  //     headers: authHeader
-  //   }).then(({data}) => {
-  //     setHasVoted(data)
-  //   }).catch(({response}) => {
-  //     setHasVoted(false)
-  //   })
-  // }, [authHeader])
-
   useEffect(() => {
     axios(`/api/voter/allowed`, {
       headers: authHeader
@@ -273,10 +240,6 @@ export const Voting: React.FC<VotingProps> = ({
         setMayVote(false);
     })
   }, [authHeader])
-
-  // useEffect(() => {
-  //   form.setFieldValue('ranking', voteOrder.map((c) => c.id))
-  // }, [voteOrder])
 
   useEffect(
     () => updateDisplayIndex(new Map(voteOrder.map((candidate, index) => [candidate.id, index]))),
@@ -301,7 +264,7 @@ export const Voting: React.FC<VotingProps> = ({
           </p>
         </Grid.Col>
         <Grid.Col md={4}>
-          <p >
+          <p>
             <b>Election ends</b> <br/>
             {election.closeTime.toLocaleString()}
           </p>
@@ -365,10 +328,6 @@ export const Voting: React.FC<VotingProps> = ({
     </Modal>
 
     <div className={classes.flexRow} style={{marginBottom:"1rem"}}>
-      {/* <div className={classes.flexSubRow}>
-        <p style={{marginTop: "0.6rem"}}>Secret: </p>
-        <TextInput disabled={disabled} placeholder="Secret" {...form.getInputProps('secret')} />
-      </div> */}
       <Button disabled={disabled} onClick={openVoteModal} fullWidth>
         Vote
       </Button>
@@ -405,7 +364,7 @@ const DraggableCandidate: React.FC<DraggableCandidateProps> = ({
         // disable x-axis movement 
         let transform = provided.draggableProps.style?.transform;
         if (snapshot.isDragging && transform) {
-          transform = transform.replace(/\(.+\,/, "(0,");
+          transform = transform.replace(/\(.+\,/, "(0px,");
         }
         const style = {
           ...provided.draggableProps.style,
@@ -413,7 +372,11 @@ const DraggableCandidate: React.FC<DraggableCandidateProps> = ({
         };
 
         return <div
-          className={cx(classes.item, { [classes.itemDragging]: snapshot.isDragging }, { [classes.disabled]: disabled })}
+          className={cx(
+            classes.item, 
+            { [classes.itemDragging]: snapshot.isDragging }, 
+            { [classes.disabled]: disabled }
+          )}
           {...provided.draggableProps}
           ref={provided.innerRef}
           style={style}
