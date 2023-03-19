@@ -64,7 +64,7 @@ func Max(a int, b int) int {
 
 func Min(a int, b int) int {
 	if a < b {
-		return b
+		return a
 	}
-	return a
+	return b
 }
