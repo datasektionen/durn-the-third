@@ -12,9 +12,7 @@ const useAuthorization = () => {
   });
   const [header] = useLocalStorage<object>({
     key: "header", defaultValue: {}
-  })
-  // const [token] = useLocalStorage<string | null>({
-  //   key: "token", defaultValue: null
+  });
   // })
 
 

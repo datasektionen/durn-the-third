@@ -30,7 +30,7 @@ export const Error: React.FC<ErrorProps> = ({ error }) => {
     <div className={classes.error}>
       <Text fw={700}>
         Error 
-        </Text>
+      </Text>
       {error}
     </div>
   </>

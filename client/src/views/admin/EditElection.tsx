@@ -172,8 +172,8 @@ const EditElection: React.FC = () => {
         changed: false,
         added: false,
       }));
+      window.location.reload();
 
-      navigate(`/admin/election/${electionId}`);
     }).catch(() => { })
   }, [candidates, changeCandidate, electionId])
 
@@ -269,7 +269,7 @@ const EditElection: React.FC = () => {
             onClick={finaliseElectionAndCountVotes}
           >
             <Text fw={700} size="xl" >
-              Finalisera och räkna röster
+              Finalize and count votes
             </Text>
           </Button>
         </Modal>
