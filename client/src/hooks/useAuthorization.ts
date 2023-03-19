@@ -1,19 +1,36 @@
 import { useLocalStorage } from "@mantine/hooks";
+import axios from "axios";
+import { useEffect } from "react";
 
 const useAuthorization = () => {
-  const [loggedIn] = useLocalStorage<boolean>({
+  const [loggedIn, setLoggedIn] = useLocalStorage<boolean>({
     key: "loggedIn", defaultValue: false
   });
-  const [user] = useLocalStorage<string>({
+  const [user, ___, removeUser] = useLocalStorage<string>({
     key: "user", defaultValue: ""
   });
-  const [perms] = useLocalStorage<string[]>({
+  const [perms, __, removePerms] = useLocalStorage<string[]>({
     key: "perms", defaultValue: []
   });
-  const [header] = useLocalStorage<object>({
+  const [header, _, removeHeader] = useLocalStorage<object>({
     key: "header", defaultValue: {}
   });
-  // })
+  
+  useEffect(() => {
+    if (!("Authorization" in header)) return;
+    axios.get(
+      "/api/validate-token",
+      {headers: Object(header)}
+    ).then(() => {
+
+    }).catch((error) => {
+      if (error?.response.status != 401) return; 
+      removeHeader();
+      removePerms();
+      removeUser();
+      setLoggedIn(false);
+    })
+  }, [header])
 
 
 
