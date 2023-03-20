@@ -84,6 +84,7 @@ export const CreateElection: React.FC = () => {
           navigate(`/admin/election/${data}`);
         })
       }).catch(() => { 
+        setError("Failed to submit election to backend");
         setSubmitDisabled(false);
       });
     }
