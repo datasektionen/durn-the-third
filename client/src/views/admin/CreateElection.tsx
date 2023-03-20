@@ -63,31 +63,35 @@ export const CreateElection: React.FC = () => {
   const submitElection = useCallback((values: typeof form.values) => {
     if (submitDisabled) return;
     setSubmitDisabled(true);
-    axios.post("/api/election/create", {
-      name: values.title,
-      mandates: values.mandates,
-      extraMandates: values.extraMandates,
-      openTime: values.openTime,
-      closeTime: values.closeTime,
-    }, {
-      headers: authHeader
-    }).then(({ data }) => {
-      // submit all added candidates
-      Promise.all(
-        candidates.map((candidate) =>
-          axios.post(`/api/election/${data}/candidate/add`, {
-            name: candidate.name,
-            presentation: candidate.presentation,
-          }, { headers: authHeader }))
-      ).then(() => {
-        navigate(`/admin/election/${data}`);
-      })
-    }).catch(() => { });
-    setSubmitDisabled(false);
-
+    const f = async () => {
+      axios.post("/api/election/create", {
+        name: values.title,
+        mandates: values.mandates,
+        extraMandates: values.extraMandates,
+        openTime: values.openTime,
+        closeTime: values.closeTime,
+      }, {
+        headers: authHeader
+      }).then(({ data }) => {
+        // submit all added candidates
+        Promise.all(
+          candidates.map((candidate) =>
+            axios.post(`/api/election/${data}/candidate/add`, {
+              name: candidate.name,
+              presentation: candidate.presentation,
+            }, { headers: authHeader }))
+        ).then(() => {
+          navigate(`/admin/election/${data}`);
+        })
+      }).catch(() => { 
+        setSubmitDisabled(false);
+      });
+    }
+    f();
   }, [candidates, candidateChanged])
 
   const onSubmit = useCallback(form.onSubmit((values) => {
+    setError(false);
     const now = new Date(Date.now());
     if (values.title == "") {
       setError("Title can't be empty");
