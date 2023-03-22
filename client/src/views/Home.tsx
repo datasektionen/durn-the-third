@@ -47,7 +47,14 @@ const Info: React.FC = () => {
 
     <p>
       Contact the Election Committee (<a href="mailto:valberedningen@datasektionen.se">valberedningen@datasektionen.se</a>)
-      or the System Administrator (<a href="mailto:d-sys@datasektionen.se">d-sys@datasektionen.se</a>).
+      or the System Administrator (<a href="mailto:d-sys@datasektionen.se">d-sys@datasektionen.se</a>)
+    </p>
+
+    <h4>Source Code and other Information</h4>
+    <p>
+      In order for the vote counting system to be as transparent as possible, the full source code 
+      is available at <a href="https://github.com/datasektionen/durn-the-third">github</a>. The system and vote counting is
+      also described at the <a href="/info">info page</a>
     </p>
   </div>
 }

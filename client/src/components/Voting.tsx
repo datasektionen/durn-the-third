@@ -121,7 +121,8 @@ const InfoBox: React.FC = () => {
   return <div className={cx(constants.themeColor, "lighten-4", classes.info)}>
     <p>
       Rank the the candidates in your preferred order. <br/> <br/>
-      Note that the ordering of the candidates that are ranked below <i>Vakant</i> is taken into account.
+      Note that the ordering of the candidates that are ranked below <i>Vakant</i> is taken into account. <br/><br/>
+      Once your vote is submitted, you won't be able to change it.
     </p>
   </div>
 }

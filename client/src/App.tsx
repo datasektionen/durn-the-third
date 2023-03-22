@@ -15,6 +15,7 @@ import { CreateElection } from "./views/admin/CreateElection";
 
 import "@total-typescript/ts-reset";
 import Vote from "./views/Vote";
+import Info from "./views/Info";
 
 const App: React.FC = () => {
   const { loggedIn, adminRead } = useAuthorization();
@@ -22,10 +23,12 @@ const App: React.FC = () => {
   const config = useMemo(() => ({
     system_name: "durn",
     color_scheme: constants.themeColor,
-    links: ( loggedIn && adminRead ? [
-      <Link key="1" to="/">Hem</Link>,
-      <Link key="2" to="/admin">Administrera val</Link>,
-      <Link key="3" to="/admin/voters">Administrera väljare </Link>,
+    links: ([
+      <Link key="1" to="/">Home</Link>,
+      <Link key="2" to="/info">Info</Link>,
+    ]).concat( loggedIn && adminRead ? [
+      <Link key="3" to="/admin">Admin Elections</Link>,
+      <Link key="4" to="/admin/voters">Admin Voters</Link>,
     ] : [] ),
     login_href: loggedIn ? "#/logout" : "#/login",
     login_text: loggedIn ? "Logga ut" : "Logga in",
@@ -41,6 +44,9 @@ const App: React.FC = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/logout" element={<Logout />} /> 
           <Route path="/token/:token" element={<Token />} />
+
+          <Route path="/info" element={<Info />} />
+
 
           <Route path="/vote/:id" element={<Vote />} />
 
