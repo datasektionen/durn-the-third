@@ -7,7 +7,7 @@ import { Container, createStyles, Center, Button, Modal, Text, Grid } from "@man
 import { useForm } from "@mantine/form";
 import { useDisclosure, useListState } from "@mantine/hooks";
 
-import { Candidate, CandidateSchema, Election, ElectionSchema, NullTime, parseElectionResponse } from "../../util/ElectionTypes";
+import { Candidate, CandidateSchema, Election, ElectionResultResponse, ElectionResultResponseSchema, ElectionSchema, NullTime, parseElectionResponse } from "../../util/ElectionTypes";
 import useAuthorization from "../../hooks/useAuthorization";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAPIData } from "../../hooks/useAxios";
@@ -61,7 +61,7 @@ const EditElection: React.FC = () => {
     open: openDeleteModal,
     close: closeDeleteModal
   }] = useDisclosure(false);
-  const [electionResult, electionResultHandler] = useListState<Candidate>([]);
+  const [electionResult, setElectionResult] = useState<ElectionResultResponse>();
 
   const { classes } = useStyles();
 
@@ -208,10 +208,12 @@ const EditElection: React.FC = () => {
     axios.get(`/api/election/${electionId}/count`, {
       headers: authHeader,
     }).then(({ data }) => {
-      z.array(CandidateSchema).parseAsync(data).then(ranking => {
-        electionResultHandler.setState(ranking);
-        openCountingModal();
-      }).catch(() => {
+      ElectionResultResponseSchema.parseAsync(data).then(
+        (result: ElectionResultResponse) => {
+          setElectionResult(result);
+          openCountingModal();
+        }
+      ).catch(() => {
         setError("Counting endpoint returned invalid data");
       });
 
@@ -230,6 +232,8 @@ const EditElection: React.FC = () => {
       closeDeleteModal();
     });
   }, [authHeader, electionId])
+
+  // countVotes();
 
   return <>
     <Header title="Editing Election" />
@@ -278,10 +282,13 @@ const EditElection: React.FC = () => {
           </Button>
         </Modal>
 
-        <Modal opened={countingModalOpen} onClose={closeCountingModal} centered my={"xl"}>
+        <Modal opened={countingModalOpen} onClose={closeCountingModal} centered size={"xl"}>
           <DisplaySchultzeResult 
             election={electionData}
-            ranking={electionResult}
+            ranking={electionResult?.ranking ?? []}
+            voteMatrix={electionResult?.voteMatrix ?? []}
+            votes={electionResult?.totalVotes ?? 0}
+            schultzeMatrix={electionResult?.schultzeMatrix ?? []}
           />
         </Modal>
 

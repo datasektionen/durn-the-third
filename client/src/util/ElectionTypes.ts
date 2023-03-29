@@ -28,6 +28,15 @@ export const ElectionSchema = z.object({
 
 export type Election = z.infer<typeof ElectionSchema>;
 
+export const ElectionResultResponseSchema = z.object({
+  ranking: z.array(CandidateSchema),
+  voteMatrix: z.array(z.array(z.number())),
+  totalVotes: z.number(),
+  schultzeMatrix: z.array(z.array(z.number())),
+});
+
+export type ElectionResultResponse = z.infer<typeof ElectionResultResponseSchema>;
+
 export const createEmptyElection = (): Election => {
   return {
     id: "",
@@ -41,6 +50,7 @@ export const createEmptyElection = (): Election => {
     finalized: false,
   }
 };
+
 
 export const electionMock = (): Election => {
   return {
