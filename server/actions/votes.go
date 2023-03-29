@@ -363,13 +363,30 @@ func CountVotesSchultze(c *gin.Context) {
 		return p[a][b] >= p[b][a]
 	})
 
-	var ret []database.Candidate
+	type responseType struct {
+		Ranking        []database.Candidate `json:"ranking"`
+		TotalVotes     int                  `json:"totalVotes"`
+		VoteMatrix     [][]int              `json:"voteMatrix"`
+		SchultzeMatrix [][]int              `json:"schultzeMatrix"`
+	}
+
+	// var ret []database.Candidate
+	var ret responseType
+	ret.TotalVotes = len(election.Votes)
+
 	for _, idx := range result {
-		ret = append(ret, election.Candidates[idx])
+		ret.Ranking = append(ret.Ranking, election.Candidates[idx])
+		var votesRow []int
+		var schultzeRow []int
+		for _, idx2 := range result {
+			votesRow = append(votesRow, prefer[idx][idx2])
+			schultzeRow = append(schultzeRow, p[idx][idx2])
+		}
+		ret.VoteMatrix = append(ret.VoteMatrix, votesRow)
+		ret.SchultzeMatrix = append(ret.SchultzeMatrix, schultzeRow)
 	}
 
 	c.JSON(http.StatusOK, ret)
-
 }
 
 func StrongestPaths(E [][]int) [][]int {
