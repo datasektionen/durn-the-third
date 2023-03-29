@@ -1,10 +1,11 @@
-import { createStyles, Stack, Table, Text } from "@mantine/core"
+import { Center, createStyles, Grid, List, Stack, Table, Text } from "@mantine/core"
 import axios from "axios"
 import React, { useEffect, useMemo, useState } from "react"
 import useAuthorization from "../hooks/useAuthorization"
 import { useAPIData } from "../hooks/useAxios"
 import { Loading, Error } from "./Loading"
 import { Candidate, Election } from "../util/ElectionTypes"
+import { Star } from "tabler-icons-react"
 
 const useStyles = createStyles((theme) => ({
   voteStageBox: {
@@ -13,6 +14,18 @@ const useStyles = createStyles((theme) => ({
     boxShadow: "1px 1px 3px 3px rgba(0,0,0,0.15)",
     padding: "1rem",
     backgroundColor: "#F7F7F7" 
+  },
+
+  goodBox: {
+    backgroundColor: "#b2f2bb"
+  },
+
+  badBox: {
+    backgroundColor: "#ff8787"
+  },
+
+  neutralBox : {
+    backgroundColor: "#fff3bf"
   }
 }))
 
@@ -108,11 +121,14 @@ const DisplayVoteStage: React.FC<DisplayVoteStageProps> = ({stage}) => {
 
 export interface DisplaySchultzeProps {
   election: Election,
-  ranking: Candidate[]
+  ranking: Candidate[],
+  voteMatrix: number[][],
+  schultzeMatrix: number[][],
+  votes: number,
 }
 
 export const DisplaySchultzeResult: React.FC<DisplaySchultzeProps> = ( {
-  election, ranking
+  election, ranking, voteMatrix, votes, schultzeMatrix
 } ) => {
 
   const firstSymbolic = useMemo(() => {
@@ -132,6 +148,8 @@ export const DisplaySchultzeResult: React.FC<DisplaySchultzeProps> = ( {
   } 
 
   return <>
+    <h3><Center>Election Result</Center></h3>
+
     {firstSymbolic > 0 && <>
       <Text align="center">
         Ordinarie
@@ -139,7 +157,7 @@ export const DisplaySchultzeResult: React.FC<DisplaySchultzeProps> = ( {
       <Table striped withColumnBorders>
         <thead>
           <tr>
-            <th style={{ width: "15%" }}> Rank </th>
+            <th style={{ width: "6rem" }}> Rank </th>
             <th> Candidate </th>
           </tr>
         </thead>
@@ -166,8 +184,8 @@ export const DisplaySchultzeResult: React.FC<DisplaySchultzeProps> = ( {
       </Text>
       <Table striped withColumnBorders>
         <thead>
-          <tr>
-            <th style={{ width: "15%" }}> Rank </th>
+          <tr key="res-head">
+            <th style={{ width: "6rem" }}> Rank </th>
             <th> Candidate </th>
           </tr>
         </thead>
@@ -179,7 +197,7 @@ export const DisplaySchultzeResult: React.FC<DisplaySchultzeProps> = ( {
                 firstSymbolic
               )
             ).map((c, i) => <>
-              <tr>
+              <tr key={`r-${i}`}>
                 <td>
                   {i + 1 + election.mandates}
                 </td>
@@ -201,7 +219,7 @@ export const DisplaySchultzeResult: React.FC<DisplaySchultzeProps> = ( {
       <Table striped withColumnBorders>
         <thead>
           <tr>
-            <th style={{ width: "15%" }}> Rank </th>
+            <th style={{ width: "6rem" }}> Rank </th>
             <th> Candidate </th>
           </tr>
         </thead>
@@ -225,7 +243,103 @@ export const DisplaySchultzeResult: React.FC<DisplaySchultzeProps> = ( {
           </>)}
         </tbody>
       </Table>
+      
+      <br/>
+      <h3><Center>Voting data</Center></h3>
+      <DisplayVoteData 
+        ranking={ranking}
+        voteMatrix={voteMatrix}
+        votes={votes}
+        schultzeMatrix={schultzeMatrix}
+      />
     </>}
+
+  </>
+}
+
+interface DisplayVoteMatrixProps {
+  ranking: Candidate[],
+  voteMatrix: number[][],
+  schultzeMatrix: number[][],
+  votes: number,
+}
+
+const DisplayVoteData: React.FC<DisplayVoteMatrixProps> = (
+  { ranking, voteMatrix, votes, schultzeMatrix }
+) => {
+  const labels = ranking.map(( _, i ) => String.fromCharCode(65 + i));
+  const { classes } = useStyles();
+  const getBoxClass = (a: number, b: number): string => {
+    if (a < b) return classes.badBox;
+    if (b < a) return classes.goodBox;
+    return classes.neutralBox;
+  }
+
+  const DisplayMatrix: React.FC<{
+    matrix: number[][],
+    name: string,
+  }> = ({matrix , name}) => <>
+    <Table withColumnBorders withBorder>
+      <thead>
+        <tr>
+          <th style={{ width: "2rem" }}></th>
+          {labels.map((l) => <th style={{ width: "2rem" }}>
+            <Center> {name}[ &bull; , {l}] </Center>
+          </th>)}
+        </tr>
+      </thead>
+      <tbody>
+        {matrix.map((row, r) => <tr>
+          <td><b><Center> {name}[{labels[r]}, &bull; ] </Center></b></td>
+          {row.map((cell, c) => <td
+            className={ getBoxClass(matrix[r][c], matrix[c][r]) }
+          >
+            <Center> {
+              r == c ? "-" : cell
+            } </Center>
+          </td>)}
+        </tr>)}
+      </tbody>
+    </Table>
+  </>;
+
+  return <>
+    <b>Candidate index:</b>
+    <List style={{margin: "1rem"}}>
+      {ranking.map((c, i) => (
+        <List.Item icon={<Text fw={700}>{labels[i]} </Text>}>
+          {c.name} 
+        </List.Item>
+      ))}
+    </List>
+
+    <p><b> Total amount of votes: </b> {votes} </p>
+    
+    <h4><Text align="center" fw={700}>
+      Vote matrix
+    </Text></h4>
+    <DisplayMatrix matrix={voteMatrix} name="d" />
+    <br />
+    <Text align="center">
+      d[X, Y] is the amount of voters that prefer candidate X over candidate Y 
+    </Text>
+    
+    <br />
+    <h4><Text align="center" fw={700}>
+      Schultze result matrix
+    </Text></h4>
+    <DisplayMatrix matrix={schultzeMatrix} name="p" />
+    <br />
+    <Text align="center">
+      p[X, Y] is the strength of the strongest paths from candidate X to candidate Y
+    </Text>
+    <br />
+    <Text>For details regarding how to interpret these matrixes, please refer to 
+      the <a href="https://en.wikipedia.org/wiki/Schulze_method" target="_blank">
+        Schultze method wikipedia article
+      </a>,
+      or some other description of the method.
+    </Text>
 
   </>
 }
