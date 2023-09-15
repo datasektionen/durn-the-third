@@ -21,7 +21,7 @@ const Admin: React.FC = () => {
   );
 
   return <> {adminRead && <>
-    <Header title="Administrera val" action={{
+    <Header title="Administrate elections" action={{
       onClick: () => navigate("/admin/create"),
       text: "Create election"
     }} />

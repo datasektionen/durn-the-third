@@ -220,7 +220,7 @@ const EditElection: React.FC = () => {
     }).catch((error) => {
       setError("Failed to count votes: " + error);
     });
-  }, [authHeader, electionId])
+  }, [authHeader, electionId]);
 
   const deleteElection = useCallback(() => {
     axios.post(`/api/election/${electionId}/delete`, {}, {
@@ -305,25 +305,24 @@ const EditElection: React.FC = () => {
                 </Text>
               </Button>
             }
-            {electionData.finalized &&
+            {electionData.finalized && <>
               <Button
                 fullWidth className={classes.button}
                 onClick={countVotes}
               >
                 <Text fw={700} size="xl" >
-                  Count votes
+                  Show vote count
                 </Text>
               </Button>
-            }
+            </>}
           </Grid.Col>
           <Grid.Col span={12}>
             <Button color="red" fullWidth onClick={openDeleteModal}>
               <Text fw={700} size="xl">
-                Delete Election
+                Delete election
               </Text>
             </Button>
           </Grid.Col>
-
         </Grid>
         
         <Modal opened={deleteModalOpen} onClose={closeDeleteModal} centered
