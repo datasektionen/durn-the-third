@@ -76,52 +76,7 @@ export const AdminElectionView: React.FC<AdminElectionViewProps> = ({
 
       <form onSubmit={onSubmit}>
         <Grid>
-          <Grid.Col md={3}>
-            <div style={{ marginBottom: "3rem" }} >
-              <Text align="center" size="lg" color="gray.7" fw={700}>
-                Election starts
-              </Text>
-              <DateTimeInput
-                onChange={onOpenTimeChanged}
-                defaultDate={openTimeDefault}
-              />
-            </div>
-
-            <div style={{ marginBottom: "2rem" }} >
-              <Text align="center" size="lg" color="gray.7" fw={700}>
-                Election ends
-              </Text>
-              <DateTimeInput
-                onChange={onCloseTimeChanged}
-                defaultDate={closeTimeDefault}
-              />
-            </div>
-
-            <div style={{ marginBottom: "2rem" }} >
-              <Text align="center" size="lg" color="gray.7" fw={700}>
-                Mandates
-              </Text>
-              <NumberInput width="3rem"
-                {...electionForm.getInputProps("mandates")}
-                min={1}
-              />
-            </div>
-
-            <div style={{ marginBottom: "2rem" }} >
-              <Text align="center" size="lg" color="gray.7" fw={700}>
-                Secondary mandates
-              </Text>
-              <NumberInput
-                {...electionForm.getInputProps("extraMandates")}
-                min={0}
-              />
-
-            </div>
-          </Grid.Col>
-
-
-          <Grid.Col md={9}>
-
+          <Grid.Col md={12}>
             <TextInput
               // class={failed ? classes.failed : "2"}
               placeholder="Election title"

@@ -168,11 +168,11 @@ export const Voting: React.FC<VotingProps> = ({
   }] = useDisclosure(false);
 
   const hasOpened = useMemo(() => (
-    (election.openTime ? dayjs(Date.now()).isAfter(election.openTime) : false)
+    (election.openTime ? dayjs(Date.now()).isAfter(election.openTime) : true)
   ), [election.openTime]);
 
   const hasClosed = useMemo(() => (
-    (election.closeTime ? dayjs(Date.now()).isAfter(election.closeTime) : true)
+    (election.closeTime ? dayjs(Date.now()).isAfter(election.closeTime) : false)
   ), [election.closeTime]);
 
   const disabled = useMemo(() => (
@@ -396,8 +396,8 @@ const DraggableCandidate: React.FC<DraggableCandidateProps> = ({
               </Text> </div>
             </div>
             {candidate.presentation != "" && !candidate.symbolic ?
-              <div style={{ whiteSpace: "nowrap", marginLeft: "0.5rem" }}> <span>
-                <a href={candidate.presentation} target="_blank"> Presentation </a>
+              <div style={{ whiteSpace: "nowrap", marginLeft: "0.5rem" }}> <span style={{ color: '#757575' }}>
+                {candidate.presentation}
               </span> </div> : <></>}
           </div>
         </div>
