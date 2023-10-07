@@ -25,6 +25,7 @@ The system uses the following permissions in pls:
 | `LOGIN_URL` | `https://login.datasektionen.se` | url for the login system and API |
 | `LOGIN_KEY` | | API-key for the login system |
 | `PLS_URL` | `https://pls.datasektionen.se` | url for the permissions system pls |
+| `PLS_SYSTEM_NAME` | `durn` | the system to check for permissions in pls |
 | `DATABASE_URL` | | postgres-url for connecting to the database instance |
 
 

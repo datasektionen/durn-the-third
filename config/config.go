@@ -10,11 +10,12 @@ import (
 )
 
 type Config struct {
-	HOST      string
-	PORT      int
-	LOGIN_URL string
-	LOGIN_KEY string
-	PLS_URL   string
+	HOST            string
+	PORT            int
+	LOGIN_URL       string
+	LOGIN_KEY       string
+	PLS_URL         string
+	PLS_SYSTEM_NAME string
 
 	DATABASE_URL string
 }
@@ -53,11 +54,12 @@ func GetConfig() *Config {
 	}
 
 	conf = Config{
-		HOST:      loadStringEnv("HOST", "https://localhost.datasektionen.se"),
-		PORT:      loadIntEnv("PORT", 3000),
-		LOGIN_URL: loadStringEnv("LOGIN_URL", "https://login.datasektionen.se"),
-		LOGIN_KEY: loadStringEnv("LOGIN_KEY", ""),
-		PLS_URL:   loadStringEnv("PLS_URL", "https://pls.datasektionen.se"),
+		HOST:            loadStringEnv("HOST", "https://localhost.datasektionen.se"),
+		PORT:            loadIntEnv("PORT", 3000),
+		LOGIN_URL:       loadStringEnv("LOGIN_URL", "https://login.datasektionen.se"),
+		LOGIN_KEY:       loadStringEnv("LOGIN_KEY", ""),
+		PLS_URL:         loadStringEnv("PLS_URL", "https://pls.datasektionen.se"),
+		PLS_SYSTEM_NAME: loadStringEnv("PLS_SYSTEM_NAME", "durn"),
 
 		DATABASE_URL: loadStringEnv("DATABASE_URL", ""),
 	}
