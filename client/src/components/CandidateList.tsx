@@ -71,7 +71,7 @@ export const CandidateList: React.FC<CandidateListProps> = (
       <td>
         <TextInput 
           value={presentation} 
-          placeholder="link to candidate presentation"
+          placeholder="description (optional)"
           onChange={(element) => setPresentation(element.target.value)}
         />
       </td>
@@ -113,7 +113,7 @@ export const CandidateList: React.FC<CandidateListProps> = (
             </th>
             <th>
               <Text style={{ margin: "1rem" }} align="center" fw={700}>
-                Candidate presentation
+                Description
               </Text>
             </th>
           </tr>
