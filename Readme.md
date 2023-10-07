@@ -1,6 +1,6 @@
 # dUrn - the voting system
 
-This is a implementation of a voting system for the Computer Science Chapter, with a backend written in golang and a frontend written in Typescript React. 
+This is a implementation of a voting system for the Computer Science Chapter, with a backend written in golang and a frontend written in Typescript React.
 
 
 
@@ -25,7 +25,7 @@ The system uses the following permissions in pls:
 | `LOGIN_URL` | `https://login.datasektionen.se` | url for the login system and API |
 | `LOGIN_KEY` | | API-key for the login system |
 | `PLS_URL` | `https://pls.datasektionen.se` | url for the permissions system pls |
-| `DATABASE_URL` | | postgres-url for connecting to the database instance | 
+| `DATABASE_URL` | | postgres-url for connecting to the database instance |
 
 
 ## How to run
@@ -44,4 +44,4 @@ The system uses the following permissions in pls:
 2. Setup environment variables
 3. Run `make prod` in root
 
-The system also has a `dockerfile` setup for deployment. 
+The system also has a `dockerfile` setup for deployment.
