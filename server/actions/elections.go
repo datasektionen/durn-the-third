@@ -82,21 +82,21 @@ func CreateElection(c *gin.Context) {
 		Published:     false,
 		Finalized:     false,
 	}
-	vacant := database.Candidate{
-		ID:           uuid.NewV4(),
-		Name:         util.VacantCandidate,
-		Presentation: "",
-		ElectionID:   election.ID,
-		Symbolic:     true,
-	}
+	// vacant := database.Candidate{
+	// 	ID:           uuid.NewV4(),
+	// 	Name:         util.VacantCandidate,
+	// 	Presentation: "",
+	// 	ElectionID:   election.ID,
+	// 	Symbolic:     true,
+	// }
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
 		if err := db.Create(&election).Error; err != nil {
 			return err
 		}
-		if err := db.Create(&vacant).Error; err != nil {
-			return err
-		}
+		// if err := db.Create(&vacant).Error; err != nil {
+		// 	return err
+		// }
 		return nil
 	}); err != nil {
 		fmt.Println(err)
@@ -389,10 +389,6 @@ func AddCandidate(c *gin.Context) {
 		c.String(http.StatusBadRequest, util.BadParameters)
 		return
 	}
-	if body.Name == util.BlankCandidate || body.Name == util.VacantCandidate {
-		c.String(http.StatusBadRequest, fmt.Sprintf("'%s' is a reserved candidate name", body.Name))
-		return
-	}
 
 	db := database.GetDB()
 	defer database.ReleaseDB()
@@ -424,7 +420,7 @@ func AddCandidate(c *gin.Context) {
 		Name:         body.Name,
 		Presentation: body.Presentation,
 		ElectionID:   electionId,
-		Symbolic:     false,
+		Symbolic:     body.Name == util.BlankCandidate || body.Name == util.VacantCandidate,
 	}
 	if err := db.Create(&candidate).Error; err != nil {
 		fmt.Println(err)
