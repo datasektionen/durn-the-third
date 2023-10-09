@@ -87,19 +87,21 @@ export const DisplayElectionInfo: React.FC<DisplayElectionInfoProps> = (
       <div className={classes.electionTitle}>
         <h3 className={classes.electionTitle}>{election.name}</h3>
       </div>
-     // <p className={classes.electionDescription}>
-     //   {election.description}
-     // </p>
-     // <p className={classes.candidateText}>
-     //   <b>{election.candidates.filter((c) => !c.symbolic).length}</b> Candidates
-     // </p>
-     // <p className={classes.candidateText}>
-     //   <b>{election.mandates}</b> Mandates
-     // </p>
-     // {election.extraMandates > 0 &&
-     //   <p className={classes.candidateText}>
-     //     <b>{election.extraMandates}</b> Secondary mandates
-     //   </p> }
+      {/*
+      <p className={classes.electionDescription}>
+        {election.description}
+      </p>
+      <p className={classes.candidateText}>
+        <b>{election.candidates.filter((c) => !c.symbolic).length}</b> Candidates
+      </p>
+      <p className={classes.candidateText}>
+        <b>{election.mandates}</b> Mandates
+      </p>
+      {election.extraMandates > 0 &&
+        <p className={classes.candidateText}>
+          <b>{election.extraMandates}</b> Secondary mandates
+        </p> }
+      */}
     </div>
   </>
 }
