@@ -285,7 +285,7 @@ export const Voting: React.FC<VotingProps> = ({
       <div className={classes.votingDisabledInfo}>
         
         {(election.finalized || (hasClosed && hasOpened)) &&
-          <p> Du kan inte längre rösta i denna omrösstning. </p>
+          <p> Du kan inte längre rösta i denna omröstning. </p>
         }
 
         {!mayVote && !hasVoted &&
