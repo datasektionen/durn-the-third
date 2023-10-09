@@ -31,30 +31,27 @@ const Info: React.FC = () => {
   const { classes, cx } = useStyles()
   return <div className={cx(constants.themeColor, "lighten-4", classes.infoBox)}>
 
-    <h4><b>What is an urnval?</b></h4>
+    <h4><b>Vad är smUrn?</b></h4>
     <p>
-      An urnval is a kind of election where you can vote ahead of time, and where voting is done through a ranking of all candidates. <br />
-      In Datasektionen, we use urnval for the posts: "Ordförande", "Vice Ordförande", "Kassör" and "Kårfullmäktige". <br />
-      More information about the posts can be found at <a href="https://dfunkt.datasektionen.se">dfunkt.datasektionen.se</a>.
+      smUrn är ett digitalt omröstningssystem som är baserat på sektionens system för digitala urnval, dUrn.
+      Systemet är primärt ämnat för användning under SM, därav namnet.
+    </p>
+  
+    <h4><b>Hur röstar jag?</b></h4>
+    <p>
+      Klicka på en tillgänglig omröstning, rangordna dina val och klicka på "Rösta"
     </p>
 
-    <h4><b>How do I vote?</b></h4>
+    <h4><b>Frågor eller tekniska problem?</b></h4>
+
     <p>
-      Click on one of the open elections, rank the candidates in your preferred order, and press "Vote".
+      Kontakta Styrelsen (<a href="mailto:drek@datasektionen.se">drek@datasektionen.se</a>)
+      eller Systemansvarig (<a href="mailto:d-sys@datasektionen.se">d-sys@datasektionen.se</a>)
     </p>
 
-    <h4><b>Questions or technical problems?</b></h4>
-
+    <h4><b>Källkod och övrig information</b></h4>
     <p>
-      Contact the Election Committee (<a href="mailto:valberedningen@datasektionen.se">valberedningen@datasektionen.se</a>)
-      or the System Administrator (<a href="mailto:d-sys@datasektionen.se">d-sys@datasektionen.se</a>)
-    </p>
-
-    <h4>Source Code and other Information</h4>
-    <p>
-      In order for the vote counting system to be as transparent as possible, the full source code 
-      is available at <a href="https://github.com/datasektionen/durn-the-third">github</a>. The system and vote counting is
-      also described at the <a href="/info">info page</a>
+      Källkoden finns tillgänglig på en branch på <a href="https://github.com/datasektionen/durn-the-third">github</a>. Mer information går att finna på <a href="/#/info">infosidan</a>
     </p>
   </div>
 }
@@ -68,14 +65,14 @@ export const Home: React.FC = () => {
   );
 
   return (<>
-    <Header title="dUrn - digitala urnval" />
+    <Header title="smUrn - digitala omröstningar" />
     
     <div style={{marginTop: "2rem"}}>
       <Container my="md">
         {!loggedIn &&
           <Center>
             <p className={cx(constants.themeColor, "lighten-4", classes.alertBox)}>
-              Log in to see all open elections.
+              Logga in för att se alla tillgängliga omröstningar.
             </p>
           </Center>
         }
@@ -88,7 +85,7 @@ export const Home: React.FC = () => {
             {elections.filter((e) => !e.finalized).length == 0 && 
               <Center>
                 <p className={cx(constants.themeColor, "lighten-4", classes.alertBox)}>
-                  There are currently no open urnval.
+                  Det finns inga tillgängliga omröstningar.
                 </p>
               </Center>}
             <Grid> 

@@ -120,9 +120,8 @@ const InfoBox: React.FC = () => {
 
   return <div className={cx(constants.themeColor, "lighten-4", classes.info)}>
     <p>
-      Rank the the candidates in your preferred order. <br/> <br/>
-      Note that the ordering of the candidates that are ranked below <i>Vakant</i> is taken into account. <br/><br/>
-      Once your vote is submitted, you won't be able to change it.
+      Sätt det alternativ du vill rösta på överst. <br/> <br/>
+      Du kan inte ändra din röst när du väl röstat.
     </p>
   </div>
 }
@@ -286,24 +285,24 @@ export const Voting: React.FC<VotingProps> = ({
       <div className={classes.votingDisabledInfo}>
         
         {(election.finalized || (hasClosed && hasOpened)) &&
-          <p> It is no longer possible to vote in this election. </p>
+          <p> Du kan inte längre rösta i denna omröstning. </p>
         }
 
         {!mayVote && !hasVoted &&
           <p>
-            You don't have the right to vote in this election<br/>
-            Contact the Election Committee if you are a member that should have this right.<br/>
-            (<a href="mailto:valberedningen@datasektionen.se">valberedningen@datasektionen.se</a>) 
+            Du saknar rättigheten att rösta i denna omröstning<br/>
+            Kontakta styreslen om du tror att något är fel.<br/>
+            (<a href="mailto:drek@datasektionen.se">drek@datasektionen.se</a>) 
             
           </p>
         }
 
         {!election.finalized &&  !hasOpened && mayVote &&
-          <p>This election hasn't been opened yet.</p>
+          <p>Omröstningen är inte öppen ännu.</p>
         }
 
         {!(election.finalized ||  hasClosed || !hasOpened) && hasVoted &&
-          <p>You've already voted in this election.</p>
+          <p>Du har redan röstat i denna omröstning.</p>
         }
       </div>
     }
@@ -321,16 +320,16 @@ export const Voting: React.FC<VotingProps> = ({
 
     <Modal opened={voteModalOpen} onClose={closeVoteModal} centered title="Submit vote">
       <Text>
-        Are you sure you want to submit your vote? It can't be changed once submitted.
+        Är du säker på att du vill rösta? Du kan inte ändra din röst när du väl röstat.
       </Text>
       <Button disabled={disabled} onClick={submitVote} fullWidth>
-        Vote
+        Rösta
       </Button>
     </Modal>
 
     <div className={classes.flexRow} style={{marginBottom:"1rem"}}>
       <Button disabled={disabled} onClick={openVoteModal} fullWidth>
-        Vote
+        Rösta
       </Button>
     </div>
 

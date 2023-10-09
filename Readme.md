@@ -1,6 +1,6 @@
-# dUrn - the voting system
+# smUrn - Digitala omröstningar
 
-This is a implementation of a voting system for the Computer Science Chapter, with a backend written in golang and a frontend written in Typescript React.
+This is a implementation of another voting system for the Computer Science Chapter, with a backend written in golang and a frontend written in Typescript React.
 
 
 
