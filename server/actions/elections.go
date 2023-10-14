@@ -91,10 +91,10 @@ func CreateElection(c *gin.Context) {
 	// }
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
-		if err := db.Create(&election).Error; err != nil {
+		if err := tx.Create(&election).Error; err != nil {
 			return err
 		}
-		// if err := db.Create(&vacant).Error; err != nil {
+		// if err := tx.Create(&vacant).Error; err != nil {
 		// 	return err
 		// }
 		return nil
