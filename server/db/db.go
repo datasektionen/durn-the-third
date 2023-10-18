@@ -3,7 +3,6 @@ package db
 import (
 	"fmt"
 	"os"
-	"sync"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -12,7 +11,6 @@ import (
 )
 
 var db *gorm.DB
-var m sync.Mutex
 
 func InitDB() {
 	c := config.GetConfig()
@@ -33,12 +31,7 @@ func InitDB() {
 }
 
 func GetDB() *gorm.DB {
-	m.Lock()
 	return db
-}
-
-func ReleaseDB() {
-	m.Unlock()
 }
 
 // ReorderRows shuffles the rows in the specified table
