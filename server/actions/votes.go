@@ -125,12 +125,12 @@ func CastVote(c *gin.Context) {
 	// by correlating positions in the database tables.
 	// Raises the time complexity of the vote operation a lot, but should be
 	// fine for the amount of traffic expected for this system.
-	if err := database.ReorderRows(db, "casted_votes"); err != nil {
-		fmt.Println("Database failed to shuffle table casted_votes")
-	}
-	if err := database.ReorderRows(db, "vote_hashes"); err != nil {
-		fmt.Println("Database failed to shuffle table vote_hashes")
-	}
+	// if err := database.ReorderRows(db, "casted_votes"); err != nil {
+	// 	fmt.Println("Database failed to shuffle table casted_votes")
+	// }
+	// if err := database.ReorderRows(db, "vote_hashes"); err != nil {
+	// 	fmt.Println("Database failed to shuffle table vote_hashes")
+	// }
 
 	c.String(http.StatusOK, hash)
 }
