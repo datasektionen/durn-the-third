@@ -32,12 +32,12 @@ func CastVote(c *gin.Context) {
 
 	if err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.BadUUID)
+		c.String(http.StatusBadRequest, util.BadUUIDMessage)
 		return
 	}
 	if err := c.BindJSON(&body); err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.BadParameters)
+		c.String(http.StatusBadRequest, util.BadParametersMessage)
 		return
 	}
 
@@ -60,7 +60,7 @@ func CastVote(c *gin.Context) {
 	election := database.Election{ID: electionId}
 	if err := db.Preload("Candidates").First(&election).Error; err != nil { // Information should not be leaked if elections is not public
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.InvalidElection)
+		c.String(http.StatusBadRequest, util.InvalidElectionMessage)
 		return
 	}
 	if election.Finalized || !util.TimeIsInValidInterval(
@@ -118,7 +118,7 @@ func CastVote(c *gin.Context) {
 		return nil
 	}); err != nil {
 		fmt.Println(err)
-		c.String(http.StatusInternalServerError, util.RequestFailed)
+		c.String(http.StatusInternalServerError, util.RequestFailedMessage)
 		return
 	}
 
@@ -142,7 +142,7 @@ func GetVotes(c *gin.Context) {
 	electionId, err := uuid.FromString(c.Param("id"))
 	if err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.BadUUID)
+		c.String(http.StatusBadRequest, util.BadUUIDMessage)
 		return
 	}
 
@@ -152,7 +152,7 @@ func GetVotes(c *gin.Context) {
 	var votes []database.Vote
 	if err := db.Preload("Rankings").Find(&votes, "election_id = ?", electionId).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusInternalServerError, util.RequestFailed)
+		c.String(http.StatusInternalServerError, util.RequestFailedMessage)
 		return
 	}
 
@@ -190,7 +190,7 @@ func CountVotes(c *gin.Context) {
 	electionId, err := uuid.FromString(c.Param("id"))
 	if err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.BadUUID)
+		c.String(http.StatusBadRequest, util.BadUUIDMessage)
 		return
 	}
 
@@ -198,7 +198,7 @@ func CountVotes(c *gin.Context) {
 	election := database.Election{ID: electionId}
 	if err := db.Preload("Votes.Rankings").Preload("Candidates").First(&election).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.InvalidElection)
+		c.String(http.StatusBadRequest, util.InvalidElectionMessage)
 		return
 	}
 	database.ReleaseDB()
@@ -301,7 +301,7 @@ func CountVotesSchultze(c *gin.Context) {
 	electionId, err := uuid.FromString(c.Param("id"))
 	if err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.BadUUID)
+		c.String(http.StatusBadRequest, util.BadUUIDMessage)
 		return
 	}
 
@@ -309,7 +309,7 @@ func CountVotesSchultze(c *gin.Context) {
 	election := database.Election{ID: electionId}
 	if err := db.Preload("Votes.Rankings").Preload("Candidates").First(&election).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.InvalidElection)
+		c.String(http.StatusBadRequest, util.InvalidElectionMessage)
 		return
 	}
 	database.ReleaseDB()
@@ -417,7 +417,7 @@ func GetHashes(c *gin.Context) {
 	var hashes []database.VoteHash
 	if err := db.Find(&hashes).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusInternalServerError, util.RequestFailed)
+		c.String(http.StatusInternalServerError, util.RequestFailedMessage)
 		return
 	}
 	var response []string
@@ -434,7 +434,7 @@ func HasVoted(c *gin.Context) {
 	electionId, err := uuid.FromString(c.Param("id"))
 	if err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.BadUUID)
+		c.String(http.StatusBadRequest, util.BadUUIDMessage)
 		return
 	}
 	user := c.GetString("user")
