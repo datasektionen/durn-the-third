@@ -54,7 +54,7 @@ const Info: React.FC = () => {
     <p>
       In order for the vote counting system to be as transparent as possible, the full source code 
       is available at <a href="https://github.com/datasektionen/durn-the-third">github</a>. The system and vote counting is
-      also described at the <a href="/info">info page</a>
+      also described at the <a href="#/info">info page</a>
     </p>
   </div>
 }
