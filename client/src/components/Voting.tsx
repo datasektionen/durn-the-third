@@ -152,11 +152,11 @@ export const Voting: React.FC<VotingProps> = ({
 
   const { classes } = useStyles();
   const [displayIndex, setDisplayIndex] = useState<Map<string, string>>(new Map<string, string>());
-  // const [hasVoted, setHasVoted] = useState(false)
-  const [hasVoted, loadingHasVoted, errorHasVoted] = useAPIData(
-    `/api/election/${election.id}/has-voted`,
-    (data) => z.boolean().parseAsync(data)
-  );
+  const [hasVoted, setHasVoted] = useState(false)
+  // const [hasVoted, loadingHasVoted, errorHasVoted] = useAPIData(
+  //   `/api/election/${election.id}/has-voted`,
+  //   (data) => z.boolean().parseAsync(data)
+  // );
   const [mayVote, setMayVote] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { authHeader } = useAuthorization();

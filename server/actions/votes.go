@@ -20,6 +20,7 @@ import (
 // CastVote submits a vote for the logged in user to the database.
 // Validates that the user has the right to vote and that it is
 // possible to vote in the election at the time of the request.
+// If the user already has a vote, it is replaced
 func CastVote(c *gin.Context) {
 	body := struct {
 		Secret  string      `json:"secret"`
@@ -41,11 +42,14 @@ func CastVote(c *gin.Context) {
 		return
 	}
 
-	user := c.GetString("user")
+	userEmail := c.GetString("user")
+	userHash := util.GetVoteHash(userEmail, electionId)
+
 	vote := database.Vote{
 		ID:         uuid.NewV4(),
 		VoteTime:   time.Now(),
 		ElectionID: electionId,
+		UserHash:   userHash,
 	}
 
 	var hash string
@@ -53,41 +57,61 @@ func CastVote(c *gin.Context) {
 	db := database.GetDB()
 	defer database.ReleaseDB()
 
+	election := database.Election{ID: electionId}
+
 	// Validation section
 	// Check that election is open for voting, that the user hasn't voted already,
 	// that all candidates are accounted for the vote, and that no extra candidates
 	// (or invalid ones) are included
-	election := database.Election{ID: electionId}
-	if err := db.Preload("Candidates").First(&election).Error; err != nil { // Information should not be leaked if elections is not public
-		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.InvalidElectionMessage)
-		return
-	}
-	if election.Finalized || !util.TimeIsInValidInterval(
-		vote.VoteTime, election.OpenTime, election.CloseTime,
-	) {
-		c.String(http.StatusBadRequest, "Voting is not open for the specified election")
-		return
-	}
-	if db.Find(&database.CastedVote{ElectionID: electionId, Email: user}).RowsAffected > 0 {
-		c.String(http.StatusBadRequest, "User has already voted")
-		return
-	}
-
-	var electionCandidates []uuid.UUID
-	for _, candidate := range election.Candidates {
-		electionCandidates = append(electionCandidates, candidate.ID)
-	}
-	if !util.SameSet(electionCandidates, body.Ranking) {
-		c.String(http.StatusBadRequest, "Missing or invalid candidates in vote")
-		return
+	{
+		if err := db.Preload("Candidates").First(&election).Error; err != nil { // Information should not be leaked if elections is not public
+			fmt.Println(err)
+			c.String(http.StatusBadRequest, util.InvalidElectionMessage)
+			return
+		}
+		if election.Finalized || !util.TimeIsInValidInterval(
+			vote.VoteTime, election.OpenTime, election.CloseTime,
+		) {
+			c.String(http.StatusBadRequest, "Voting is not open for the specified election")
+			return
+		}
+		// feature-change: allow changing vote
+		// if db.Find(&database.CastedVote{ElectionID: electionId, Email: user}).RowsAffected > 0 {
+		// 	c.String(http.StatusBadRequest, "User has already voted")
+		// 	return
+		// }
+		var electionCandidates []uuid.UUID
+		for _, candidate := range election.Candidates {
+			electionCandidates = append(electionCandidates, candidate.ID)
+		}
+		if !util.SameSet(electionCandidates, body.Ranking) {
+			c.String(http.StatusBadRequest, "Missing or invalid candidates in vote")
+			return
+		}
 	}
 
 	// Insertion section
 	if err := db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Create(&vote).Error; err != nil {
-			return err
+
+		existingVote := &database.Vote{}
+		if err := tx.Where("user_hash", userHash).First(&existingVote).Error; err != nil { // this throws an error in the log, which is intended, but not nice
+
+			if err := tx.Create(&vote).Error; err != nil {
+				return err
+			}
+
+			if err := tx.Create(&database.CastedVote{
+				Email:      userEmail,
+				ElectionID: electionId,
+			}).Error; err != nil {
+				return err
+			}
+
+		} else {
+			vote = *existingVote
+			tx.Delete(&database.Ranking{}, "vote_id", vote.ID)
 		}
+
 		for rank, candidateID := range body.Ranking {
 			ranking := database.Ranking{
 				VoteID:      vote.ID,
@@ -102,12 +126,6 @@ func CastVote(c *gin.Context) {
 
 		// hash = calculateVoteHash(&vote, user, body.Secret)
 
-		if err := tx.Create(&database.CastedVote{
-			Email:      user,
-			ElectionID: electionId,
-		}).Error; err != nil {
-			return err
-		}
 		// if err := tx.Create(&database.VoteHash{
 		// 	Hash:       hash,
 		// 	ElectionID: electionId,
