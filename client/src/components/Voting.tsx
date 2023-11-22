@@ -382,6 +382,9 @@ export const Voting: React.FC<VotingProps> = ({
           </Text>
         ))}
       </div>
+      <Button onClick={() => window.location.assign("/")} fullWidth>
+        Go back to homepage
+      </Button>
     </Modal>
   
     {(loadingHasVoted || submitVoteLoading) && <Center style={{margin: "1rem"}}>
