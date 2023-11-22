@@ -40,7 +40,7 @@ const Info: React.FC = () => {
 
         <h3>Why can't my vote be changed after voting?</h3>
         <p>
-          This is not true anymore, it is not possible to change your vote.
+          This is not true anymore, it is now possible to change your vote.
         </p>
 
         {/* <p>
