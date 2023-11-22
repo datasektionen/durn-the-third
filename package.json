@@ -1,12 +1,15 @@
 {
   "name": "durn-client",
   "version": "1.0.0",
-  "description": "frontent for durn",
+  "description": "frontend for durn",
   "main": "index.js",
   "author": "Herman Karlsson",
   "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
-    "dev": "cross-env NODE_ENV=development NODE_OPTIONS=--openssl-legacy-provider webpack-dev-server --config ./client/webpack.config.js --disable-host-check",
+    "dev": "cross-env NODE_ENV=development webpack-dev-server --config ./client/webpack.config.js --disable-host-check",
     "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider NODE_ENV=production webpack --config ./client/webpack.config.js ",
     "start": "serve dist"
   },

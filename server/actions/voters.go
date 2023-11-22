@@ -22,7 +22,7 @@ func AddVoters(c *gin.Context) {
 
 	if err := c.BindJSON(&body); err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.BadParameters)
+		c.String(http.StatusBadRequest, util.BadParametersMessage)
 		return
 	}
 
@@ -38,14 +38,14 @@ func AddVoters(c *gin.Context) {
 
 	if err := db.Clauses(clause.OnConflict{DoNothing: true}).Create(&voters).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusInternalServerError, util.RequestFailed)
+		c.String(http.StatusInternalServerError, util.RequestFailedMessage)
 		return
 	}
 
 	result, err := getAllVoters(db)
 	if err != nil {
 		fmt.Println(err)
-		c.String(http.StatusInternalServerError, util.RequestFailed)
+		c.String(http.StatusInternalServerError, util.RequestFailedMessage)
 		return
 	}
 	c.JSON(http.StatusOK, result)
@@ -60,7 +60,7 @@ func RemoveVoters(c *gin.Context) {
 
 	if err := c.BindJSON(&body); err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.BadParameters)
+		c.String(http.StatusBadRequest, util.BadParametersMessage)
 		return
 	}
 
@@ -74,14 +74,14 @@ func RemoveVoters(c *gin.Context) {
 
 	if err := db.Delete(&voters).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusInternalServerError, util.RequestFailed)
+		c.String(http.StatusInternalServerError, util.RequestFailedMessage)
 		return
 	}
 
 	result, err := getAllVoters(db)
 	if err != nil {
 		fmt.Println(err)
-		c.String(http.StatusInternalServerError, util.RequestFailed)
+		c.String(http.StatusInternalServerError, util.RequestFailedMessage)
 		return
 	}
 	c.JSON(http.StatusOK, result)
@@ -95,7 +95,7 @@ func GetVoters(c *gin.Context) {
 	result, err := getAllVoters(db)
 	if err != nil {
 		fmt.Println(err)
-		c.String(http.StatusInternalServerError, util.RequestFailed)
+		c.String(http.StatusInternalServerError, util.RequestFailedMessage)
 		return
 	}
 	c.JSON(http.StatusOK, result)

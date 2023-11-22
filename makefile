@@ -1,6 +1,5 @@
 .PHONY: dev
 
-
 dev: init build #run
 
 prod: init build run-server
@@ -17,7 +16,6 @@ init-server:
 
 init-client:
 	npm install
-
 
 build: build-server build-client
 

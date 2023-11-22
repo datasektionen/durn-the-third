@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
 import { DragDropContext, Droppable, Draggable, DropResult, DragUpdate } from 'react-beautiful-dnd'
-import { Selector } from 'tabler-icons-react'
+import { Selector, Tex } from 'tabler-icons-react'
 import { useForm } from "@mantine/form"
 import { useDisclosure, useListState } from "@mantine/hooks";
 import { Button, Center, createStyles, Grid, TextInput, Text, Modal } from "@mantine/core";
@@ -11,10 +11,11 @@ import { Candidate, Election } from "../util/ElectionTypes";
 import useAuthorization from "../hooks/useAuthorization";
 import constants from "../util/constants";
 import { compareList } from "../util/funcs";
-import { Error } from "./Loading";
+import Loading, { Error } from "./Loading";
 import dayjs from "dayjs";
 import { useAPIData } from "../hooks/useAxios";
 import { z } from "zod";
+import { redirect } from "react-router-dom";
 
 interface candidateInfo {
   id: string,
@@ -113,6 +114,23 @@ const useStyles = createStyles((theme) => ({
     borderRadius: "0.6rem",
     backgroundColor: "#ffcccb"
   },
+
+  candidate: {
+    margin: "1rem",
+    padding: "0.5rem",
+    paddingTop: "0.7rem",
+    backgroundColor: theme.colors.gray[1],
+    borderRadius: "0.5rem",
+    boxShadow: "1px 1px 1px 1px rgba(0,0,0,0.15)",
+  },
+
+  hasVotedInfo: {
+    padding: "1rem",
+    paddingBottom: "0.5rem",
+    marginBottom: "1rem",
+    borderRadius: "0.5rem",
+    backgroundColor: "rgb(255, 250, 160)",
+  }
 }));
 
 const InfoBox: React.FC = () => {
@@ -122,7 +140,7 @@ const InfoBox: React.FC = () => {
     <p>
       Rank the the candidates in your preferred order. <br/> <br/>
       Note that the ordering of the candidates that are ranked below <i>Vakant</i> is taken into account. <br/><br/>
-      Once your vote is submitted, you won't be able to change it.
+      You will be able to change your vote once it is submitted
     </p>
   </div>
 }
@@ -150,7 +168,7 @@ export const Voting: React.FC<VotingProps> = ({
     return compareList(aKey, bKey)
   }));
 
-  const { classes } = useStyles();
+  const { classes, cx } = useStyles();
   const [displayIndex, setDisplayIndex] = useState<Map<string, string>>(new Map<string, string>());
   // const [hasVoted, setHasVoted] = useState(false)
   const [hasVoted, loadingHasVoted, errorHasVoted] = useAPIData(
@@ -161,10 +179,17 @@ export const Voting: React.FC<VotingProps> = ({
   const [error, setError] = useState<string | null>(null);
   const { authHeader } = useAuthorization();
   const [unathorized, setUnathorized] = useState(false);
+  const [submittedVoteOrder, setSubmittedVoteOrder] = useState<Candidate[]>([]);
+  const [submitVoteLoading, setSubmitVoteLoading] = useState<boolean>(false);
 
   const [voteModalOpen, {
     open: openVoteModal,
     close: closeVoteModal
+  }] = useDisclosure(false);
+  
+  const [successfulModalOpen, {
+    open: openSuccessfulModal,
+    close: closeSuccessfulModal
   }] = useDisclosure(false);
 
   const hasOpened = useMemo(() => (
@@ -176,14 +201,16 @@ export const Voting: React.FC<VotingProps> = ({
   ), [election.closeTime]);
 
   const disabled = useMemo(() => (
-    hasVoted || election.finalized || !hasOpened || hasClosed || !mayVote
-  ), [hasVoted, hasOpened, hasClosed, mayVote]);
+    election.finalized || !hasOpened || hasClosed || !mayVote || loadingHasVoted || submitVoteLoading
+  ), [hasVoted, hasOpened, hasClosed, mayVote, loadingHasVoted, submitVoteLoading]);
 
   const updateDisplayIndex = useCallback((indexes: Map<string, number>) => {
     let firstSymbolic = voteOrder.length;
+
     // voteOrder.forEach((candidate) => {
     //   if (candidate.symbolic) firstSymbolic = Math.min(firstSymbolic, indexes.get(candidate.id) ?? firstSymbolic)
     // })
+
     setDisplayIndex(new Map(voteOrder.map((candidate) => {
       let index = indexes.get(candidate.id) ?? 0
       return [candidate.id, `${firstSymbolic < index ? "-" : index + 1}`]
@@ -214,21 +241,28 @@ export const Voting: React.FC<VotingProps> = ({
   }, [voteOrderHandlers]);
 
   const submitVote = useCallback(() => {
+    setSubmittedVoteOrder(voteOrder);
+    setSubmitVoteLoading(true);
+
     axios.post(`/api/election/${election.id}/vote`, {
       secret: "",
       ranking: voteOrder.map((c) => c.id)
     }, {
       headers: authHeader
     }).then(({ data }) => {
-      window.location.reload();
+      openSuccessfulModal();
+      setSubmitVoteLoading(false);
     }).catch(( {response} ) => {
       console.log(response);
       if (response.status == 401) {
         setUnathorized(true);
       }
       setError(response.data);
+      setSubmitVoteLoading(false);
     });
-    closeVoteModal();
+
+    // closeVoteModal();
+
   }, [voteOrder, authHeader])
 
   useEffect(() => {
@@ -282,7 +316,7 @@ export const Voting: React.FC<VotingProps> = ({
 
     <InfoBox />
 
-    {disabled &&
+    {disabled && !loadingHasVoted && !submitVoteLoading &&
       <div className={classes.votingDisabledInfo}>
         
         {(election.finalized || (hasClosed && hasOpened)) &&
@@ -302,9 +336,18 @@ export const Voting: React.FC<VotingProps> = ({
           <p>This election hasn't been opened yet.</p>
         }
 
-        {!(election.finalized ||  hasClosed || !hasOpened) && hasVoted &&
+        {/* {!(election.finalized ||  hasClosed || !hasOpened) && hasVoted &&
           <p>You've already voted in this election.</p>
-        }
+        } */}
+      </div>
+    }
+
+    {!disabled && !loadingHasVoted && hasVoted && 
+      <div className={classes.hasVotedInfo}>
+        <p>
+          You have voted in this election already, but it is possible to change your vote if needed! <br/>
+          Note that the order of the candidates are randomized each time you load the page, and not necessarily the same as the order you previously voted in.
+        </p>
       </div>
     }
 
@@ -319,17 +362,37 @@ export const Voting: React.FC<VotingProps> = ({
     </>}
 
 
-    <Modal opened={voteModalOpen} onClose={closeVoteModal} centered title="Submit vote">
+    {/* <Modal opened={voteModalOpen} onClose={closeVoteModal} centered title="Submit vote">
       <Text>
         Are you sure you want to submit your vote? It can't be changed once submitted.
       </Text>
       <Button disabled={disabled} onClick={submitVote} fullWidth>
         Vote
       </Button>
+    </Modal> */}
+  
+    <Modal opened={successfulModalOpen} onClose={() => window.location.assign("/")} centered title="Vote successfully submitted">
+      <Text>
+        Your vote has successfully been submitted! You voted in the following order: 
+      </Text>
+      <div className={cx(constants.themeColor, "lighten-4", classes.info)}>
+        {submittedVoteOrder.map((candidate, i) => (
+          <Text className={cx(classes.candidate)} fs={candidate.symbolic ? "italic" : ""}>
+            {i+1}: {candidate.name}
+          </Text>
+        ))}
+      </div>
+      <Button onClick={() => window.location.assign("/")} fullWidth>
+        Go back to homepage
+      </Button>
     </Modal>
+  
+    {(loadingHasVoted || submitVoteLoading) && <Center style={{margin: "1rem"}}>
+      <Loading />
+    </Center>}
 
     <div className={classes.flexRow} style={{marginBottom:"1rem"}}>
-      <Button disabled={disabled} onClick={openVoteModal} fullWidth>
+      <Button disabled={disabled} onClick={submitVote} fullWidth>
         Vote
       </Button>
     </div>
@@ -344,6 +407,7 @@ export const Voting: React.FC<VotingProps> = ({
         )}
       </Droppable>
     </DragDropContext>
+
   </>
 }
 

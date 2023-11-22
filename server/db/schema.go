@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	uuid "github.com/satori/go.uuid"
@@ -57,11 +58,18 @@ type Vote struct {
 	ID         uuid.UUID `gorm:"primaryKey"`
 	VoteTime   time.Time `gorm:"not null"`
 	ElectionID uuid.UUID `gorm:"not null"`
-	Rankings   []Ranking `gorm:"foreignKey:VoteID;references:ID"`
+	Rankings   []Ranking `gorm:"foreignKey:VoteID;references:ID;constraint:OnDelete:CASCADE"`
+	UserHash   string    ``
+}
+
+func (v *Vote) BeforeDelete(tx *gorm.DB) (err error) {
+	fmt.Println(v.ID)
+	tx.Delete(&Ranking{}, "vote_id", v.ID)
+	return nil
 }
 
 type Ranking struct {
-	VoteID      uuid.UUID `gorm:"PrimaryKey"`
+	VoteID      uuid.UUID `gorm:"PrimaryKey;constraint:OnDelete:CASCADE"`
 	Rank        int       `gorm:"PrimaryKey"`
 	CandidateID uuid.UUID `gorm:"not null"`
 }
