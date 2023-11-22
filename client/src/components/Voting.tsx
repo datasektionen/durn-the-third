@@ -345,7 +345,8 @@ export const Voting: React.FC<VotingProps> = ({
     {!disabled && !loadingHasVoted && hasVoted && 
       <div className={classes.hasVotedInfo}>
         <p>
-          You have voted in this election already, but it is possible to change your vote if needed!
+          You have voted in this election already, but it is possible to change your vote if needed! <br/>
+          Note that the order of the candidates are randomized each time you load the page, and not necessarily the same as the order you previously voted in.
         </p>
       </div>
     }

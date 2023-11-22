@@ -38,8 +38,12 @@ const Info: React.FC = () => {
           which is very throughout and descriptive and describes it much better than what could fit here.
         </p>
 
-        <h3>Why can't my vote be changed or viewed after voting?</h3>
+        <h3>Why can't my vote be changed after voting?</h3>
         <p>
+          This is not true anymore, it is not possible to change your vote.
+        </p>
+
+        {/* <p>
           This is due to a balancing of the interests of security and having a good user experience. The simple solution
           for allowing this would be to store which user made each vote in the database. This would however allow anyone with
           database access (through a leak or admin access) to see what any and all persons voted for. A possible idea for
@@ -52,7 +56,7 @@ const Info: React.FC = () => {
           The last point in particular brings a lot of responsibility in regards to the security of the system.
           <br/><br/>
           This is not a perfect solution, and is a balancing of interests, how this is implemented could be changed in the future.
-        </p>
+        </p> */}
 
         <h3>Source Code</h3>
         In order to be as transparent as possible, the source code for the system is available 
