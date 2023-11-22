@@ -52,8 +52,6 @@ func CastVote(c *gin.Context) {
 		UserHash:   userHash,
 	}
 
-	var hash string
-
 	db := database.GetDB()
 	defer database.ReleaseDB()
 
@@ -152,7 +150,7 @@ func CastVote(c *gin.Context) {
 	// 	fmt.Println("Database failed to shuffle table vote_hashes")
 	// }
 
-	c.String(http.StatusOK, hash)
+	c.String(http.StatusOK, "")
 }
 
 // GetVotes returns all votes for a specific election, in the same format as
