@@ -152,11 +152,11 @@ export const Voting: React.FC<VotingProps> = ({
 
   const { classes } = useStyles();
   const [displayIndex, setDisplayIndex] = useState<Map<string, string>>(new Map<string, string>());
-  const [hasVoted, setHasVoted] = useState(false)
-  // const [hasVoted, loadingHasVoted, errorHasVoted] = useAPIData(
-  //   `/api/election/${election.id}/has-voted`,
-  //   (data) => z.boolean().parseAsync(data)
-  // );
+  // const [hasVoted, setHasVoted] = useState(false)
+  const [hasVoted, loadingHasVoted, errorHasVoted] = useAPIData(
+    `/api/election/${election.id}/has-voted`,
+    (data) => z.boolean().parseAsync(data)
+  );
   const [mayVote, setMayVote] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { authHeader } = useAuthorization();
@@ -176,8 +176,8 @@ export const Voting: React.FC<VotingProps> = ({
   ), [election.closeTime]);
 
   const disabled = useMemo(() => (
-    hasVoted || election.finalized || !hasOpened || hasClosed || !mayVote
-  ), [hasVoted, hasOpened, hasClosed, mayVote]);
+    election.finalized || !hasOpened || hasClosed || !mayVote || loadingHasVoted
+  ), [hasVoted, hasOpened, hasClosed, mayVote, loadingHasVoted]);
 
   const updateDisplayIndex = useCallback((indexes: Map<string, number>) => {
     let firstSymbolic = voteOrder.length;
@@ -251,6 +251,8 @@ export const Voting: React.FC<VotingProps> = ({
     <DraggableCandidate candidate={candidate} index={index} disabled={disabled} displayIndex={displayIndex}/>
   ))
 
+  console.log(disabled);
+
   return <>
     <div>
       <p>{election.description}</p>
@@ -282,7 +284,7 @@ export const Voting: React.FC<VotingProps> = ({
 
     <InfoBox />
 
-    {disabled &&
+    {disabled && !loadingHasVoted &&
       <div className={classes.votingDisabledInfo}>
         
         {(election.finalized || (hasClosed && hasOpened)) &&
@@ -302,9 +304,9 @@ export const Voting: React.FC<VotingProps> = ({
           <p>This election hasn't been opened yet.</p>
         }
 
-        {!(election.finalized ||  hasClosed || !hasOpened) && hasVoted &&
+        {/* {!(election.finalized ||  hasClosed || !hasOpened) && hasVoted &&
           <p>You've already voted in this election.</p>
-        }
+        } */}
       </div>
     }
 
