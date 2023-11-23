@@ -180,7 +180,7 @@ export const DisplaySchultzeResult: React.FC<DisplaySchultzeProps> = ( {
     {election.extraMandates > 0 && firstSymbolic > election.mandates && <>
 
       <Text align="center">
-        Suppleang
+        Suppleant
       </Text>
       <Table striped withColumnBorders>
         <thead>

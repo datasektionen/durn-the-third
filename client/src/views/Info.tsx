@@ -46,8 +46,8 @@ const Info: React.FC = () => {
 
         <h3>Varför kan jag inte ändra min röst efter att jag har röstat?</h3>
         <p>
-		    För att det är så dUrn fungerar.
-		    Vill man läsa mer om varför dUrn fungerar på det sättet så kan man gå in på dUrns <a href="https://durn.datasektionen.se/#/info">infosida</a>.
+          Numera så går det faktiskt att ändra sin röst.
+	  	    Vill man läsa mer om varför dUrn fungerar på det sättet så kan man gå in på dUrns <a href="https://durn.datasektionen.se/#/info">infosida</a>.
         </p>
 
         <h3>Källkod</h3>

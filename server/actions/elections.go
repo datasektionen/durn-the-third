@@ -65,7 +65,7 @@ func CreateElection(c *gin.Context) {
 		ExtraMandates: 0,
 	}
 	if err := c.BindJSON(&body); err != nil {
-		c.String(http.StatusBadRequest, util.BadParameters)
+		c.String(http.StatusBadRequest, util.BadParametersMessage)
 		return
 	}
 
@@ -99,7 +99,7 @@ func CreateElection(c *gin.Context) {
 		return nil
 	}); err != nil {
 		fmt.Println(err)
-		c.String(http.StatusInternalServerError, util.RequestFailed)
+		c.String(http.StatusInternalServerError, util.RequestFailedMessage)
 		return
 	}
 
@@ -123,12 +123,12 @@ func EditElection(c *gin.Context) {
 
 	if err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.BadUUID)
+		c.String(http.StatusBadRequest, util.BadUUIDMessage)
 		return
 	}
 	if err := c.BindJSON(&body); err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.BadParameters)
+		c.String(http.StatusBadRequest, util.BadParametersMessage)
 		return
 	}
 
@@ -136,7 +136,7 @@ func EditElection(c *gin.Context) {
 	db := database.GetDB()
 	if err := db.Preload("Candidates").First(&election).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.InvalidElection)
+		c.String(http.StatusBadRequest, util.InvalidElectionMessage)
 		return
 	}
 
@@ -160,7 +160,7 @@ func EditElection(c *gin.Context) {
 	}
 	if err := db.Save(&election).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusInternalServerError, util.RequestFailed)
+		c.String(http.StatusInternalServerError, util.RequestFailedMessage)
 		return
 	}
 	c.JSON(http.StatusOK, convertElectionToExportType(election))
@@ -171,7 +171,7 @@ func setElectionPublishedStatus(c *gin.Context, publishedStatus bool) {
 	electionId, err := uuid.FromString(c.Param("id"))
 	if err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.BadUUID)
+		c.String(http.StatusBadRequest, util.BadUUIDMessage)
 		return
 	}
 
@@ -179,14 +179,14 @@ func setElectionPublishedStatus(c *gin.Context, publishedStatus bool) {
 	db := database.GetDB()
 	if err := db.Preload("Candidates").First(&election).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.InvalidElection)
+		c.String(http.StatusBadRequest, util.InvalidElectionMessage)
 		return
 	}
 
 	election.Published = publishedStatus
 	if err := db.Save(&election).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusInternalServerError, util.RequestFailed)
+		c.String(http.StatusInternalServerError, util.RequestFailedMessage)
 		return
 	}
 
@@ -210,7 +210,7 @@ func FinalizeElection(c *gin.Context) {
 	electionId, err := uuid.FromString(c.Param("id"))
 	if err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.BadUUID)
+		c.String(http.StatusBadRequest, util.BadUUIDMessage)
 		return
 	}
 
@@ -218,14 +218,14 @@ func FinalizeElection(c *gin.Context) {
 	db := database.GetDB()
 	if err := db.Preload("Candidates").First(&election).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.InvalidElection)
+		c.String(http.StatusBadRequest, util.InvalidElectionMessage)
 		return
 	}
 
 	election.Finalized = true
 	if err := db.Save(&election).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusInternalServerError, util.RequestFailed)
+		c.String(http.StatusInternalServerError, util.RequestFailedMessage)
 		return
 	}
 
@@ -238,7 +238,7 @@ func DeleteElection(c *gin.Context) {
 	electionId, err := uuid.FromString(c.Param("id"))
 	if err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.BadUUID)
+		c.String(http.StatusBadRequest, util.BadUUIDMessage)
 		return
 	}
 
@@ -246,7 +246,7 @@ func DeleteElection(c *gin.Context) {
 	db := database.GetDB()
 	if err := db.Preload("Votes").First(&election).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.InvalidElection)
+		c.String(http.StatusBadRequest, util.InvalidElectionMessage)
 		return
 	}
 
@@ -264,7 +264,7 @@ func DeleteElection(c *gin.Context) {
 		return nil
 	}); err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.RequestFailed)
+		c.String(http.StatusBadRequest, util.RequestFailedMessage)
 	}
 
 	c.JSON(http.StatusOK, "")
@@ -276,7 +276,7 @@ func GetElection(c *gin.Context) {
 	electionId, err := uuid.FromString(c.Param("id"))
 	if err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.BadUUID)
+		c.String(http.StatusBadRequest, util.BadUUIDMessage)
 		return
 	}
 
@@ -285,7 +285,7 @@ func GetElection(c *gin.Context) {
 	election := database.Election{ID: electionId}
 	if err := db.Preload("Candidates").First(&election).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.InvalidElection)
+		c.String(http.StatusBadRequest, util.InvalidElectionMessage)
 		return
 	}
 
@@ -300,7 +300,7 @@ func GetElections(c *gin.Context) {
 	var elections []database.Election
 	if err := db.Preload("Candidates").Find(&elections).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.InvalidElection)
+		c.String(http.StatusBadRequest, util.InvalidElectionMessage)
 		return
 	}
 
@@ -319,7 +319,7 @@ func GetPublicElections(c *gin.Context) {
 	var elections []database.Election
 	if err := db.Preload("Candidates").Find(&elections).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusInternalServerError, util.RequestFailed)
+		c.String(http.StatusInternalServerError, util.RequestFailedMessage)
 		return
 	}
 
@@ -341,7 +341,7 @@ func GetPublicElection(c *gin.Context) {
 	electionId, err := uuid.FromString(c.Param("id"))
 	if err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.BadUUID)
+		c.String(http.StatusBadRequest, util.BadUUIDMessage)
 		return
 	}
 
@@ -351,7 +351,7 @@ func GetPublicElection(c *gin.Context) {
 	election := database.Election{ID: electionId}
 	if err := db.Preload("Candidates").First(&election).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.InvalidElection)
+		c.String(http.StatusBadRequest, util.InvalidElectionMessage)
 		return
 	}
 
@@ -372,12 +372,12 @@ func AddCandidate(c *gin.Context) {
 
 	if err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.BadUUID)
+		c.String(http.StatusBadRequest, util.BadUUIDMessage)
 		return
 	}
 	if err := c.BindJSON(&body); err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.BadParameters)
+		c.String(http.StatusBadRequest, util.BadParametersMessage)
 		return
 	}
 
@@ -386,7 +386,7 @@ func AddCandidate(c *gin.Context) {
 	election := database.Election{ID: electionId}
 	if err := db.Preload("Votes").First(&election).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.InvalidElection)
+		c.String(http.StatusBadRequest, util.InvalidElectionMessage)
 		return
 	}
 
@@ -414,7 +414,7 @@ func AddCandidate(c *gin.Context) {
 	}
 	if err := db.Create(&candidate).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusInternalServerError, util.RequestFailed)
+		c.String(http.StatusInternalServerError, util.RequestFailedMessage)
 		return
 	}
 	c.JSON(http.StatusOK, candidate)
@@ -431,12 +431,12 @@ func EditCandidate(c *gin.Context) {
 
 	if err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.BadUUID)
+		c.String(http.StatusBadRequest, util.BadUUIDMessage)
 		return
 	}
 	if err := c.BindJSON(&body); err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.BadParameters)
+		c.String(http.StatusBadRequest, util.BadParametersMessage)
 		return
 	}
 
@@ -456,7 +456,7 @@ func EditCandidate(c *gin.Context) {
 	}
 	if err := db.Save(&candidate).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusInternalServerError, util.RequestFailed)
+		c.String(http.StatusInternalServerError, util.RequestFailedMessage)
 		return
 	}
 	c.JSON(http.StatusOK, candidate)
@@ -469,7 +469,7 @@ func RemoveCandidate(c *gin.Context) {
 
 	if err != nil {
 		fmt.Println(err)
-		c.String(http.StatusBadRequest, util.BadUUID)
+		c.String(http.StatusBadRequest, util.BadUUIDMessage)
 		return
 	}
 
@@ -499,7 +499,7 @@ func RemoveCandidate(c *gin.Context) {
 
 	if err := db.Delete(&candidate).Error; err != nil {
 		fmt.Println(err)
-		c.String(http.StatusInternalServerError, util.RequestFailed)
+		c.String(http.StatusInternalServerError, util.RequestFailedMessage)
 		return
 	}
 
