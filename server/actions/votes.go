@@ -197,6 +197,27 @@ func GetVotes(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+func GetVoteCount(c *gin.Context) {
+	electionId, err := uuid.FromString(c.Param("id"))
+	if err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadUUIDMessage)
+		return
+	}
+
+	db := database.GetDB()
+	defer database.ReleaseDB()
+
+	var count int64
+	if err := db.Model(database.Vote{}).Where("election_id = ?", electionId).Count(&count).Error; err != nil {
+		fmt.Println(err)
+		c.String(http.StatusInternalServerError, util.RequestFailedMessage)
+		return
+	}
+
+	c.JSON(http.StatusOK, count)
+}
+
 // CountVotes calculates the winner of an election using the "Alternativsomröstning" algorithm,
 // as described in https://styrdokument.datasektionen.se/reglemente (§3.12.7 Urnval)
 // Expects there to be  token candidates for a vacant spot and a blank vote, which it

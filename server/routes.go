@@ -52,6 +52,7 @@ func InitRoutes(r *gin.RouterGroup) {
 	auth.GET("/election/:id/has-voted", actions.HasVoted)
 	read.GET("/election/:id/votes", actions.GetVotes)
 	read.GET("/election/:id/count", actions.CountVotesSchultze)
+	write.GET("/election/:id/vote-count", actions.GetVoteCount)
 	// read.GET("/election/:id/countOld", actions.CountVotes)
 	vote.GET("/election/hashes", actions.GetHashes)
 
