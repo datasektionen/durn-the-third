@@ -4,6 +4,7 @@ import React from "react";
 import { Candidate, NullTime } from "../util/ElectionTypes";
 import { CandidateList } from "./CandidateList";
 import { DateTimeInput } from "./DateTime";
+import Loading from "./Loading";
 
 export interface ElectionFormValues {
   title: string,
@@ -35,7 +36,8 @@ export interface AdminElectionViewProps {
   userInputError: string | false,
   openTimeDefault?: NullTime,
   closeTimeDefault?: NullTime,
-  submitDisabled?: boolean
+  submitDisabled?: boolean,
+  submittedVotes?: number | null,
 }
 
 const useStyles = createStyles((theme) => {
@@ -51,6 +53,7 @@ export const AdminElectionView: React.FC<AdminElectionViewProps> = ({
   onCloseTimeChanged, onOpenTimeChanged, userInputError,
   candidates, onCandidateAdded, onCandidateRemoved, onCandidateChanged,
   openTimeDefault = null, closeTimeDefault = null, submitDisabled = false,
+  submittedVotes
 }) => {
   const { classes } = useStyles();
 
@@ -115,7 +118,15 @@ export const AdminElectionView: React.FC<AdminElectionViewProps> = ({
                 {...electionForm.getInputProps("extraMandates")}
                 min={0}
               />
+            </div>
 
+            <div>
+              <Text size="lg" fw={700} align="center">
+                Submitted votes
+              </Text>
+              <Text align="center">
+                {submittedVotes ?? "-"}
+              </Text>
             </div>
           </Grid.Col>
 
