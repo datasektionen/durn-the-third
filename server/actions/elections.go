@@ -152,6 +152,9 @@ func EditElection(c *gin.Context) {
 	if body.Description != nil {
 		election.Description = *body.Description
 	}
+	if body.Mandates != nil {
+		election.Mandates = *body.Mandates
+	}
 	if body.OpenTime != nil {
 		election.OpenTime = util.ConvertNullTime(*body.OpenTime)
 	}

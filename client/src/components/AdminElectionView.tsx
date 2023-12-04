@@ -82,7 +82,7 @@ export const AdminElectionView: React.FC<AdminElectionViewProps> = ({
           <Grid.Col md={3}>
             <div style={{ marginBottom: "2rem" }} >
               <Text align="center" size="lg" color="gray.7" fw={700}>
-                Alternativ att välja
+                Antal alternativ att välja
               </Text>
               <NumberInput width="3rem"
                 {...electionForm.getInputProps("mandates")}
@@ -90,19 +90,9 @@ export const AdminElectionView: React.FC<AdminElectionViewProps> = ({
               />
             </div>
 
-            <div style={{ marginBottom: "2rem" }} >
-              <Text align="center" size="lg" color="gray.7" fw={700}>
-                Sekundära alternativ att välja
-              </Text>
-              <NumberInput
-                {...electionForm.getInputProps("extraMandates")}
-                min={0}
-              />
-            </div>
-
             <div>
               <Text size="lg" fw={700} align="center">
-                Antal lagda röster
+                Antal röster
               </Text>
               <Text align="center">
                 {submittedVotes ?? "-"}
