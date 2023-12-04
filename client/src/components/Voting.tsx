@@ -101,7 +101,9 @@ const useStyles = createStyles((theme) => ({
 
   info : {
     padding: "1rem",
+    paddingBottom: "0.5rem",
     marginBottom: "1rem",
+    marginTop: "2rem",
     borderRadius: "0.5rem",
     backgroundColor: "rgb(197, 202, 233)",
   },
@@ -138,8 +140,9 @@ const InfoBox: React.FC = () => {
 
   return <div className={cx(constants.themeColor, "lighten-4", classes.info)}>
     <p>
-      Sätt det alternativ du vill rösta på överst. <br/> <br/>
-      Rangordningen på alla alternativ tas i beaktning.
+      Sätt det alternativ du vill rösta på överst. <br/> 
+      Notera att ordningen på alla alternativ tas i beaktning.<br/>
+      Det går att ändra sin röst.
     </p>
   </div>
 }
@@ -285,7 +288,7 @@ export const Voting: React.FC<VotingProps> = ({
   ))
 
   return <>
-    <div>
+    <div >
       <p>{election.description}</p>
     </div>
 
@@ -344,8 +347,7 @@ export const Voting: React.FC<VotingProps> = ({
     {!disabled && !loadingHasVoted && hasVoted && 
       <div className={classes.hasVotedInfo}>
         <p>
-          Du har röstat i denna omröstning redan, men det går att ändra sin röst om det behövs.<br/>
-          Notera att ordningen på alla alternativ spelar roll.
+          Du har röstat i den här omröstning redan, men det går att ändra sin röst om det behövs.<br/>
         </p>
       </div>
     }
@@ -370,9 +372,12 @@ export const Voting: React.FC<VotingProps> = ({
       </Button>
     </Modal> */}
   
-    <Modal opened={successfulModalOpen} onClose={() => window.location.assign("/")} centered title="Vote successfully submitted">
+    <Modal 
+      opened={successfulModalOpen} onClose={() => window.location.assign("/")} centered 
+      title="Röst mottagen"
+    >
       <Text>
-        Your vote has successfully been submitted! You voted in the following order: 
+        Du röstade med följande rankning
       </Text>
       <div className={cx(constants.themeColor, "lighten-4", classes.info)}>
         {submittedVoteOrder.map((candidate, i) => (
@@ -382,7 +387,7 @@ export const Voting: React.FC<VotingProps> = ({
         ))}
       </div>
       <Button onClick={() => window.location.assign("/")} fullWidth>
-        Go back to homepage
+        Till startsidan
       </Button>
     </Modal>
   
