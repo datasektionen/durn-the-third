@@ -7,15 +7,14 @@ import { Container, createStyles, Center, Button, Modal, Text, Grid } from "@man
 import { useForm } from "@mantine/form";
 import { useDisclosure, useListState } from "@mantine/hooks";
 
-import { Candidate, CandidateSchema, Election, ElectionResultResponse, ElectionResultResponseSchema, ElectionSchema, NullTime, parseElectionResponse } from "../../util/ElectionTypes";
+import { Candidate, Election, ElectionResultResponse, ElectionResultResponseSchema, ElectionSchema, NullTime, parseElectionResponse } from "../../util/ElectionTypes";
 import useAuthorization from "../../hooks/useAuthorization";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAPIData } from "../../hooks/useAxios";
 import { AdminElectionView, ElectionFormValues } from "../../components/AdminElectionView";
 import Loading, { Error } from "../../components/Loading";
-import { ClassNames } from "@emotion/react";
 import { DisplaySchultzeResult } from "../../components/DisplayResult";
-import { string, z } from "zod";
+import { z } from "zod";
 
 const useStyles = createStyles((theme) => ({
   failed: {
@@ -46,6 +45,10 @@ const EditElection: React.FC = () => {
       closeTime: null as NullTime,
     }
   });
+  const [voteCount, loadingVotes, errorVotes] = useAPIData<number>(
+    `/api/election/${electionId}/vote-count`,
+    (data) => z.number().parseAsync(data)
+  );
 
   const [finalizeModalOpen, {
     open: openFinalizeModal, 
@@ -259,6 +262,7 @@ const EditElection: React.FC = () => {
           userInputError={userInputError}
           openTimeDefault={electionData.openTime}
           closeTimeDefault={electionData.closeTime}
+          submittedVotes={voteCount}
         />
 
         <Modal opened={finalizeModalOpen} onClose={closeFinalizeModal} centered my={"md"}
