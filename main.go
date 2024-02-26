@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 
 	conf "durn/config"
@@ -13,7 +12,7 @@ import (
 func main() {
 	r := gin.Default()
 
-	r.Use(static.Serve("/", static.LocalFile("./dist", true)))
+	// r.Use(static.Serve("/", static.LocalFile("./dist", true)))
 	r.Static("/public", "./public")
 
 	api := r.Group("/api")
