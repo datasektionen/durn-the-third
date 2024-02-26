@@ -53,7 +53,6 @@ func CastVote(c *gin.Context) {
 	}
 
 	db := database.GetDB()
-	defer database.ReleaseDB()
 
 	election := database.Election{ID: electionId}
 
@@ -164,7 +163,6 @@ func GetVotes(c *gin.Context) {
 	}
 
 	db := database.GetDB()
-	defer database.ReleaseDB()
 
 	var votes []database.Vote
 	if err := db.Preload("Rankings").Find(&votes, "election_id = ?", electionId).Error; err != nil {
@@ -206,7 +204,6 @@ func GetVoteCount(c *gin.Context) {
 	}
 
 	db := database.GetDB()
-	defer database.ReleaseDB()
 
 	var count int64
 	if err := db.Model(database.Vote{}).Where("election_id = ?", electionId).Count(&count).Error; err != nil {
@@ -239,7 +236,6 @@ func CountVotes(c *gin.Context) {
 		c.String(http.StatusBadRequest, util.InvalidElectionMessage)
 		return
 	}
-	database.ReleaseDB()
 	if !election.Finalized {
 		c.String(http.StatusBadRequest, "Can't count votes of unfinalized election")
 		return
@@ -350,7 +346,6 @@ func CountVotesSchultze(c *gin.Context) {
 		c.String(http.StatusBadRequest, util.InvalidElectionMessage)
 		return
 	}
-	database.ReleaseDB()
 	if !election.Finalized {
 		c.String(http.StatusBadRequest, "Can't count votes of unfinalized election")
 		return
@@ -450,7 +445,6 @@ func GetHashes(c *gin.Context) {
 	// TODO: possibly add electionID to database for hashes, since it would be nice
 	// to be able to filter by that and only allow fetching from finalized elections
 	db := database.GetDB()
-	defer database.ReleaseDB()
 
 	var hashes []database.VoteHash
 	if err := db.Find(&hashes).Error; err != nil {
@@ -478,7 +472,6 @@ func HasVoted(c *gin.Context) {
 	user := c.GetString("user")
 
 	db := database.GetDB()
-	defer database.ReleaseDB()
 
 	if db.Find(&database.CastedVote{ElectionID: electionId, Email: user}).RowsAffected == 0 {
 		c.String(http.StatusOK, "false")

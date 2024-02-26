@@ -78,7 +78,7 @@ const EditElection: React.FC = () => {
         closeTime: electionData.closeTime,
       });
       candidatesHandler.setState(
-        electionData.candidates.filter((c: Candidate) => !c.symbolic)
+        electionData.candidates
           .map((c: Candidate) => ({
             ...c,
             changed: false,

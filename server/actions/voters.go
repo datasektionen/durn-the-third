@@ -34,7 +34,6 @@ func AddVoters(c *gin.Context) {
 	}
 
 	db := database.GetDB()
-	defer database.ReleaseDB()
 
 	if err := db.Clauses(clause.OnConflict{DoNothing: true}).Create(&voters).Error; err != nil {
 		fmt.Println(err)
@@ -70,7 +69,6 @@ func RemoveVoters(c *gin.Context) {
 	}
 
 	db := database.GetDB()
-	defer database.ReleaseDB()
 
 	if err := db.Delete(&voters).Error; err != nil {
 		fmt.Println(err)
@@ -90,7 +88,6 @@ func RemoveVoters(c *gin.Context) {
 // GetVoters fetches all current allowed voters from the database
 func GetVoters(c *gin.Context) {
 	db := database.GetDB()
-	defer database.ReleaseDB()
 
 	result, err := getAllVoters(db)
 	if err != nil {

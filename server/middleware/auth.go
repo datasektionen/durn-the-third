@@ -58,6 +58,7 @@ func Authenticate() gin.HandlerFunc {
 func Authorize() gin.HandlerFunc {
 	conf := config.GetConfig()
 	url := conf.PLS_URL
+	systemName := conf.PLS_SYSTEM_NAME
 
 	if check, err := http.Get(url + "/"); err != nil || check.StatusCode != 200 {
 		fmt.Println(err)
@@ -66,7 +67,7 @@ func Authorize() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		user := c.GetString("userid")
-		requestURL := fmt.Sprintf("%s/api/user/%s/durn", url, user)
+		requestURL := fmt.Sprintf("%s/api/user/%s/%s", url, user, systemName)
 
 		var response []string
 

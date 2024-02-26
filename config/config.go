@@ -10,19 +10,14 @@ import (
 )
 
 type Config struct {
-	HOST      string
-	PORT      int
-	LOGIN_URL string
-	LOGIN_KEY string
-	PLS_URL   string
+	HOST            string
+	PORT            int
+	LOGIN_URL       string
+	LOGIN_KEY       string
+	PLS_URL         string
+	PLS_SYSTEM_NAME string
 
 	DATABASE_URL string
-
-	DB_HOST string
-	DB_PORT int
-	DB_NAME string
-	DB_USER string
-	DB_PSWD string
 }
 
 var (
@@ -59,19 +54,14 @@ func GetConfig() *Config {
 	}
 
 	conf = Config{
-		HOST:      loadStringEnv("HOST", "https://localhost.datasektionen.se"),
-		PORT:      loadIntEnv("PORT", 3000),
-		LOGIN_URL: loadStringEnv("LOGIN_URL", "https://login.datasektionen.se"),
-		LOGIN_KEY: loadStringEnv("LOGIN_KEY", ""),
-		PLS_URL:   loadStringEnv("PLS_URL", "https://pls.datasektionen.se"),
+		HOST:            loadStringEnv("HOST", "https://localhost.datasektionen.se"),
+		PORT:            loadIntEnv("PORT", 3000),
+		LOGIN_URL:       loadStringEnv("LOGIN_URL", "https://login.datasektionen.se"),
+		LOGIN_KEY:       loadStringEnv("LOGIN_KEY", ""),
+		PLS_URL:         loadStringEnv("PLS_URL", "https://pls.datasektionen.se"),
+		PLS_SYSTEM_NAME: loadStringEnv("PLS_SYSTEM_NAME", "durn"),
 
 		DATABASE_URL: loadStringEnv("DATABASE_URL", ""),
-
-		DB_HOST: loadStringEnv("DB_HOST", ""),
-		DB_PORT: loadIntEnv("DB_PORT", 5432),
-		DB_NAME: loadStringEnv("DB_NAME", "durn"),
-		DB_USER: loadStringEnv("DB_USER", "durn"),
-		DB_PSWD: loadStringEnv("DB_PSWD", ""),
 	}
 
 	loaded = true
