@@ -9,12 +9,12 @@ const isProd = process.env.NODE_ENV === "production";
 const config = {
   mode: isProd ? "production" : "development",
   entry: {
-    index: "./client/src/index.tsx",
+    index: "./src/index.tsx",
   },
   output: {
     path: resolve(__dirname, "../dist"),
     filename: "bundle.js",
-    publicPath: "/public"
+    // publicPath: "./public"
   },
   resolve: {
     extensions: [".js", ".jsx", ".ts", ".tsx"],
@@ -30,7 +30,7 @@ const config = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: "./client/src/index.html",
+      template: "./src/index.html",
       filename: "index.html",
       inject: "body",
     }),

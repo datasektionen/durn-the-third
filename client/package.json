@@ -9,8 +9,8 @@
     "node": ">=18"
   },
   "scripts": {
-    "dev": "cross-env NODE_ENV=development webpack-dev-server --config ./client/webpack.config.js --disable-host-check",
-    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider NODE_ENV=production webpack --config ./client/webpack.config.js ",
+    "dev": "cross-env NODE_ENV=development webpack-dev-server --config ./webpack.config.js --disable-host-check",
+    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider NODE_ENV=production webpack --config ./webpack.config.js ",
     "start": "serve dist"
   },
   "dependencies": {

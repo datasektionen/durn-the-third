@@ -23,7 +23,7 @@ build-server:
 	go build
 
 build-client:
-	npm run build
+	cd client && npm run build
 
 # run: run-server run-client
 
@@ -31,4 +31,4 @@ run-server:
 	fresh
 
 run-client:
-	npm run dev
+	cd client && npm run dev
