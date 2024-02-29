@@ -1,0 +1,14 @@
+version: '3.8'
+
+
+services:
+  server:
+    container_name: durn-server
+    build: 
+      dockerfile: server.Dockerfile
+
+  client:
+    container_name: durn-client
+    build:
+      dockerfile: client.Dockerfile
+
