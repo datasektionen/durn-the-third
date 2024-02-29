@@ -160,6 +160,12 @@ func EditElection(c *gin.Context) {
 	if body.CloseTime != nil {
 		election.CloseTime = util.ConvertNullTime(*body.CloseTime)
 	}
+	if body.Mandates != nil {
+		election.Mandates = *body.Mandates
+	}
+	if body.ExtraMandates != nil {
+		election.ExtraMandates = *body.ExtraMandates
+	}
 	if err := db.Save(&election).Error; err != nil {
 		fmt.Println(err)
 		c.String(http.StatusInternalServerError, util.RequestFailedMessage)
