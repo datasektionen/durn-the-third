@@ -2,13 +2,48 @@ version: '3.8'
 
 
 services:
+  nyckeln:
+    container_name: pls-login-mock
+    image: ghcr.io/datasektionen/nyckeln-under-dorrmattan
+    ports:
+      - 7002:7002
+      - 7001:7001
+
+  db:
+    container_name: db
+    image: postgres:16
+    environment:
+      - POSTGRES_PASSWORD=durn
+      - POSTGRES_DB=durn
+      - POSTGRES_USER=durn
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
   server:
     container_name: durn-server
     build: 
       dockerfile: server.Dockerfile
+    ports:
+      - 3000:3000
+    environment:
+      - HOST=localhost
+      - PORT=3000
+      - LOGIN_URL=http://nyckeln:7002
+      - PLS_URL=http://nyckeln:7001
+      - DATABASE_URL=postgresql://durn:durn@db:5432/durn
+    depends_on:
+      - db
 
   client:
     container_name: durn-client
     build:
       dockerfile: client.Dockerfile
+    ports:
+      - 8080:8080
+    environment:
+      - PORT=8080
+      - API_URL=http://localhost:3000
+    command: ["npm", "run", "dev"]
 
+volumes:
+  postgres:
