@@ -10,6 +10,7 @@ import { Candidate, NullTime } from "../../util/ElectionTypes"
 import useAuthorization from "../../hooks/useAuthorization"
 import { useNavigate } from "react-router-dom"
 import { AdminElectionView, ElectionFormValues } from "../../components/AdminElectionView"
+import { env } from "../../util/env"
 
 const useStyles = createStyles((theme) => ({
   failed: {
@@ -64,7 +65,7 @@ export const CreateElection: React.FC = () => {
     if (submitDisabled) return;
     setSubmitDisabled(true);
     const f = async () => {
-      axios.post("/api/election/create", {
+      axios.post(`${env.API_URL}/api/election/create`, {
         name: values.title,
         mandates: values.mandates,
         extraMandates: values.extraMandates,
@@ -76,7 +77,7 @@ export const CreateElection: React.FC = () => {
         // submit all added candidates
         Promise.all(
           candidates.map((candidate) =>
-            axios.post(`/api/election/${data}/candidate/add`, {
+            axios.post(`${env.API_URL}/api/election/${data}/candidate/add`, {
               name: candidate.name,
               presentation: candidate.presentation,
             }, { headers: authHeader }))

@@ -59,7 +59,8 @@
   "react-dotenv": {
     "whitelist": [
       "LOGIN_URL",
-      "PLS_URL"
+      "PLS_URL",
+      "API_URL"
     ]
   },
   "proxy": "http://127.0.0.1:3000/"

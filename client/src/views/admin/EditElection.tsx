@@ -15,6 +15,7 @@ import { AdminElectionView, ElectionFormValues } from "../../components/AdminEle
 import Loading, { Error } from "../../components/Loading";
 import { DisplaySchultzeResult } from "../../components/DisplayResult";
 import { z } from "zod";
+import { env } from "../../util/env";
 
 const useStyles = createStyles((theme) => ({
   failed: {
@@ -32,7 +33,7 @@ const EditElection: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const electionId = useParams()["id"] ?? "";
   const [electionData, loadingData, fetchError] = useAPIData<Election>(
-    `/api/election/${electionId}`,
+    `${env.API_URL}/api/election/${electionId}`,
     (data) => ElectionSchema.parseAsync(parseElectionResponse(data)),
   );
   const [candidates, candidatesHandler] = useListState<Candidate>();
@@ -46,7 +47,7 @@ const EditElection: React.FC = () => {
     }
   });
   const [voteCount, loadingVotes, errorVotes] = useAPIData<number>(
-    `/api/election/${electionId}/vote-count`,
+    `${env.API_URL}/api/election/${electionId}/vote-count`,
     (data) => z.number().parseAsync(data)
   );
 

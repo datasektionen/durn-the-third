@@ -1,6 +1,7 @@
 import { useLocalStorage } from "@mantine/hooks";
 import axios from "axios";
 import { useEffect } from "react";
+import { env } from "../util/env";
 
 const useAuthorization = () => {
   const [loggedIn, setLoggedIn] = useLocalStorage<boolean>({
@@ -19,7 +20,7 @@ const useAuthorization = () => {
   useEffect(() => {
     if (!("Authorization" in header)) return;
     axios.get(
-      "/api/validate-token",
+      `${env.API_URL}/api/validate-token`, 
       {headers: Object(header)}
     ).then(() => {
 

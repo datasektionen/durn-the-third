@@ -10,13 +10,14 @@ import { useAPIData, useApiRequester } from "../../hooks/useAxios";
 import { DisplayElectionInfo } from "../../components/ElectionInfo";
 import { z } from "zod";
 import Loading, { Error } from "../../components/Loading";
+import { env } from "../../util/env";
 
 
 const Admin: React.FC = () => {
   const { adminRead } = useAuthorization();
   const navigate = useNavigate();
   const [elections, electionsLoading, electionsError] = useAPIData<Election[]>(
-    `/api/elections`,
+    `${env.API_URL}/api/elections`,
     (data) => z.array(ElectionSchema).parseAsync(data.map(parseElectionResponse))
   );
 

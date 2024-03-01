@@ -5,6 +5,7 @@ import { Modal, Button, Center, Text, Container, createStyles } from "@mantine/c
 import { InformationModal } from "../../components/PopupModals"
 import useAuthorization from "../../hooks/useAuthorization"
 import axios from "axios"
+import { env } from "../../util/env"
 
 
 const useStyles = createStyles((theme) => ({
@@ -22,7 +23,7 @@ const AdminActions: React.FC = () => {
   const { classes } = useStyles()
 
   const nuke = () => {
-    axios.delete("/api/elections/nuke", {
+    axios.delete(`${env.API_URL}/api/elections/nuke`, {
       headers: authHeader
     }).then(() => {
       setReadied(false)

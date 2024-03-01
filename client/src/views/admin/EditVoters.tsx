@@ -8,6 +8,7 @@ import { Checkbox, createStyles, Grid, ScrollArea, Table, Container, Skeleton, B
 import useAuthorization from "../../hooks/useAuthorization";
 import useMap from "../../hooks/useMap";
 import constants from "../../util/constants";
+import { env } from "../../util/env";
 
 const useStyles = createStyles((theme) => { return {
   tableContainer: {
@@ -31,7 +32,7 @@ const EditVoters: React.FC = () => {
   const [voters, setVoters] = useState<string[]>([])
 
   useEffect(() => {
-    axios("/api/voters", {
+    axios(`${env.API_URL}/api/voters`, {
       headers: authHeader
     }).then((res) => {
       setVoters(res.data.voters)
@@ -89,7 +90,7 @@ const AddVotersField: React.FC<AddVotersFieldProps> = ({disabled, setVoters}) =>
   const ref = useRef<HTMLTextAreaElement>(null)
 
   const addVoters = (voters: string[]) => {
-    axios.put("/api/voters/add",{
+    axios.put(`${env.API_URL}/api/voters/add`,{
       voters: voters
     }, {
       headers: authHeader
@@ -147,7 +148,7 @@ const VotersTable: React.FC<VotersTableProps> = ({voters, setVoters}) => {
     if (selection.size == 0) return
     const removedVoters = Array.from(selection.keys())
 
-    axios.delete("/api/voters/remove", {
+    axios.delete(`${env.API_URL}/api/voters/remove`, {
       headers: authHeader,
       data: {
         voters: removedVoters

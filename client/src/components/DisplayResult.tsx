@@ -6,6 +6,7 @@ import { useAPIData } from "../hooks/useAxios"
 import { Loading, Error } from "./Loading"
 import { Candidate, Election } from "../util/ElectionTypes"
 import { Star } from "tabler-icons-react"
+import { env } from "../util/env"
 
 const useStyles = createStyles((theme) => ({
   voteStageBox: {
@@ -46,7 +47,7 @@ export const DisplayResult: React.FC<DisplayResultProps> = (
   {electionId}
 ) => {
   const [voteStages, loadingStages, stagesError] = useAPIData<VoteStage[]>(
-    `/api/election/${electionId}/count`,
+    `${env.API_URL}/api/election/${electionId}/count`,
     (data) => Promise.resolve(data)
   )
 

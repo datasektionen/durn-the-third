@@ -6,6 +6,7 @@ import { useAPIData } from "../hooks/useAxios";
 import { ElectionSchema, parseElectionResponse } from "../util/ElectionTypes";
 import { LoadingContainer } from "../components/Loading";
 import { Container, createStyles } from "@mantine/core";
+import { env } from "../util/env";
 
 const useStyles = createStyles((theme) => ({
   box: {
@@ -19,7 +20,7 @@ const useStyles = createStyles((theme) => ({
 const Vote: React.FC = () => {
   const electionID = useParams()["id"] ?? "";
   const [electionData, electionLoading, electionError] = useAPIData(
-    `/api/election/public/${electionID}`,
+    `${env.API_URL}/api/election/public/${electionID}`,
     (data) => ElectionSchema.parseAsync(parseElectionResponse(data))
   )
   const { classes } = useStyles();

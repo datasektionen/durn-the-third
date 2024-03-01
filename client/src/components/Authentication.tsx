@@ -5,12 +5,12 @@ import {
   useParams,
   useNavigate,
 } from "react-router-dom";
+import { env } from "../util/env"
+
 
 export const Login: React.FC = () => {
-  const loginURL = "https://login.datasektionen.se"
-
   const callback = encodeURIComponent(`${window.location.origin}/#/token/`)
-  const url = `${loginURL}/login?callback=${callback}`;
+  const url = `${env.LOGIN_URL}/login?callback=${callback}`;
   window.location.replace(url);
   return <div />;
 }
@@ -67,7 +67,7 @@ export const Token: React.FC = () => {
   useEffect(() => {
     if (token) {
       const header = { "Authorization": `Bearer ${token}` }
-      axios.get('/api/validate-token', {
+      axios.get(`${env.API_URL}/api/validate-token`, {
         headers: header
       }).then(({ data }) => {
         setLoggedIn(true);

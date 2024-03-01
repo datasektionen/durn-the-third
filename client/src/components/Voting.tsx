@@ -16,6 +16,7 @@ import dayjs from "dayjs";
 import { useAPIData } from "../hooks/useAxios";
 import { z } from "zod";
 import { redirect } from "react-router-dom";
+import { env } from "../util/env";
 
 interface candidateInfo {
   id: string,
@@ -172,7 +173,7 @@ export const Voting: React.FC<VotingProps> = ({
   const [displayIndex, setDisplayIndex] = useState<Map<string, string>>(new Map<string, string>());
   // const [hasVoted, setHasVoted] = useState(false)
   const [hasVoted, loadingHasVoted, errorHasVoted] = useAPIData(
-    `/api/election/${election.id}/has-voted`,
+    `${env.API_URL}/api/election/${election.id}/has-voted`,
     (data) => z.boolean().parseAsync(data)
   );
   const [mayVote, setMayVote] = useState(true);
@@ -244,7 +245,7 @@ export const Voting: React.FC<VotingProps> = ({
     setSubmittedVoteOrder(voteOrder);
     setSubmitVoteLoading(true);
 
-    axios.post(`/api/election/${election.id}/vote`, {
+    axios.post(`${env.API_URL}/api/election/${election.id}/vote`, {
       secret: "",
       ranking: voteOrder.map((c) => c.id)
     }, {
@@ -266,7 +267,7 @@ export const Voting: React.FC<VotingProps> = ({
   }, [voteOrder, authHeader])
 
   useEffect(() => {
-    axios(`/api/voter/allowed`, {
+    axios(`${env.API_URL}/api/voter/allowed`, {
       headers: authHeader
     }).then(() => {
       setMayVote(true);
