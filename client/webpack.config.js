@@ -35,7 +35,7 @@ const config = {
       inject: "body",
     }),
     new dotEnv({
-      path: "./.env",
+      path: "../.env",
       systemvars: true,
     }),
   ], 
@@ -54,12 +54,6 @@ if (isProd) {
     compress: true,
     stats: "errors-only",
     overlay: true,
-    proxy: {
-      "/api/*": {
-        target: "http://localhost:3000/",
-        secure: "false"
-      },
-    }
   };
 }
 
