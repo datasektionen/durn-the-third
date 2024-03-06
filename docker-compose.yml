@@ -6,8 +6,9 @@ services:
     container_name: pls-login-mock
     image: ghcr.io/datasektionen/nyckeln-under-dorrmattan
     ports:
-      - 7002:7002
-      - 7001:7001
+      - 7002:7002 # login
+      - 7001:7001 # pls
+
 
   db:
     container_name: db
@@ -42,6 +43,7 @@ services:
       - 8080:8080
     environment:
       - PORT=8080
+      - LOGIN_URL=http://localhost:7002
       - API_URL=http://localhost:3000
     command: ["npm", "run", "dev"]
 
