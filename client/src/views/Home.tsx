@@ -11,6 +11,7 @@ import constants from "../util/constants";
 import { useAPIData } from "../hooks/useAxios";
 import { z } from "zod";
 import Loading, { Error } from "../components/Loading";
+import { env } from "../util/env";
 
 const useStyles = createStyles((theme) => ({
   infoBox: {
@@ -63,7 +64,7 @@ export const Home: React.FC = () => {
   const { loggedIn } = useAuthorization();
   const { cx, classes } = useStyles();
   const [elections, electionsLoading, electionsError] = useAPIData<Election[]>(
-    `/api/elections/public`, 
+    `${env.API_URL}/api/elections/public`, 
     (data) => z.array(ElectionSchema).parseAsync(data.map(parseElectionResponse))
   );
 

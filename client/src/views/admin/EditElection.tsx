@@ -130,7 +130,7 @@ const EditElection: React.FC = () => {
   };
 
   const saveElection = useCallback((values: typeof electionForm.values) => {
-    axios.patch(`/api/election/${electionId}/edit`, {
+    axios.patch(`${env.API_URL}/api/election/${electionId}/edit`, {
       name: values.title,
       mandates: values.mandates,
       extraMandates: values.extraMandates,
@@ -143,7 +143,7 @@ const EditElection: React.FC = () => {
       candidates.filter(
         (c) => !c.added && !c.removed && c.changed
       ).map((candidate) =>
-        axios.put( `/api/election/candidate/${candidate.id}/edit`, {
+        axios.put( `${env.API_URL}/api/election/candidate/${candidate.id}/edit`, {
           name: candidate.name,
           presentation: candidate.presentation,
         }, { headers: authHeader })
@@ -152,7 +152,7 @@ const EditElection: React.FC = () => {
       candidates.filter(
         (c) => !c.added && c.removed
       ).map((candidate) =>
-        axios.post( `/api/election/candidate/${candidate.id}/delete`, {},
+        axios.post( `${env.API_URL}/api/election/candidate/${candidate.id}/delete`, {},
           { headers: authHeader }
         ).then(() => {
           candidatesHandler.filter(
@@ -164,7 +164,7 @@ const EditElection: React.FC = () => {
       candidates.filter(
         (c) => c.added && !c.removed
       ).map((candidate) =>
-        axios.post(`/api/election/${electionId}/candidate/add`, {
+        axios.post(`${env.API_URL}/api/election/${electionId}/candidate/add`, {
           name: candidate.name,
           presentation: candidate.presentation,
         }, { headers: authHeader })
@@ -197,7 +197,7 @@ const EditElection: React.FC = () => {
   }), [setError, electionForm]);
 
   const finaliseElectionAndCountVotes = useCallback(() => {
-    axios.put(`/api/election/${electionId}/finalize`, {}, {
+    axios.put(`${env.API_URL}/api/election/${electionId}/finalize`, {}, {
       headers: authHeader
     }).then(() => {
       countVotes();
@@ -209,7 +209,7 @@ const EditElection: React.FC = () => {
   }, [authHeader, electionId]);
 
   const countVotes = useCallback(() => {
-    axios.get(`/api/election/${electionId}/count`, {
+    axios.get(`${env.API_URL}/api/election/${electionId}/count`, {
       headers: authHeader,
     }).then(({ data }) => {
       ElectionResultResponseSchema.parseAsync(data).then(
@@ -227,7 +227,7 @@ const EditElection: React.FC = () => {
   }, [authHeader, electionId]);
 
   const deleteElection = useCallback(() => {
-    axios.post(`/api/election/${electionId}/delete`, {}, {
+    axios.post(`${env.API_URL}/api/election/${electionId}/delete`, {}, {
       headers: authHeader,
     }).then(() => {
       navigate("/admin");
