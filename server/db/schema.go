@@ -73,3 +73,20 @@ type Ranking struct {
 	Rank        int       `gorm:"PrimaryKey"`
 	CandidateID uuid.UUID `gorm:"not null"`
 }
+
+type ElectionResult struct {
+	ID             uuid.UUID `gorm:"PrimaryKey"`
+	ElectionID     uuid.UUID `gorm:"not null"`
+	Election       Election  `gorm:"foreignKey:ElectionID"`
+	CreationTime   time.Time `gorm:"not null"`
+	CountingMethod string    `gorm:"not null"`
+	Seed           int
+	Results        []Result `gorm:"foreignKey:ElectionResultID;references:ID"`
+}
+
+type Result struct {
+	ElectionResultID uuid.UUID `gorm:"PrimaryKey"`
+	CandidateId      uuid.UUID `gorm:"PrimaryKey"`
+	Candidate        Candidate `gorm:"foreignKey:CandidateId"`
+	Ordering         int       `gorm:"not null"`
+}
