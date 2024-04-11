@@ -4,6 +4,7 @@ import (
 	database "durn/server/db"
 	"durn/server/util"
 	"encoding/hex"
+	"encoding/json"
 	"math/rand"
 	"sort"
 	"time"
@@ -329,6 +330,11 @@ func CountVotesAlternativ(c *gin.Context) {
 		electionResult = append(electionResult, stageResult)
 	}
 
+	if err := storeElectionResult(electionResult, electionId); err != nil {
+		fmt.Println("Failed to cache election result:")
+		fmt.Println(err)
+	}
+
 	c.JSON(http.StatusOK, electionResult)
 }
 
@@ -424,6 +430,11 @@ func CountVotesSchultze(c *gin.Context) {
 		ret.SchultzeMatrix = append(ret.SchultzeMatrix, schultzeRow)
 	}
 
+	if err := storeElectionResult(ret, electionId); err != nil {
+		fmt.Println("Failed to cache election result:")
+		fmt.Println(err)
+	}
+
 	c.JSON(http.StatusOK, ret)
 }
 
@@ -443,6 +454,50 @@ func StrongestPaths(E [][]int) [][]int {
 	}
 
 	return res
+}
+
+func storeElectionResult(result any, electionID uuid.UUID) error {
+	resultString, err := json.Marshal(result)
+	if err != nil {
+		return err
+	}
+	db := database.GetDB()
+	defer database.ReleaseDB()
+
+	electionResult := database.ElectionResult{
+		ID:         uuid.NewV4(),
+		ElectionID: electionID,
+		Result:     string(resultString),
+	}
+	db.Create(electionResult)
+
+	return nil
+}
+
+func GetPreviousElectionResults(c *gin.Context) {
+	electionId, err := uuid.FromString(c.Param("id"))
+	if err != nil {
+		fmt.Println(err)
+		c.String(http.StatusBadRequest, util.BadUUIDMessage)
+		return
+	}
+
+	db := database.GetDB()
+	defer database.ReleaseDB()
+
+	var results []database.ElectionResult
+	if err := db.Find(&results, "election_id = ?", electionId); err != nil {
+		fmt.Println(err)
+		c.String(http.StatusInternalServerError, util.RequestFailedMessage)
+		return
+	}
+
+	var ret string[]
+	for _, result := range results {
+		ret := append(ret, result.Result)
+	}
+
+	c.JSON(http.StatusOK, ret)
 }
 
 // GetHashes returns all hashes in the database. Requires user to be able to vote.
