@@ -218,13 +218,13 @@ func GetVoteCount(c *gin.Context) {
 	c.JSON(http.StatusOK, count)
 }
 
-// CountVotes calculates the winner of an election using the "Alternativsomröstning" algorithm,
+// CountVotesAlternativ calculates the winner of an election using the "Alternativsomröstning" algorithm,
 // as described in https://styrdokument.datasektionen.se/reglemente (§3.12.7 Urnval)
 // Expects there to be  token candidates for a vacant spot and a blank vote, which it
 // treats differently, but works without them.
 // Does not handle the case where the two lowest candidates have the same amount of votes
 // in a good way (it is probably random) since it is not handled in the algorithm specification
-func CountVotes(c *gin.Context) {
+func CountVotesAlternativ(c *gin.Context) {
 	electionId, err := uuid.FromString(c.Param("id"))
 	if err != nil {
 		fmt.Println(err)
