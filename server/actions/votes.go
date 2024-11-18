@@ -492,9 +492,9 @@ func GetPreviousElectionResults(c *gin.Context) {
 		return
 	}
 
-	var ret string[]
+	var ret []string
 	for _, result := range results {
-		ret := append(ret, result.Result)
+		ret = append(ret, result.Result)
 	}
 
 	c.JSON(http.StatusOK, ret)
