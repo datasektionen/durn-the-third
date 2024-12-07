@@ -148,17 +148,17 @@ export const DisplaySchultzeResult: React.FC<DisplaySchultzeProps> = ( {
   } 
 
   return <>
-    <h3><Center>Election Result</Center></h3>
+    <h3><Center>Röstresultat</Center></h3>
 
     {firstSymbolic > 0 && <>
       <Text align="center">
-        Ordinarie
+        SM föredrog följande alternativ
       </Text>
       <Table striped withColumnBorders>
         <thead>
           <tr>
             <th style={{ width: "6rem" }}> Rank </th>
-            <th> Candidate </th>
+            <th> Alternativ </th>
           </tr>
         </thead>
         <tbody>
@@ -214,13 +214,13 @@ export const DisplaySchultzeResult: React.FC<DisplaySchultzeProps> = ( {
     {(ranking.length > election.mandates + election.extraMandates ||
       firstSymbolic < ranking.length) && <>
       <Text align="center">
-        Non-Elected
+        SM föredrog INTE följade alternativ
       </Text>
       <Table striped withColumnBorders>
         <thead>
           <tr>
             <th style={{ width: "6rem" }}> Rank </th>
-            <th> Candidate </th>
+            <th> Alternativ </th>
           </tr>
         </thead>
         <tbody>
@@ -245,7 +245,7 @@ export const DisplaySchultzeResult: React.FC<DisplaySchultzeProps> = ( {
       </Table>
       
       <br/>
-      <h3><Center>Voting data</Center></h3>
+      <h3><Center>Röstdata</Center></h3>
       <DisplayVoteData 
         ranking={ranking}
         voteMatrix={voteMatrix}
@@ -304,7 +304,10 @@ const DisplayVoteData: React.FC<DisplayVoteMatrixProps> = (
   </>;
 
   return <>
-    <b>Candidate index:</b>
+
+    <p><b> Totala antalet röster: </b> {votes} </p>
+    
+    <b>Alternativindex:</b>
     <List style={{margin: "1rem"}}>
       {ranking.map((c, i) => (
         <List.Item icon={<Text fw={700}>{labels[i]} </Text>}>
@@ -313,10 +316,9 @@ const DisplayVoteData: React.FC<DisplayVoteMatrixProps> = (
       ))}
     </List>
 
-    <p><b> Total amount of votes: </b> {votes} </p>
     
     <h4><Text align="center" fw={700}>
-      Vote matrix
+      Röstmatris
     </Text></h4>
     <DisplayMatrix matrix={voteMatrix} name="d" />
     <br />
@@ -326,7 +328,7 @@ const DisplayVoteData: React.FC<DisplayVoteMatrixProps> = (
     
     <br />
     <h4><Text align="center" fw={700}>
-      Schultze result matrix
+      Schulzeresultatmatris
     </Text></h4>
     <DisplayMatrix matrix={schultzeMatrix} name="p" />
     <br />

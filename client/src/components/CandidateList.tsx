@@ -64,14 +64,14 @@ export const CandidateList: React.FC<CandidateListProps> = (
       <td>
         <TextInput 
           value={name}
-          placeholder="candidate name"
+          placeholder="Alternativ"
           onChange={(element) => setName(element.target.value)}
         />
       </td>
       <td>
         <TextInput 
           value={presentation} 
-          placeholder="link to candidate presentation"
+          placeholder="beskrivning (optional)"
           onChange={(element) => setPresentation(element.target.value)}
         />
       </td>
@@ -83,7 +83,7 @@ export const CandidateList: React.FC<CandidateListProps> = (
 
 
       <Text fw={700} c="gray.7" style={{ margin: "0.5rem", marginTop: "1rem" }} align="center">
-        Add new candidate
+        Lägg till alternativ
       </Text>
 
       <Table withBorder withColumnBorders>
@@ -108,12 +108,12 @@ export const CandidateList: React.FC<CandidateListProps> = (
             <th style={{ width: 30 }}></th>
             <th>
               <Text style={{ margin: "1rem" }} align="center" fw={700}>
-                Name of the candidate
+                Alternativ
               </Text>
             </th>
             <th>
               <Text style={{ margin: "1rem" }} align="center" fw={700}>
-                Candidate presentation
+                Beskrivning
               </Text>
             </th>
           </tr>

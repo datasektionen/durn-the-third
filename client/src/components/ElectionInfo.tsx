@@ -87,6 +87,7 @@ export const DisplayElectionInfo: React.FC<DisplayElectionInfoProps> = (
       <div className={classes.electionTitle}>
         <h3 className={classes.electionTitle}>{election.name}</h3>
       </div>
+      {/*
       <p className={classes.electionDescription}>
         {election.description}
       </p>
@@ -100,6 +101,7 @@ export const DisplayElectionInfo: React.FC<DisplayElectionInfoProps> = (
         <p className={classes.candidateText}>
           <b>{election.extraMandates}</b> Secondary mandates
         </p> }
+      */}
     </div>
   </>
 }

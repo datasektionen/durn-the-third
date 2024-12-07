@@ -16,7 +16,7 @@ func ValidEmail(email string) bool {
 // both a start and an end.
 func TimeIsInValidInterval(time time.Time, start sql.NullTime, end sql.NullTime) bool {
 	if !start.Valid || !end.Valid {
-		return false
+		return true
 	}
 	if time.Before(start.Time) || time.After(end.Time) {
 		return false

@@ -101,7 +101,9 @@ const useStyles = createStyles((theme) => ({
 
   info : {
     padding: "1rem",
+    paddingBottom: "0.5rem",
     marginBottom: "1rem",
+    marginTop: "2rem",
     borderRadius: "0.5rem",
     backgroundColor: "rgb(197, 202, 233)",
   },
@@ -138,9 +140,9 @@ const InfoBox: React.FC = () => {
 
   return <div className={cx(constants.themeColor, "lighten-4", classes.info)}>
     <p>
-      Rank the the candidates in your preferred order. <br/> <br/>
-      Note that the ordering of the candidates that are ranked below <i>Vakant</i> is taken into account. <br/><br/>
-      You will be able to change your vote once it is submitted
+      Sätt det alternativ du vill rösta på överst. <br/> 
+      Notera att ordningen på alla alternativ tas i beaktning.<br/>
+      Det går att ändra sin röst.
     </p>
   </div>
 }
@@ -193,11 +195,11 @@ export const Voting: React.FC<VotingProps> = ({
   }] = useDisclosure(false);
 
   const hasOpened = useMemo(() => (
-    (election.openTime ? dayjs(Date.now()).isAfter(election.openTime) : false)
+    (election.openTime ? dayjs(Date.now()).isAfter(election.openTime) : true)
   ), [election.openTime]);
 
   const hasClosed = useMemo(() => (
-    (election.closeTime ? dayjs(Date.now()).isAfter(election.closeTime) : true)
+    (election.closeTime ? dayjs(Date.now()).isAfter(election.closeTime) : false)
   ), [election.closeTime]);
 
   const disabled = useMemo(() => (
@@ -286,7 +288,7 @@ export const Voting: React.FC<VotingProps> = ({
   ))
 
   return <>
-    <div>
+    <div >
       <p>{election.description}</p>
     </div>
 
@@ -320,20 +322,20 @@ export const Voting: React.FC<VotingProps> = ({
       <div className={classes.votingDisabledInfo}>
         
         {(election.finalized || (hasClosed && hasOpened)) &&
-          <p> It is no longer possible to vote in this election. </p>
+          <p> Du kan inte längre rösta i denna omröstning. </p>
         }
 
         {!mayVote && !hasVoted &&
           <p>
-            You don't have the right to vote in this election<br/>
-            Contact the Election Committee if you are a member that should have this right.<br/>
-            (<a href="mailto:valberedningen@datasektionen.se">valberedningen@datasektionen.se</a>) 
+            Du saknar rättigheten att rösta i denna omröstning<br/>
+            Kontakta styreslen om du tror att något är fel.<br/>
+            (<a href="mailto:drek@datasektionen.se">drek@datasektionen.se</a>) 
             
           </p>
         }
 
         {!election.finalized &&  !hasOpened && mayVote &&
-          <p>This election hasn't been opened yet.</p>
+          <p>Omröstningen är inte öppen ännu.</p>
         }
 
         {/* {!(election.finalized ||  hasClosed || !hasOpened) && hasVoted &&
@@ -345,8 +347,7 @@ export const Voting: React.FC<VotingProps> = ({
     {!disabled && !loadingHasVoted && hasVoted && 
       <div className={classes.hasVotedInfo}>
         <p>
-          You have voted in this election already, but it is possible to change your vote if needed! <br/>
-          Note that the order of the candidates are randomized each time you load the page, and not necessarily the same as the order you previously voted in.
+          Du har röstat i den här omröstning redan, men det går att ändra sin röst om det behövs.<br/>
         </p>
       </div>
     }
@@ -364,16 +365,19 @@ export const Voting: React.FC<VotingProps> = ({
 
     {/* <Modal opened={voteModalOpen} onClose={closeVoteModal} centered title="Submit vote">
       <Text>
-        Are you sure you want to submit your vote? It can't be changed once submitted.
+        Är du säker på att du vill rösta? Du kan inte ändra din röst när du väl röstat.
       </Text>
       <Button disabled={disabled} onClick={submitVote} fullWidth>
-        Vote
+        Rösta
       </Button>
     </Modal> */}
   
-    <Modal opened={successfulModalOpen} onClose={() => window.location.assign("/")} centered title="Vote successfully submitted">
+    <Modal 
+      opened={successfulModalOpen} onClose={() => window.location.assign("/")} centered 
+      title="Röst mottagen"
+    >
       <Text>
-        Your vote has successfully been submitted! You voted in the following order: 
+        Du röstade med följande rankning
       </Text>
       <div className={cx(constants.themeColor, "lighten-4", classes.info)}>
         {submittedVoteOrder.map((candidate, i) => (
@@ -383,7 +387,7 @@ export const Voting: React.FC<VotingProps> = ({
         ))}
       </div>
       <Button onClick={() => window.location.assign("/")} fullWidth>
-        Go back to homepage
+        Till startsidan
       </Button>
     </Modal>
   
@@ -393,7 +397,7 @@ export const Voting: React.FC<VotingProps> = ({
 
     <div className={classes.flexRow} style={{marginBottom:"1rem"}}>
       <Button disabled={disabled} onClick={submitVote} fullWidth>
-        Vote
+        Rösta
       </Button>
     </div>
 
@@ -460,8 +464,8 @@ const DraggableCandidate: React.FC<DraggableCandidateProps> = ({
               </Text> </div>
             </div>
             {candidate.presentation != "" && !candidate.symbolic ?
-              <div style={{ whiteSpace: "nowrap", marginLeft: "0.5rem" }}> <span>
-                <a href={candidate.presentation} target="_blank"> Presentation </a>
+              <div style={{ whiteSpace: "nowrap", marginLeft: "0.5rem" }}> <span style={{ color: '#757575' }}>
+                {candidate.presentation}
               </span> </div> : <></>}
           </div>
         </div>

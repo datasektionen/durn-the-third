@@ -70,7 +70,6 @@ func CreateElection(c *gin.Context) {
 	}
 
 	db := database.GetDB()
-	defer database.ReleaseDB()
 	election := database.Election{
 		ID:            uuid.NewV4(),
 		Name:          body.Name,
@@ -82,21 +81,21 @@ func CreateElection(c *gin.Context) {
 		Published:     false,
 		Finalized:     false,
 	}
-	vacant := database.Candidate{
-		ID:           uuid.NewV4(),
-		Name:         util.VacantCandidate,
-		Presentation: "",
-		ElectionID:   election.ID,
-		Symbolic:     true,
-	}
+	// vacant := database.Candidate{
+	// 	ID:           uuid.NewV4(),
+	// 	Name:         util.VacantCandidate,
+	// 	Presentation: "",
+	// 	ElectionID:   election.ID,
+	// 	Symbolic:     true,
+	// }
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
-		if err := db.Create(&election).Error; err != nil {
+		if err := tx.Create(&election).Error; err != nil {
 			return err
 		}
-		if err := db.Create(&vacant).Error; err != nil {
-			return err
-		}
+		// if err := tx.Create(&vacant).Error; err != nil {
+		// 	return err
+		// }
 		return nil
 	}); err != nil {
 		fmt.Println(err)
@@ -135,7 +134,6 @@ func EditElection(c *gin.Context) {
 
 	election := database.Election{ID: electionId}
 	db := database.GetDB()
-	defer database.ReleaseDB()
 	if err := db.Preload("Candidates").First(&election).Error; err != nil {
 		fmt.Println(err)
 		c.String(http.StatusBadRequest, util.InvalidElectionMessage)
@@ -153,6 +151,9 @@ func EditElection(c *gin.Context) {
 	}
 	if body.Description != nil {
 		election.Description = *body.Description
+	}
+	if body.Mandates != nil {
+		election.Mandates = *body.Mandates
 	}
 	if body.OpenTime != nil {
 		election.OpenTime = util.ConvertNullTime(*body.OpenTime)
@@ -185,7 +186,6 @@ func setElectionPublishedStatus(c *gin.Context, publishedStatus bool) {
 
 	election := database.Election{ID: electionId}
 	db := database.GetDB()
-	defer database.ReleaseDB()
 	if err := db.Preload("Candidates").First(&election).Error; err != nil {
 		fmt.Println(err)
 		c.String(http.StatusBadRequest, util.InvalidElectionMessage)
@@ -225,7 +225,6 @@ func FinalizeElection(c *gin.Context) {
 
 	election := database.Election{ID: electionId}
 	db := database.GetDB()
-	defer database.ReleaseDB()
 	if err := db.Preload("Candidates").First(&election).Error; err != nil {
 		fmt.Println(err)
 		c.String(http.StatusBadRequest, util.InvalidElectionMessage)
@@ -254,7 +253,6 @@ func DeleteElection(c *gin.Context) {
 
 	election := database.Election{ID: electionId}
 	db := database.GetDB()
-	defer database.ReleaseDB()
 	if err := db.Preload("Votes").First(&election).Error; err != nil {
 		fmt.Println(err)
 		c.String(http.StatusBadRequest, util.InvalidElectionMessage)
@@ -292,7 +290,6 @@ func GetElection(c *gin.Context) {
 	}
 
 	db := database.GetDB()
-	defer database.ReleaseDB()
 
 	election := database.Election{ID: electionId}
 	if err := db.Preload("Candidates").First(&election).Error; err != nil {
@@ -308,7 +305,6 @@ func GetElection(c *gin.Context) {
 // candidates in the elections.
 func GetElections(c *gin.Context) {
 	db := database.GetDB()
-	defer database.ReleaseDB()
 
 	var elections []database.Election
 	if err := db.Preload("Candidates").Find(&elections).Error; err != nil {
@@ -328,7 +324,6 @@ func GetElections(c *gin.Context) {
 // published flag set to true.
 func GetPublicElections(c *gin.Context) {
 	db := database.GetDB()
-	defer database.ReleaseDB()
 
 	var elections []database.Election
 	if err := db.Preload("Candidates").Find(&elections).Error; err != nil {
@@ -360,7 +355,6 @@ func GetPublicElection(c *gin.Context) {
 	}
 
 	db := database.GetDB()
-	defer database.ReleaseDB()
 	// election := database.FetchElectionIfPublic(db, electionId)
 
 	election := database.Election{ID: electionId}
@@ -395,13 +389,8 @@ func AddCandidate(c *gin.Context) {
 		c.String(http.StatusBadRequest, util.BadParametersMessage)
 		return
 	}
-	if body.Name == util.BlankCandidate || body.Name == util.VacantCandidate {
-		c.String(http.StatusBadRequest, fmt.Sprintf("'%s' is a reserved candidate name", body.Name))
-		return
-	}
 
 	db := database.GetDB()
-	defer database.ReleaseDB()
 
 	election := database.Election{ID: electionId}
 	if err := db.Preload("Votes").First(&election).Error; err != nil {
@@ -430,7 +419,7 @@ func AddCandidate(c *gin.Context) {
 		Name:         body.Name,
 		Presentation: body.Presentation,
 		ElectionID:   electionId,
-		Symbolic:     false,
+		Symbolic:     body.Name == util.BlankCandidate || body.Name == util.VacantCandidate,
 	}
 	if err := db.Create(&candidate).Error; err != nil {
 		fmt.Println(err)
@@ -462,7 +451,6 @@ func EditCandidate(c *gin.Context) {
 
 	candidate := database.Candidate{ID: candidateId}
 	db := database.GetDB()
-	defer database.ReleaseDB()
 	if err := db.First(&candidate).Error; err != nil {
 		fmt.Println(err)
 		c.String(http.StatusBadRequest, "Invalid candidate specified")
@@ -496,7 +484,6 @@ func RemoveCandidate(c *gin.Context) {
 
 	candidate := database.Candidate{ID: candidateId}
 	db := database.GetDB()
-	defer database.ReleaseDB()
 	if err := db.Preload("Election.Votes").First(&candidate).Error; err != nil {
 		c.String(http.StatusBadRequest, "Invalid candidate specified")
 		return
