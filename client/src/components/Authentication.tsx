@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 
 export const Login: React.FC = () => {
-  const loginURL = "https://login.datasektionen.se"
+  const loginURL = "https://sso.datasektionen.se/legacyapi"
 
   const callback = encodeURIComponent(`${window.location.origin}/#/token/`)
   const url = `${loginURL}/login?callback=${callback}`;
