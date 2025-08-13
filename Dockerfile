@@ -13,5 +13,6 @@ COPY go.mod go.sum /app/
 RUN go mod download
 COPY . /app/
 COPY --from=webpack_builder /app/dist /app/dist
+RUN go build 
 EXPOSE 3000
-CMD [ "go", "run", "main.go" ]
+CMD [ "./durn" ]
