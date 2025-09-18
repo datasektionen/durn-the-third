@@ -41,7 +41,7 @@ func Authenticate() gin.HandlerFunc {
 		requestURL := fmt.Sprintf("%s/verify/%s?api_key=%s", url, token, key)
 
 		var response loginResponse
-		if err := util.GetValidatedJsonFromURL(requestURL, &response); err != nil {
+		if err := util.GetValidatedJsonFromURL(requestURL, &response, nil); err != nil {
 			// TODO: proper logging
 			c.String(http.StatusUnauthorized, "Not logged in") // Unauthorized = Unauthenticated in http
 			c.Abort()
@@ -55,9 +55,15 @@ func Authenticate() gin.HandlerFunc {
 	}
 }
 
+type hivePermission struct {
+	PermId string `json:"perm_id"`
+	Scope  string `json:"scope"`
+}
+
 func Authorize() gin.HandlerFunc {
 	conf := config.GetConfig()
-	url := conf.PLS_URL
+	url := conf.HIVE_URL
+	token := conf.HIVE_API_KEY
 
 	if check, err := http.Get(url + "/"); err != nil || check.StatusCode != 200 {
 		fmt.Println(err)
@@ -66,22 +72,28 @@ func Authorize() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		user := c.GetString("userid")
-		requestURL := fmt.Sprintf("%s/api/user/%s/durn", url, user)
+		requestURL := fmt.Sprintf("%s/api/v1/user/%s/permissions", url, user)
 
-		var response []string
+		var response []hivePermission
 
-		if err := util.GetJsonFromURL(requestURL, &response); err != nil {
+		if err := util.GetValidatedJsonFromURL(requestURL, &response, token); err != nil {
 			// TODO: PROPER LOGGING
 			fmt.Println("AUTHORIZATION FAILED")
 			response = []string{}
 		}
 
-		c.Set("perms", response)
+		// we only care about PermIds, since all our perms are unscoped
+		perms := make([]string, len(response))
+		for i, v := range response {
+			perms[i] = v.PermId
+		}
+
+		c.Set("perms", perms)
 		c.Next()
 	}
 }
 
-// Checks if the logged in user has the provided permission in pls
+// Checks if the logged in user has the provided permission in Hive;
 // assumes Authentication and Authorization has been done
 func HasPerm(perm string) gin.HandlerFunc {
 	return func(c *gin.Context) {

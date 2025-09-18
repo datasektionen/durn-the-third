@@ -10,11 +10,14 @@ import (
 )
 
 type Config struct {
-	HOST      string
-	PORT      int
+	HOST string
+	PORT int
+
 	LOGIN_URL string
 	LOGIN_KEY string
-	PLS_URL   string
+
+	HIVE_URL     string
+	HIVE_API_KEY string
 
 	DATABASE_URL string
 
@@ -59,11 +62,14 @@ func GetConfig() *Config {
 	}
 
 	conf = Config{
-		HOST:      loadStringEnv("HOST", "https://localhost.datasektionen.se"),
-		PORT:      loadIntEnv("PORT", 3000),
+		HOST: loadStringEnv("HOST", "https://localhost.datasektionen.se"),
+		PORT: loadIntEnv("PORT", 3000),
+
 		LOGIN_URL: loadStringEnv("LOGIN_URL", "https://login.datasektionen.se"),
 		LOGIN_KEY: loadStringEnv("LOGIN_KEY", ""),
-		PLS_URL:   loadStringEnv("PLS_URL", "https://pls.datasektionen.se"),
+
+		HIVE_URL:     loadStringEnv("HIVE_URL", "https://hive.datasektionen.se"),
+		HIVE_API_KEY: loadStringEnv("HIVE_API_KEY", ""),
 
 		DATABASE_URL: loadStringEnv("DATABASE_URL", ""),
 

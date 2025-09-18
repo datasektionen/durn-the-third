@@ -13,9 +13,17 @@ import (
 
 var validate *validator.Validate = validator.New()
 
-func GetFromUrl(url string) ([]byte, error) {
-	res, err := http.Get(url)
+func GetFromUrl(url string, bearerToken string) ([]byte, error) {
+	req, err = http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return []byte{}, err
+	}
 
+	if bearerToken != nil {
+		req.Header.Set("Authorization", "Bearer " + bearerToken)
+	}
+
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -36,8 +44,8 @@ func ParseJson[D string | []byte, T any](data D, target *T) error {
 	return nil
 }
 
-func GetJsonFromURL[T any](url string, target *T) error {
-	json, err := GetFromUrl(url)
+func GetJsonFromURL[T any](url string, target *T, bearerToken string) error {
+	json, err := GetFromUrl(url, bearerToken)
 	if err != nil {
 		return err
 	}
@@ -61,8 +69,8 @@ func ValidateJson[D string | []byte, T any](data D, target *T) error {
 	return nil
 }
 
-func GetValidatedJsonFromURL[T any](url string, target *T) error {
-	json, err := GetFromUrl(url)
+func GetValidatedJsonFromURL[T any](url string, target *T, bearerToken string) error {
+	json, err := GetFromUrl(url, bearerToken)
 	if err != nil {
 		return err
 	}
