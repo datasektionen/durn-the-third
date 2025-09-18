@@ -5,9 +5,9 @@ This is a implementation of a voting system for the Computer Science Chapter, wi
 
 
 
-# pls Permissions
+# Hive Permissions
 
-The system uses the following permissions in pls:
+The system uses the following permissions in Hive:
 
 | permission | access |
 |----|-----|
@@ -24,7 +24,8 @@ The system uses the following permissions in pls:
 | `POST` | `3000` | specifies the port that the system will run on |
 | `LOGIN_URL` | `https://login.datasektionen.se` | url for the login system and API |
 | `LOGIN_KEY` | | API-key for the login system |
-| `PLS_URL` | `https://pls.datasektionen.se` | url for the permissions system pls |
+| `HIVE_URL` | `https://hive.datasektionen.se` | url for the permissions system hive |
+| `HIVE_API_KEY` | | API-key for the permissions system |
 | `DATABASE_URL` | | postgres-url for connecting to the database instance | 
 
 
@@ -44,4 +45,4 @@ The system uses the following permissions in pls:
 2. Setup environment variables
 3. Run `make prod` in root
 
-The system also has a `dockerfile` setup for deployment. 
+The system also has a `dockerfile` setup for deployment.
