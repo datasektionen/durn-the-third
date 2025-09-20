@@ -56,8 +56,8 @@ func Authenticate() gin.HandlerFunc {
 }
 
 type hivePermission struct {
-	PermId string `json:"perm_id"`
-	Scope  string `json:"scope"`
+	Id    string `json:"id"`
+	Scope string `json:"scope"`
 }
 
 func Authorize() gin.HandlerFunc {
@@ -85,7 +85,7 @@ func Authorize() gin.HandlerFunc {
 		// we only care about PermIds, since all our perms are unscoped
 		perms := make([]string, len(response))
 		for i, v := range response {
-			perms[i] = v.PermId
+			perms[i] = v.Id
 		}
 
 		c.Set("perms", perms)
