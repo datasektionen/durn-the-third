@@ -76,7 +76,7 @@ func Authorize() gin.HandlerFunc {
 
 		var response []hivePermission
 
-		if err := util.GetValidatedJsonFromURL(requestURL, &response, token); err != nil {
+		if err := util.GetJsonFromURL(requestURL, &response, token); err != nil {
 			// TODO: PROPER LOGGING
 			fmt.Println("AUTHORIZATION FAILED", err)
 			response = []hivePermission{}
