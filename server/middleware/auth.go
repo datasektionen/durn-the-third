@@ -41,7 +41,7 @@ func Authenticate() gin.HandlerFunc {
 		requestURL := fmt.Sprintf("%s/verify/%s?api_key=%s", url, token, key)
 
 		var response loginResponse
-		if err := util.GetValidatedJsonFromURL(requestURL, &response, nil); err != nil {
+		if err := util.GetValidatedJsonFromURL(requestURL, &response, ""); err != nil {
 			// TODO: proper logging
 			c.String(http.StatusUnauthorized, "Not logged in") // Unauthorized = Unauthenticated in http
 			c.Abort()

@@ -19,7 +19,7 @@ func GetFromUrl(url string, bearerToken string) ([]byte, error) {
 		return []byte{}, err
 	}
 
-	if bearerToken != nil {
+	if bearerToken != "" {
 		req.Header.Set("Authorization", "Bearer " + bearerToken)
 	}
 
