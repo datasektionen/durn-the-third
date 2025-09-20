@@ -14,7 +14,7 @@ import (
 var validate *validator.Validate = validator.New()
 
 func GetFromUrl(url string, bearerToken string) ([]byte, error) {
-	req, err = http.NewRequest(http.MethodGet, url, nil)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return []byte{}, err
 	}
