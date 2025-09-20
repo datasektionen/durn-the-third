@@ -79,7 +79,7 @@ func Authorize() gin.HandlerFunc {
 		if err := util.GetValidatedJsonFromURL(requestURL, &response, token); err != nil {
 			// TODO: PROPER LOGGING
 			fmt.Println("AUTHORIZATION FAILED")
-			response = []string{}
+			response = []hivePermission{}
 		}
 
 		// we only care about PermIds, since all our perms are unscoped
