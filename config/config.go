@@ -20,12 +20,6 @@ type Config struct {
 	HIVE_API_KEY string
 
 	DATABASE_URL string
-
-	DB_HOST string
-	DB_PORT int
-	DB_NAME string
-	DB_USER string
-	DB_PSWD string
 }
 
 var (
@@ -72,12 +66,6 @@ func GetConfig() *Config {
 		HIVE_API_KEY: loadStringEnv("HIVE_API_KEY", ""),
 
 		DATABASE_URL: loadStringEnv("DATABASE_URL", ""),
-
-		DB_HOST: loadStringEnv("DB_HOST", ""),
-		DB_PORT: loadIntEnv("DB_PORT", 5432),
-		DB_NAME: loadStringEnv("DB_NAME", "durn"),
-		DB_USER: loadStringEnv("DB_USER", "durn"),
-		DB_PSWD: loadStringEnv("DB_PSWD", ""),
 	}
 
 	loaded = true

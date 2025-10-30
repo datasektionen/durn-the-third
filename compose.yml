@@ -1,0 +1,71 @@
+services:
+  app:
+    build:
+      context: .
+      args:
+        REACT_APP_LOGIN_API_URL: http://localhost:7002
+    environment:
+      - PORT=8080
+      - HOST=0.0.0.0
+      - LOGIN_URL=http://nyckeln:7002
+      - LOGIN_KEY=1234567890abcdefabcdef
+      - HIVE_URL=http://nyckeln:7004
+      - HIVE_API_KEY=1234567890abcdefabcdef
+      - DATABASE_URL=postgres://durn:durn@db:5432/durn
+    ports: [ 8080:8080 ]
+    depends_on:
+      db:
+        condition: service_healthy
+    develop:
+      watch:
+        - path: .
+          action: rebuild
+  db:
+    image: 'postgres:latest'
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: durn
+      POSTGRES_PASSWORD: durn
+      POSTGRES_DB: durn
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - "sh -c 'pg_isready -d durn -U durn'"
+      interval: 1s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+  nyckeln:
+    image: ghcr.io/datasektionen/nyckeln-under-dorrmattan
+    ports:
+      - 7002:7002
+      - 7004:7004
+    configs:
+      - source: nyckeln.yaml
+        target: /config.yaml
+
+configs:
+  nyckeln.yaml:
+    content: |
+      users:
+        - ug_kth_id: some-id
+          kth_id: turetek
+          email: turetek@kth.se
+          first_name: Ture
+          family_name: Teknolog
+          hive_tags:
+            - id: personal_email
+              content: turetek@gmail.com
+
+      hive:
+        groups:
+          - name: Valberedningens ordförande
+            id: valberedning-ordf
+            domain: example.com
+            members:
+              - turetek
+            permissions:
+              - id: admin-read
+              - id: admin-write
+

@@ -5,6 +5,10 @@ WORKDIR /app
 COPY package.json package-lock.json /app/
 RUN npm install
 COPY . /app/
+
+ARG REACT_APP_LOGIN_API_URL=https://sso.datasektionen.se/legacyapi
+ENV REACT_APP_LOGIN_API_URL=$REACT_APP_LOGIN_API_URL
+
 RUN npm run build
 
 FROM golang:1.19.3

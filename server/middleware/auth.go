@@ -65,7 +65,8 @@ func Authorize() gin.HandlerFunc {
 	url := conf.HIVE_URL
 	token := conf.HIVE_API_KEY
 
-	if check, err := http.Get(url + "/"); err != nil || check.StatusCode != 200 {
+	// because hive doesn't have a test endpoint we cannot verify connection
+	if _, err := http.Get(url + "/"); err != nil {
 		fmt.Println(err)
 		os.Exit(5)
 	}
