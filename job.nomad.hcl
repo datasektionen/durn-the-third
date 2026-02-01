@@ -29,13 +29,14 @@ job "durn" {
         data        = <<ENV
 {{ with nomadVar "nomad/jobs/durn" }}
 DATABASE_URL=postgresql://durn:{{ .db_password }}@postgres.dsekt.internal:5432/durn
-LOGIN_KEY={{ .login_key }}
-HIVE_API_KEY={{ .hive_api_key }}
+OIDC_CLIENT_SECRET={{ .oidc_secret }}
 {{ end }}
 PORT={{ env "NOMAD_PORT_http" }}
 HOST=0.0.0.0
-LOGIN_URL=https://sso.datasektionen.se/legacyapi
-HIVE_URL=https://hive.datasektionen.se
+OIDC_PROVIDER=https://sso.datasektionen.se/op
+OIDC_CLIENT_ID=durn
+OIDC_REDIRECT_URL=https://durn.datasektionen.se/api/oidc/callback
+
 ENV
         destination = "local/.env"
         env         = true

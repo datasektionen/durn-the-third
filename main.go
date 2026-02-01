@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 
@@ -12,6 +14,9 @@ import (
 
 func main() {
 	r := gin.Default()
+
+	store := cookie.NewStore([]byte("secret"))
+	r.Use(sessions.Sessions("session", store))
 
 	r.Use(static.Serve("/", static.LocalFile("./dist", true)))
 	r.Static("/public", "./public")

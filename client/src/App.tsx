@@ -4,7 +4,7 @@ import { HashRouter, Routes, Route, Link, } from "react-router-dom";
 import useAuthorization from "./hooks/useAuthorization";
 
 import { Home } from "./views/Home";
-import { Login, Logout, Token } from "./components/Authentication";
+import { Login, Logout } from "./components/Authentication";
 import constants from "./util/constants";
 
 import Admin from "./views/admin/Admin";
@@ -43,10 +43,8 @@ const App: React.FC = () => {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/logout" element={<Logout />} /> 
-          <Route path="/token/:token" element={<Token />} />
 
           <Route path="/info" element={<Info />} />
-
 
           <Route path="/vote/:id" element={<Vote />} />
 

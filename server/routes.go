@@ -19,9 +19,12 @@ func InitRoutes(r *gin.RouterGroup) {
 
 	r.GET("/ping", func(c *gin.Context) { c.String(http.StatusOK, "pong") })
 
-	auth := r.Group("/", middleware.Auth()...)
-
-	auth.GET("/validate-token", actions.ValidateToken)
+	auth := r.Group("/", middleware.Auth())
+	silentAuth := r.Group("/", middleware.SiletAuth())
+	auth.GET("/login", actions.Login)
+	auth.GET("/logout", actions.Logout)
+	silentAuth.GET("/check", actions.CheckLogin)
+	r.GET("/oidc/callback", middleware.HandleOAuth2)
 
 	write := auth.Group("/", middleware.HasPerm("admin-write"))
 	read := auth.Group("/", middleware.HasPerm("admin-read"))

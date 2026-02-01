@@ -13,11 +13,10 @@ type Config struct {
 	HOST string
 	PORT int
 
-	LOGIN_URL string
-	LOGIN_KEY string
-
-	HIVE_URL     string
-	HIVE_API_KEY string
+	OIDC_PROVIDER      string
+	OIDC_CLIENT_ID     string
+	OIDC_CLIENT_SECRET string
+	OIDC_REDIRECT_URL  string
 
 	DATABASE_URL string
 }
@@ -59,11 +58,10 @@ func GetConfig() *Config {
 		HOST: loadStringEnv("HOST", "https://localhost.datasektionen.se"),
 		PORT: loadIntEnv("PORT", 3000),
 
-		LOGIN_URL: loadStringEnv("LOGIN_URL", "https://login.datasektionen.se"),
-		LOGIN_KEY: loadStringEnv("LOGIN_KEY", ""),
-
-		HIVE_URL:     loadStringEnv("HIVE_URL", "https://hive.datasektionen.se"),
-		HIVE_API_KEY: loadStringEnv("HIVE_API_KEY", ""),
+		OIDC_PROVIDER: loadStringEnv("OIDC_PROVIDER", "https://sso.datasektionen.se/op"),
+		OIDC_CLIENT_ID: loadStringEnv("OIDC_CLIENT_ID", "durn"),
+		OIDC_CLIENT_SECRET: loadStringEnv("OIDC_CLIENT_SECRET", ""),
+		OIDC_REDIRECT_URL: loadStringEnv("OIDC_REDIRECT_URL", "https://durn.datasektionen.se/api/oidc/callback"),
 
 		DATABASE_URL: loadStringEnv("DATABASE_URL", ""),
 	}

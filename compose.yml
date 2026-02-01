@@ -2,17 +2,17 @@ services:
   app:
     build:
       context: .
-      args:
-        REACT_APP_LOGIN_API_URL: http://localhost:7002
+      target: dev
     environment:
       - PORT=8080
       - HOST=0.0.0.0
-      - LOGIN_URL=http://nyckeln:7002
-      - LOGIN_KEY=1234567890abcdefabcdef
-      - HIVE_URL=http://nyckeln:7004
-      - HIVE_API_KEY=1234567890abcdefabcdef
+      - OIDC_PROVIDER=http://localhost:7003
+      - OIDC_CLIENT_ID=client-id
+      - OIDC_CLIENT_SECRET=client-secret
+      - OIDC_REDIRECT_URL=http://localhost:8080/api/oidc/callback
       - DATABASE_URL=postgres://durn:durn@db:5432/durn
     ports: [ 8080:8080 ]
+    command: sh -c /app/run.sh
     depends_on:
       db:
         condition: service_healthy
@@ -20,6 +20,9 @@ services:
       watch:
         - path: .
           action: rebuild
+    configs:
+      - source: nginx.conf
+        target: /etc/nginx/nginx.conf
   db:
     image: 'postgres:latest'
     ports:
@@ -40,14 +43,35 @@ services:
     image: ghcr.io/datasektionen/nyckeln-under-dorrmattan
     ports:
       - 7002:7002
+      - 7003:7003
       - 7004:7004
     configs:
       - source: nyckeln.yaml
         target: /config.yaml
 
 configs:
+  nginx.conf:
+    content: | 
+      events {}
+
+      http {
+        server {
+          listen 7003;
+
+          location / {
+            proxy_pass http://nyckeln:7003;
+          }
+        }
+      }
+
   nyckeln.yaml:
     content: |
+      clients:
+        - id: client-id
+          secret: client-secret
+          redirect_uris:
+            - http://localhost:8080/api/oidc/callback
+
       users:
         - ug_kth_id: some-id
           kth_id: turetek
