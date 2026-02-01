@@ -1,97 +1,181 @@
 package middleware
 
 import (
-	"fmt"
-	"net/http"
-	"os"
-	"strings"
-
+	"context"
+	"crypto/rand"
 	"durn/config"
-	"durn/server/util"
+	"encoding/base64"
+	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"slices"
 
+	"github.com/coreos/go-oidc/v3/oidc"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/oauth2"
+	// "github.com/go-playground/locales/ses"
 )
 
-type loginResponse struct {
-	Email     string `json:"emails" Usage:"email"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Ugkthid   string `json:"ugkthid"`
-	User      string `json:"user"`
+type Permission struct {
+	Id    string
+	Scope string
 }
 
-func Authenticate() gin.HandlerFunc {
-	conf := config.GetConfig()
-	url := conf.LOGIN_URL
-	key := conf.LOGIN_KEY
+var (
+	loaded       bool = false
+	oauth2Config oauth2.Config
+	verifier     *oidc.IDTokenVerifier
+)
 
-	if check, err := http.Get(url + "/hello"); err != nil || check.StatusCode != 200 {
-		fmt.Println(err)
-		os.Exit(5)
+func InitOIDC(ctx context.Context) {
+	c := config.GetConfig()
+	provider, err := oidc.NewProvider(ctx, c.OIDC_PROVIDER)
+	if err != nil {
+		log.Panicln(err.Error())
+		panic(err.Error())
 	}
 
+	// Configure an OpenID Connect aware OAuth2 client.
+	oauth2Config = oauth2.Config{
+		ClientID:     c.OIDC_CLIENT_ID,
+		ClientSecret: c.OIDC_CLIENT_SECRET,
+		RedirectURL:  c.OIDC_REDIRECT_URL,
+
+		// Discovery returns the OAuth2 endpoints.
+		Endpoint: provider.Endpoint(),
+
+		// "openid" is a required scope for OpenID Connect flows.
+		Scopes: []string{oidc.ScopeOpenID, "profile", "email", "permissions"},
+	}
+	verifier = provider.Verifier(&oidc.Config{ClientID: c.OIDC_CLIENT_ID})
+
+	loaded = true
+}
+
+func RandString(nByte int) (string, error) {
+	b := make([]byte, nByte)
+	if _, err := io.ReadFull(rand.Reader, b); err != nil {
+		return "", err
+	}
+	return base64.RawURLEncoding.EncodeToString(b), nil
+}
+
+func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authHeader := strings.Split(c.GetHeader("Authorization"), " ")
-		if len(authHeader) < 2 {
-			c.String(http.StatusUnauthorized, "Invalid Authorization header provided") // Unauthorized = Unauthenticated in http
-			c.Abort()
-			return
-		}
-		token := authHeader[1]
-		requestURL := fmt.Sprintf("%s/verify/%s?api_key=%s", url, token, key)
+		session := sessions.Default(c)
 
-		var response loginResponse
-		if err := util.GetValidatedJsonFromURL(requestURL, &response, ""); err != nil {
-			// TODO: proper logging
-			c.String(http.StatusUnauthorized, "Not logged in") // Unauthorized = Unauthenticated in http
-			c.Abort()
-			return
+		if !loaded {
+			InitOIDC(c)
 		}
 
-		c.Set("user", fmt.Sprintf("%s@kth.se", response.User))
-		c.Set("userid", response.User)
+		if session.Get("userid") == nil {
+			state, err := RandString(16)
+			if err != nil {
+				c.String(http.StatusInternalServerError, "failed to generate state")
+				c.Abort()
+			}
+			c.SetCookie("state", state, 3600, "/", "localhost", false, true)
+
+			c.Abort()
+			c.Redirect(http.StatusTemporaryRedirect, oauth2Config.AuthCodeURL(state))
+			return
+		}
+
+		c.Set("user", session.Get("user"))
+		c.Set("userid", session.Get("userid"))
+		c.Set("perms", session.Get("perms"))
 
 		c.Next()
 	}
 }
 
-type hivePermission struct {
-	Id    string `json:"id"`
-	Scope string `json:"scope"`
-}
-
-func Authorize() gin.HandlerFunc {
-	conf := config.GetConfig()
-	url := conf.HIVE_URL
-	token := conf.HIVE_API_KEY
-
-	// because hive doesn't have a test endpoint we cannot verify connection
-	if _, err := http.Get(url + "/"); err != nil {
-		fmt.Println(err)
-		os.Exit(5)
-	}
-
+func SiletAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user := c.GetString("userid")
-		requestURL := fmt.Sprintf("%s/api/v1/user/%s/permissions", url, user)
+		session := sessions.Default(c)
 
-		var response []hivePermission
-
-		if err := util.GetJsonFromURL(requestURL, &response, token); err != nil {
-			// TODO: PROPER LOGGING
-			fmt.Println("AUTHORIZATION FAILED", err)
-			response = []hivePermission{}
+		if !loaded {
+			InitOIDC(c)
 		}
 
-		// we only care about PermIds, since all our perms are unscoped
-		perms := make([]string, len(response))
-		for i, v := range response {
-			perms[i] = v.Id
+		if session.Get("userid") != nil {
+			c.Set("user", session.Get("user"))
+			c.Set("userid", session.Get("userid"))
+			c.Set("perms", session.Get("perms"))
+		} else {
+			fmt.Println("userid does not exist in session")
 		}
 
-		c.Set("perms", perms)
 		c.Next()
 	}
+}
+
+func HandleOAuth2(c *gin.Context) {
+	if !loaded {
+		InitOIDC(c)
+	}
+	s := sessions.Default(c)
+
+	// Verify state and errors.
+	state, err := c.Cookie("state")
+	if err != nil {
+		c.String(http.StatusBadRequest, "state not found")
+		c.Abort()
+		return
+	}
+
+	if c.Query("state") != state {
+		c.String(http.StatusBadRequest, "state did not match")
+		c.Abort()
+		return
+	}
+
+	oauth2Token, err := oauth2Config.Exchange(c, c.Query("code"))
+	if err != nil {
+		c.String(http.StatusBadRequest, "failed to exchange code")
+		c.Abort()
+		return
+	}
+
+	// Extract the ID Token from OAuth2 token.
+	rawIDToken, ok := oauth2Token.Extra("id_token").(string)
+	if !ok {
+		c.String(http.StatusBadRequest, "No id token")
+		c.Abort()
+		return
+	}
+
+	// Parse and verify ID Token payload.
+	idToken, err := verifier.Verify(c, rawIDToken)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Failed to verify id token")
+		c.Abort()
+		return
+	}
+
+	var claims struct {
+		Email       string       `json:"email"`
+		Permissions []Permission `json:"permissions"`
+	}
+	if err := idToken.Claims(&claims); err != nil {
+		c.String(http.StatusBadRequest, "Failed to extract claims")
+		c.Abort()
+		return
+	}
+
+	// we only care about PermIds, since all our perms are unscoped
+	perms := make([]string, len(claims.Permissions))
+	for i, v := range claims.Permissions {
+		perms[i] = v.Id
+	}
+
+	s.Set("user", fmt.Sprintf("%s@kth.se", idToken.Subject))
+	s.Set("userid", idToken.Subject)
+	s.Set("perms", perms)
+	s.Save()
+
+	c.Redirect(http.StatusTemporaryRedirect, "/")
 }
 
 // Checks if the logged in user has the provided permission in Hive;
@@ -103,17 +187,12 @@ func HasPerm(perm string) gin.HandlerFunc {
 			fmt.Print("error")
 			return
 		}
-		for _, val := range perms {
-			if val == perm {
-				c.Next()
-				return
-			}
+		if slices.Contains(perms, perm) {
+
+			c.Next()
+			return
 		}
 		c.String(http.StatusForbidden, "Insufficient permissions")
 		c.Abort()
 	}
-}
-
-func Auth() gin.HandlersChain {
-	return gin.HandlersChain{Authenticate(), Authorize()}
 }

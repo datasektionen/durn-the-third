@@ -56,10 +56,5 @@
     "webpack-cli": "^3.3.10",
     "webpack-dev-server": "^3.10.1"
   },
-  "react-dotenv": {
-    "whitelist": [
-      "LOGIN_URL"
-    ]
-  },
   "proxy": "http://127.0.0.1:3000/"
 }

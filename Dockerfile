@@ -6,12 +6,9 @@ COPY package.json package-lock.json /app/
 RUN npm install
 COPY . /app/
 
-ARG REACT_APP_LOGIN_API_URL=https://sso.datasektionen.se/legacyapi
-ENV REACT_APP_LOGIN_API_URL=$REACT_APP_LOGIN_API_URL
-
 RUN npm run build
 
-FROM golang:1.19.3
+FROM golang:1.24.0-alpine AS prod
 WORKDIR /app
 COPY go.mod go.sum /app/
 RUN go mod download
@@ -20,3 +17,13 @@ COPY --from=webpack_builder /app/dist /app/dist
 RUN go build 
 EXPOSE 3000
 CMD [ "./durn" ]
+
+FROM prod AS dev
+
+WORKDIR /app
+
+RUN apk --no-cache add nginx
+
+RUN echo "nginx &" >> run.sh
+RUN echo "./durn" >> run.sh
+RUN chmod +x run.sh

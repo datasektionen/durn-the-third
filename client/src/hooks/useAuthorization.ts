@@ -6,33 +6,30 @@ const useAuthorization = () => {
   const [loggedIn, setLoggedIn] = useLocalStorage<boolean>({
     key: "loggedIn", defaultValue: false
   });
-  const [user, ___, removeUser] = useLocalStorage<string>({
+  const [user, setUser, removeUser] = useLocalStorage<string>({
     key: "user", defaultValue: ""
   });
-  const [perms, __, removePerms] = useLocalStorage<string[]>({
+  const [perms, setPerms, removePerms] = useLocalStorage<string[]>({
     key: "perms", defaultValue: []
   });
   const [header, _, removeHeader] = useLocalStorage<object>({
     key: "header", defaultValue: {}
   });
-  
-  useEffect(() => {
-    if (!("Authorization" in header)) return;
-    axios.get(
-      "/api/validate-token",
-      {headers: Object(header)}
-    ).then(() => {
 
-    }).catch((error) => {
-      if (error?.response.status != 401) return; 
-      removeHeader();
+  useEffect(() => {
+
+    axios.get('/api/check', {
+    }).then(({ data }) => {
+
+      setLoggedIn(true);
+      setUser(data.user);
+      setPerms(data.perms);
+    }).catch(() => {
       removePerms();
       removeUser();
       setLoggedIn(false);
     })
   }, [header])
-
-
 
   return {
     loggedIn,
@@ -40,7 +37,6 @@ const useAuthorization = () => {
     adminWrite: perms.includes("admin-write"),
     user: user,
     perms: perms,
-    authHeader: header
   };
 };
 
