@@ -48,7 +48,7 @@ func Authenticate() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("user", response.Email)
+		c.Set("user", fmt.Sprintf("%s@kth.se", response.User))
 		c.Set("userid", response.User)
 
 		c.Next()
