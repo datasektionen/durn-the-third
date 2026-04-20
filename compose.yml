@@ -11,6 +11,7 @@ services:
       - OIDC_CLIENT_SECRET=client-secret
       - OIDC_REDIRECT_URL=http://localhost:8080/api/oidc/callback
       - DATABASE_URL=postgres://durn:durn@db:5432/durn
+      - DOMAIN=localhost
     ports: [ 8080:8080 ]
     command: sh -c /app/run.sh
     depends_on:

@@ -76,7 +76,7 @@ func Auth() gin.HandlerFunc {
 				c.String(http.StatusInternalServerError, "failed to generate state")
 				c.Abort()
 			}
-			c.SetCookie("state", state, 3600, "/", "localhost", false, true)
+			c.SetCookie("state", state, 3600, "/", config.GetConfig().DOMAIN, false, true)
 
 			c.Abort()
 			c.Redirect(http.StatusTemporaryRedirect, oauth2Config.AuthCodeURL(state))

@@ -10,8 +10,9 @@ import (
 )
 
 type Config struct {
-	HOST string
-	PORT int
+	HOST   string
+	DOMAIN string
+	PORT   int
 
 	OIDC_PROVIDER      string
 	OIDC_CLIENT_ID     string
@@ -56,12 +57,13 @@ func GetConfig() *Config {
 
 	conf = Config{
 		HOST: loadStringEnv("HOST", "https://localhost.datasektionen.se"),
+		DOMAIN: loadStringEnv("DOMAIN", "durn.datasektionen.se"),
 		PORT: loadIntEnv("PORT", 3000),
 
-		OIDC_PROVIDER: loadStringEnv("OIDC_PROVIDER", "https://sso.datasektionen.se/op"),
-		OIDC_CLIENT_ID: loadStringEnv("OIDC_CLIENT_ID", "durn"),
+		OIDC_PROVIDER:      loadStringEnv("OIDC_PROVIDER", "https://sso.datasektionen.se/op"),
+		OIDC_CLIENT_ID:     loadStringEnv("OIDC_CLIENT_ID", "durn"),
 		OIDC_CLIENT_SECRET: loadStringEnv("OIDC_CLIENT_SECRET", ""),
-		OIDC_REDIRECT_URL: loadStringEnv("OIDC_REDIRECT_URL", "https://durn.datasektionen.se/api/oidc/callback"),
+		OIDC_REDIRECT_URL:  loadStringEnv("OIDC_REDIRECT_URL", "https://durn.datasektionen.se/api/oidc/callback"),
 
 		DATABASE_URL: loadStringEnv("DATABASE_URL", ""),
 	}

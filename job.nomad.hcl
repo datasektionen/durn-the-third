@@ -33,6 +33,7 @@ OIDC_CLIENT_SECRET={{ .oidc_secret }}
 {{ end }}
 PORT={{ env "NOMAD_PORT_http" }}
 HOST=0.0.0.0
+DOMAIN=durn.datasektionen.se
 OIDC_PROVIDER=https://sso.datasektionen.se/op
 OIDC_CLIENT_ID=durn
 OIDC_REDIRECT_URL=https://durn.datasektionen.se/api/oidc/callback
